@@ -1,0 +1,66 @@
+:root {
+	--shadow-dark:0 6px 10px rgba(40,40,40,0.25);
+	--shadow-darker:0 6px 10px rgba(40,40,40,0.4);
+	--shadow-smooth:0 1px 1px rgba(0,0,0,0.08), 0 2px 2px rgba(0,0,0,0.12), 0 4px 4px rgba(0,0,0,0.16), 0 8px 8px rgba(0,0,0,0.20);
+	--shadow-accent:0 0 12px rgba(0,150,255,0.9);
+	--main-first:rgb(10,10,10);
+	--main-second:rgb(20,20,20);
+	--main-third:rgb(40,40,40);
+	--main-fourth:rgb(60,60,60);
+	--main-contrast:rgb(255,255,255);
+	--accent-light:rgb(0,150,255);
+	--font-family:"Helvetica Neue", "Lucida Grande", "Arial", "Verdana", "Tahoma", sans-serif;
+}
+html {
+	font-family:var(--font-family);
+}
+body {
+	background:var(--main-first);
+	color:var(--main-contrast);
+	margin:0;
+	padding:0;
+	font-size:0;
+	overflow:hidden;
+}
+input, button {
+	outline:none;
+	border:none;
+}
+.noselect {
+	-webkit-user-select:none;
+	-khtml-user-select:none;
+	-moz-user-select:none;
+	-ms-user-select:none;
+	user-select:none;
+	outline:none;
+}
+.hidden {
+	display:none;
+	visibility:hidden;
+	position:absolute;
+	z-index:-1;
+}
+
+::-webkit-scrollbar {
+	display:block;
+	width:4px;
+	background:var(--main-third);
+}
+::-webkit-scrollbar-thumb {
+	border-radius:5px;
+	background:var(--main-second);
+}
+::-webkit-scrollbar-thumb:hover {
+	background:var(--main-fourth);
+}
+::-webkit-scrollbar-track { 
+	background:var(--main-third);
+}
+
+input::-webkit-outer-spin-button, input::-webkit-inner-spin-button {
+	-webkit-appearance:none;
+	margin:0;
+}
+input[type=number] {
+	-moz-appearance:textfield;
+}

@@ -12,6 +12,12 @@ document.addEventListener("DOMContentLoaded", () => {
 	let buttonPreviousPage = document.getElementById("previous-page");
 	let buttonNextPage = document.getElementById("next-page");
 
+	let divNavbarBackground = document.getElementById("navbar-background");
+	let divNavbarDashboard = document.getElementById("navbar-dashboard");
+	let divNavbarMarket = document.getElementById("navbar-market");
+	let divNavbarHoldings = document.getElementById("navbar-holdings");
+	let divNavbarSettings = document.getElementById("navbar-settings");
+
 	let divPageNavigation = document.getElementById("page-navigation");
 	let divMarketList = document.getElementById("market-list");
 
@@ -35,6 +41,22 @@ document.addEventListener("DOMContentLoaded", () => {
 		adjustToScreen();
 	});
 
+	divNavbarDashboard.addEventListener("click", () => {
+		switchPage("dashboard");
+	});
+
+	divNavbarMarket.addEventListener("click", () => {
+		switchPage("market");
+	});
+
+	divNavbarHoldings.addEventListener("click", () => {
+		switchPage("holdings");
+	});
+
+	divNavbarSettings.addEventListener("click", () => {
+		switchPage("settings");
+	});
+
 	buttonPreviousPage.addEventListener("click", () => {
 		previousPage();
 	});
@@ -42,6 +64,32 @@ document.addEventListener("DOMContentLoaded", () => {
 	buttonNextPage.addEventListener("click", () => {
 		nextPage();
 	});
+
+	function switchPage(page) {
+		divNavbarDashboard.classList.remove("active");
+		divNavbarMarket.classList.remove("active");
+		divNavbarHoldings.classList.remove("active");
+		divNavbarSettings.classList.remove("active");
+
+		switch(page) {
+			case "dashboard":
+				divNavbarDashboard.classList.add("active");
+				divNavbarBackground.setAttribute("class", "background dashboard");
+				break;
+			case "market":
+				divNavbarMarket.classList.add("active");
+				divNavbarBackground.setAttribute("class", "background market");
+				break;
+			case "holdings":
+				divNavbarHoldings.classList.add("active");
+				divNavbarBackground.setAttribute("class", "background holdings");
+				break;
+			case "settings":
+				divNavbarSettings.classList.add("active");
+				divNavbarBackground.setAttribute("class", "background settings");
+				break;
+		}
+	}
 
 	function adjustToScreen() {
 		

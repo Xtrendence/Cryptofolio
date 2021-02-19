@@ -102,6 +102,152 @@
 	}
 }
 
+@media screen and (max-width:700px) {
+	.navbar {
+		bottom:0;
+		top:auto;
+		height:80px;
+		width:100%;
+		text-align:center;
+	}
+	.navbar .item {
+		display:inline-block;
+		width:60px;
+		margin:10px 10px 0 10px;
+	}
+
+	.navbar .background {
+		position:absolute;
+		width:60px;
+		height:60px;
+		z-index:1;
+		left:20px;
+		top:10px;
+		border-radius:var(--border-radius);
+		background:var(--main-third);
+		transition:left 0.25s;
+	}
+	.navbar .background.dashboard {
+		top:10px;
+		left:calc(50% - 150px);
+	}
+	.navbar .background.market {
+		top:10px;
+		left:calc(50% - 70px);
+	}
+	.navbar .background.holdings {
+		top:10px;
+		left:calc(50% + 10px);
+	}
+	.navbar .background.settings {
+		top:10px;
+		left:calc(50% + 90px);
+	}
+
+	.page {
+		left:0;
+		width:100%;
+		height:calc(100% - 80px);
+	}
+}
+
+@media screen and (max-width:600px) {
+	.header {
+		font-size:16px;
+		padding:0 10px 0 10px;
+	}
+	.header.coin {
+		width:90px;
+	}
+	.header.price {
+		width:100px;
+	}
+
+	.coin-wrapper span {
+		font-size:16px;
+		padding:0 10px 0 10px;
+	}
+	.coin-wrapper img {
+		vertical-align:middle;
+		width:28px;
+		height:28px;
+		border-radius:50%;
+	}
+	.coin-wrapper .coin {
+		width:62px;
+	}
+	.coin-wrapper .price {
+		width:100px;
+	}
+}
+
+@media screen and (max-width:480px) {
+	.page-navigation-wrapper {
+		right:auto;
+		top:auto;
+		bottom:20px;
+		left:calc(50% - 200px / 2);
+	}
+	.market .stats-wrapper .stats-title {
+		font-size:16px;
+	}
+	.market .stats-wrapper .stats-subtitle {
+		font-size:16px;
+	}
+	.market-list-wrapper {
+		top:100px;
+	}
+	.header.market-cap {
+		width:100px;
+	}
+	.coin-wrapper .market-cap {
+		width:100px;
+	}
+}
+
+@media screen and (max-width:440px) {
+	.market .stats-wrapper {
+		left:20px;
+		right:auto;
+	}
+	.market .stats-wrapper .stats-card.volume {
+		display:none;
+	}
+	.header.market-cap {
+		width:65px;
+	}
+	.coin-wrapper .market-cap {
+		width:65px;
+	}
+}
+
+@media screen and (max-width:410px) {
+	.header.rank {
+		display:none;
+	}
+	.header.coin {
+		padding-left:20px;
+	}
+	.coin-wrapper .rank {
+		display:none;
+	}
+	.coin-wrapper img {
+		margin-left:10px;
+	}
+}
+
+@media screen and (max-width:380px) {
+	.header.coin {
+		width:60px;
+	}
+	.coin-wrapper img {
+		display:none;
+	}
+	.coin-wrapper .coin {
+		margin-left:10px;
+	}
+}
+
 @media screen and (min-width:1300px) {
 	.page-navigation-wrapper {
 		bottom:20px;

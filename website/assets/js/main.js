@@ -9,6 +9,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	let spanPageNumber = document.getElementById("page-number");
 
+	let spanHeaderMarketCap = document.getElementsByClassName("header market-cap")[0];
+
 	let buttonPreviousPage = document.getElementById("previous-page");
 	let buttonNextPage = document.getElementById("next-page");
 
@@ -40,7 +42,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
 		clearTimeout(window.resizedFinished);
 		window.resizedFinished = setTimeout(() => {
-			listMarket();
+			let page = parseInt(divMarketList.getAttribute("data-page"));
+			listMarket(page);
 		}, 1000);
 
 		adjustToScreen();
@@ -107,7 +110,11 @@ document.addEventListener("DOMContentLoaded", () => {
 	}
 
 	function adjustToScreen() {
-		
+		if(window.innerWidth <= 440) {
+			spanHeaderMarketCap.textContent = "M. Cap";
+		} else {
+			spanHeaderMarketCap.textContent = "Market Cap";
+		}
 	}
 
 	function previousPage() {
@@ -161,8 +168,11 @@ document.addEventListener("DOMContentLoaded", () => {
 					}
 					let id = coin.id;
 					let marketCap = coin.market_cap;
-					if(window.innerWidth <= 960) {
+					if(window.innerWidth <= 960 && window.innerWidth > 440) {
 						marketCap = abbreviateNumber(marketCap, 2);
+					}
+					else if(window.innerWidth <= 440) {
+						marketCap = abbreviateNumber(marketCap, 0);
 					}
 					let rank = coin.market_cap_rank;
 					let name = coin.name;

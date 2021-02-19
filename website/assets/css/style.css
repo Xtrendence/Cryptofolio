@@ -339,6 +339,9 @@ input[type=number] {
 	width:88px;
 	text-align:left;
 	padding-left:10px;
+	text-overflow:ellipsis;
+	white-space:nowrap;
+	overflow:hidden;
 }
 .coin-wrapper .price {
 	width:120px;

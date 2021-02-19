@@ -18,6 +18,11 @@ document.addEventListener("DOMContentLoaded", () => {
 	let divNavbarHoldings = document.getElementById("navbar-holdings");
 	let divNavbarSettings = document.getElementById("navbar-settings");
 
+	let divPageDashboard = document.getElementById("page-dashboard");
+	let divPageMarket = document.getElementById("page-market");
+	let divPageHoldings = document.getElementById("page-holdings");
+	let divPageSettings = document.getElementById("page-settings");
+
 	let divPageNavigation = document.getElementById("page-navigation");
 	let divMarketList = document.getElementById("market-list");
 
@@ -71,21 +76,31 @@ document.addEventListener("DOMContentLoaded", () => {
 		divNavbarHoldings.classList.remove("active");
 		divNavbarSettings.classList.remove("active");
 
+		divPageDashboard.classList.remove("active");
+		divPageMarket.classList.remove("active");
+		divPageHoldings.classList.remove("active");
+		divPageSettings.classList.remove("active");
+
 		switch(page) {
 			case "dashboard":
 				divNavbarDashboard.classList.add("active");
+				divPageDashboard.classList.add("active");
 				divNavbarBackground.setAttribute("class", "background dashboard");
 				break;
 			case "market":
 				divNavbarMarket.classList.add("active");
+				divPageMarket.classList.add("active");
 				divNavbarBackground.setAttribute("class", "background market");
+				listMarket();
 				break;
 			case "holdings":
 				divNavbarHoldings.classList.add("active");
+				divPageHoldings.classList.add("active");
 				divNavbarBackground.setAttribute("class", "background holdings");
 				break;
 			case "settings":
 				divNavbarSettings.classList.add("active");
+				divPageSettings.classList.add("active");
 				divNavbarBackground.setAttribute("class", "background settings");
 				break;
 		}

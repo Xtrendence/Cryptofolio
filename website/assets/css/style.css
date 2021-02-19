@@ -134,12 +134,16 @@ input[type=number] {
 }
 
 .page {
+	display:none;
 	position:absolute;
 	top:0;
 	left:200px;
 	width:calc(100% - 200px);
 	height:100%;
 	background:var(--main-third);
+}
+.page.active {
+	display:block;
 }
 
 .page-navigation-wrapper {

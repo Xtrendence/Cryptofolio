@@ -11,51 +11,68 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	listMarket();
 
+	let updateMarketListInterval = setInterval(listMarket, 30000);
+
 	function listMarket() {
-		getMarket().then(coins => {
-			let bitcoinMarketCap;
+		if(document.getElementById("navbar-market").classList.contains("active")) {
+			getMarket().then(coins => {
+				let bitcoinMarketCap;
 
-			divMarketList.innerHTML = "";
-
-			coins.map(coin => {
-				let price = parseFloat(coin.current_price);
-				if(price > 1) {
-					price = separateThousands(price);
-				}
-				let id = coin.id;
-				let marketCap= coin.market_cap;
-				let rank = coin.market_cap_rank;
-				let name = coin.name;
-				let icon = coin.image;
-				let priceChangeDay = coin.price_change_percentage_24h;
-				let symbol = coin.symbol;
-				let volume = coin.total_volume;
-
-				if(symbol === "btc") {
-					bitcoinMarketCap = marketCap;
+				if(document.getElementsByClassName("coin-wrapper loading").length > 0) {
+					document.getElementsByClassName("coin-wrapper loading")[0].remove();
 				}
 
-				let div = document.createElement("div");
-				div.classList.add("coin-wrapper");
-				div.innerHTML = '<span class="rank">' + rank + '</span><img src="' + icon + '"><span class="coin">' + symbol.toUpperCase() + '</span><span class="price">$ ' + price + '</span><span class="market-cap">$ ' + separateThousands(marketCap) + '</span><span class="day">' + priceChangeDay.toFixed(2) + '%</span>';
+				coins.map(coin => {
+					let price = parseFloat(coin.current_price);
+					if(price > 1) {
+						price = separateThousands(price);
+					}
+					let id = coin.id;
+					let marketCap = coin.market_cap;
+					let rank = coin.market_cap_rank;
+					let name = coin.name;
+					let icon = coin.image;
+					let priceChangeDay = coin.price_change_percentage_24h;
+					let symbol = coin.symbol;
+					let volume = coin.total_volume;
 
-				divMarketList.appendChild(div);
-			});
+					if(symbol === "btc") {
+						bitcoinMarketCap = marketCap;
+					}
 
-			getGlobal().then(global => {
-				let marketCap = global.data.total_market_cap.usd;
-				let volume = global.data.total_volume.usd;
-				let dominance = (bitcoinMarketCap / marketCap) * 100;
+					let div;
 
-				spanGlobalMarketCap.textContent = "$ " + separateThousands(marketCap.toFixed(0));
-				spanGlobalVolume.textContent = "$ " + separateThousands(volume.toFixed(0));
-				spanGlobalDominance.textContent = dominance.toFixed(1) + "%";
+					if(document.getElementById(id)) {
+						div = document.getElementById(id);
+						div.getElementsByClassName("price")[0].textContent = "$ " + price;
+						div.getElementsByClassName("market-cap")[0].textContent = "$ " + separateThousands(marketCap);
+						div.getElementsByClassName("day")[0].textContent = priceChangeDay.toFixed(2) + "%";
+					} else {
+						div = document.createElement("div");
+						div.id = id;
+						div.classList.add("coin-wrapper");
+
+						div.innerHTML = '<span class="rank">' + rank + '</span><img src="' + icon + '"><span class="coin">' + symbol.toUpperCase() + '</span><span class="price">$ ' + price + '</span><span class="market-cap">$ ' + separateThousands(marketCap) + '</span><span class="day">' + priceChangeDay.toFixed(2) + '%</span>';
+
+						divMarketList.appendChild(div);
+					}
+				});
+
+				getGlobal().then(global => {
+					let marketCap = global.data.total_market_cap.usd;
+					let volume = global.data.total_volume.usd;
+					let dominance = (bitcoinMarketCap / marketCap) * 100;
+
+					spanGlobalMarketCap.textContent = "$ " + separateThousands(marketCap.toFixed(0));
+					spanGlobalVolume.textContent = "$ " + separateThousands(volume.toFixed(0));
+					spanGlobalDominance.textContent = dominance.toFixed(1) + "%";
+				}).catch(e => {
+					console.log(e);
+				});
 			}).catch(e => {
 				console.log(e);
 			});
-		}).catch(e => {
-			console.log(e);
-		});
+		}
 	}
 
 	function getGlobal() {

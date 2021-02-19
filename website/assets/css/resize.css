@@ -79,19 +79,19 @@
 }
 
 @media screen and (max-width:960px) {
-	.header.market-cap {
+	.market-list-wrapper .header.market-cap {
 		width:120px;
 	}
-	.coin-wrapper .market-cap {
+	.market-list-wrapper .coin-wrapper .market-cap {
 		width:120px;
 	}
 }
 
 @media screen and (max-width:860px) {
-	.header.day {
+	.market-list-wrapper .header.day {
 		display:none;
 	}
-	.coin-wrapper .day {
+	.market-list-wrapper .coin-wrapper .day {
 		display:none;
 	}
 }
@@ -152,31 +152,31 @@
 }
 
 @media screen and (max-width:600px) {
-	.header {
+	.market-list-wrapper .header {
 		font-size:16px;
 		padding:0 10px 0 10px;
 	}
-	.header.coin {
+	.market-list-wrapper .header.coin {
 		width:90px;
 	}
-	.header.price {
+	.market-list-wrapper .header.price {
 		width:100px;
 	}
 
-	.coin-wrapper span {
+	.market-list-wrapper .coin-wrapper span {
 		font-size:16px;
 		padding:0 10px 0 10px;
 	}
-	.coin-wrapper img {
+	.market-list-wrapper .coin-wrapper img {
 		vertical-align:middle;
 		width:28px;
 		height:28px;
 		border-radius:50%;
 	}
-	.coin-wrapper .coin {
+	.market-list-wrapper .coin-wrapper .coin {
 		width:62px;
 	}
-	.coin-wrapper .price {
+	.market-list-wrapper .coin-wrapper .price {
 		width:100px;
 	}
 }
@@ -197,10 +197,10 @@
 	.market-list-wrapper {
 		top:100px;
 	}
-	.header.market-cap {
+	.market-list-wrapper .header.market-cap {
 		width:100px;
 	}
-	.coin-wrapper .market-cap {
+	.market-list-wrapper .coin-wrapper .market-cap {
 		width:100px;
 	}
 }
@@ -213,37 +213,37 @@
 	.market .stats-wrapper .stats-card.volume {
 		display:none;
 	}
-	.header.market-cap {
+	.market-list-wrapper .header.market-cap {
 		width:65px;
 	}
-	.coin-wrapper .market-cap {
+	.market-list-wrapper .coin-wrapper .market-cap {
 		width:65px;
 	}
 }
 
 @media screen and (max-width:410px) {
-	.header.rank {
+	.market-list-wrapper .header.rank {
 		display:none;
 	}
-	.header.coin {
+	.market-list-wrapper .header.coin {
 		padding-left:20px;
 	}
-	.coin-wrapper .rank {
+	.market-list-wrapper .coin-wrapper .rank {
 		display:none;
 	}
-	.coin-wrapper img {
+	.market-list-wrapper .coin-wrapper img {
 		margin-left:10px;
 	}
 }
 
 @media screen and (max-width:380px) {
-	.header.coin {
+	.market-list-wrapper .header.coin {
 		width:60px;
 	}
-	.coin-wrapper img {
+	.market-list-wrapper .coin-wrapper img {
 		display:none;
 	}
-	.coin-wrapper .coin {
+	.market-list-wrapper .coin-wrapper .coin {
 		margin-left:10px;
 	}
 }

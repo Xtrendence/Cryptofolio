@@ -261,7 +261,7 @@ input[type=number] {
 	background:var(--main-first);
 	overflow:hidden;
 }
-.headers-wrapper {
+.market-list-wrapper .headers-wrapper, .holdings-list-wrapper .headers-wrapper {
 	position:absolute;
 	top:0;
 	left:0;
@@ -273,7 +273,7 @@ input[type=number] {
 	border-style:solid;
 	font-size:0;
 }
-.header {
+.market-list-wrapper .header, .holdings-list-wrapper .header {
 	font-size:18px;
 	display:inline-block;
 	line-height:60px;
@@ -282,25 +282,25 @@ input[type=number] {
 	color:var(--main-contrast-light);
 	text-align:left;
 }
-.header.rank {
+.market-list-wrapper .header.rank {
 	width:20px;
 	text-align:center;
 }
-.header.coin {
+.market-list-wrapper .header.coin {
 	width:110px;
 }
-.header.price {
+.market-list-wrapper .header.price {
 	width:120px;
 }
-.header.market-cap {
+.market-list-wrapper .header.market-cap {
 	width:200px;
 }
-.header.day {
+.market-list-wrapper .header.day {
 	width:120px;
 	text-align:center;
 }
 
-.market-list {
+.market-list, .holdings-list {
 	position:absolute;
 	top:60px;
 	left:0;
@@ -311,12 +311,12 @@ input[type=number] {
 	-webkit-overflow-scrolling:touch;
 }
 
-.coin-wrapper {
+.market-list-wrapper .coin-wrapper, .holdings-list-wrapper .coin-wrapper {
 	border-color:var(--main-second);
 	border-width:0 0 1px 0;
 	border-style:solid;
 }
-.coin-wrapper span {
+.market-list-wrapper .coin-wrapper span, .holdings-list-wrapper .coin-wrapper span {
 	font-size:18px;
 	display:inline-block;
 	line-height:60px;
@@ -326,16 +326,16 @@ input[type=number] {
 	text-align:center;
 	vertical-align:middle;
 }
-.coin-wrapper .rank {
+.market-list-wrapper .coin-wrapper .rank {
 	width:20px;
 }
-.coin-wrapper img {
+.market-list-wrapper .coin-wrapper img {
 	vertical-align:middle;
 	width:28px;
 	height:28px;
 	border-radius:50%;
 }
-.coin-wrapper .coin {
+.market-list-wrapper .coin-wrapper .coin {
 	width:88px;
 	text-align:left;
 	padding-left:10px;
@@ -343,14 +343,59 @@ input[type=number] {
 	white-space:nowrap;
 	overflow:hidden;
 }
-.coin-wrapper .price {
+.market-list-wrapper .coin-wrapper .price {
 	width:120px;
 	text-align:left;
 }
-.coin-wrapper .market-cap {
+.market-list-wrapper .coin-wrapper .market-cap {
 	width:200px;
 	text-align:left;
 }
-.coin-wrapper .day {
+.market-list-wrapper .coin-wrapper .day {
 	width:120px;
+}
+
+.holdings-list-wrapper {
+	position:absolute;
+	top:20px;
+	left:20px;
+	width:500px;
+	height:400px;
+	border-radius:var(--border-radius);
+	box-shadow:var(--shadow-smooth);
+	background:var(--main-first);
+	overflow:hidden;
+}
+.holdings-list-wrapper .header.coin {
+	width:110px;
+}
+.holdings-list-wrapper .header.amount {
+	width:120px;
+}
+.holdings-list-wrapper .header.value {
+	width:120px;
+}
+
+.holdings-list-wrapper .coin-wrapper img {
+	vertical-align:middle;
+	width:28px;
+	height:28px;
+	border-radius:50%;
+	margin-left:10px;
+}
+.holdings-list-wrapper .coin-wrapper .coin {
+	width:82px;
+	text-align:left;
+	padding-left:10px;
+	text-overflow:ellipsis;
+	white-space:nowrap;
+	overflow:hidden;
+}
+.holdings-list-wrapper .coin-wrapper .amount {
+	width:120px;
+	text-align:left;
+}
+.holdings-list-wrapper .coin-wrapper .value {
+	width:120px;
+	text-align:left;
 }

@@ -1,0 +1,39 @@
+@media screen and (max-width:1040px) {
+	.navbar {
+		width:100px;
+	}
+	.navbar .item {
+		text-align:center;
+	}
+	.navbar .item span {
+		display:none;
+	}
+	.navbar .item svg {
+		margin:0;
+		padding-top:14px;
+	}
+
+	.page {
+		width:calc(100% - 100px);
+		left:100px;
+	}
+}
+
+@media screen and (min-width:1300px) {
+	.market .stats-wrapper {
+		width:240px;
+		height:auto;
+		padding:0 0 20px 0;
+	}
+	.market .stats-wrapper .stats-card {
+		display:block;
+		margin:20px auto 0 auto;
+		height:80px;
+	}
+	.market-list-wrapper {
+		width:calc(100% - 300px);
+		height:calc(100% - 40px);
+		top:20px;
+		right:280px;
+	}
+}

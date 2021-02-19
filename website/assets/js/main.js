@@ -1,25 +1,94 @@
 document.addEventListener("DOMContentLoaded", () => {
+	let globalData = {};
+	
 	let body = document.body;
 
 	let spanGlobalMarketCap = document.getElementById("global-market-cap");
 	let spanGlobalVolume = document.getElementById("global-volume");
 	let spanGlobalDominance = document.getElementById("global-dominance");
 
+	let spanPageNumber = document.getElementById("page-number");
+
+	let buttonPreviousPage = document.getElementById("previous-page");
+	let buttonNextPage = document.getElementById("next-page");
+
+	let divPageNavigation = document.getElementById("page-navigation");
 	let divMarketList = document.getElementById("market-list");
 
 	detectMobile() ? body.id = "mobile" : body.id = "desktop";
+
+	adjustToScreen();
 
 	listMarket();
 
 	let updateMarketListInterval = setInterval(listMarket, 30000);
 
-	function listMarket() {
-		if(document.getElementById("navbar-market").classList.contains("active")) {
-			getMarket().then(coins => {
-				let bitcoinMarketCap;
+	window.addEventListener("resize", () => {
+		clearStats();
+		clearMarketList();
 
+		clearTimeout(window.resizedFinished);
+		window.resizedFinished = setTimeout(() => {
+			listMarket();
+		}, 1000);
+
+		adjustToScreen();
+	});
+
+	buttonPreviousPage.addEventListener("click", () => {
+		previousPage();
+	});
+
+	buttonNextPage.addEventListener("click", () => {
+		nextPage();
+	});
+
+	function adjustToScreen() {
+		
+	}
+
+	function previousPage() {
+		let page = parseInt(divMarketList.getAttribute("data-page"));
+		if(page > 1) {
+			page -= 1;
+			divMarketList.setAttribute("data-page", page);
+			clearMarketList();
+			spanPageNumber.textContent = "Page " + page;
+			listMarket(page);
+		}
+	}
+
+	function nextPage() {
+		let page = parseInt(divMarketList.getAttribute("data-page"));
+		let limit = 5;
+		if(page < limit) {
+			page += 1;
+			divMarketList.setAttribute("data-page", page);
+			clearMarketList();
+			spanPageNumber.textContent = "Page " + page;
+			listMarket(page);
+		}
+	}
+
+	function clearMarketList() {
+		divMarketList.classList.add("loading");
+		divMarketList.innerHTML = '<div class="coin-wrapper loading"><span>Loading...</span></div>';
+	}
+
+	function clearStats() {
+		spanGlobalMarketCap.textContent = "...";
+		spanGlobalVolume.textContent = "...";
+		spanGlobalDominance.textContent = "...";
+	}
+
+	function listMarket(page) {
+		if(document.getElementById("navbar-market").classList.contains("active")) {
+			divPageNavigation.classList.remove("active");
+
+			getMarket(page).then(coins => {
 				if(document.getElementsByClassName("coin-wrapper loading").length > 0) {
 					document.getElementsByClassName("coin-wrapper loading")[0].remove();
+					divMarketList.classList.remove("loading");
 				}
 
 				coins.map(coin => {
@@ -29,45 +98,66 @@ document.addEventListener("DOMContentLoaded", () => {
 					}
 					let id = coin.id;
 					let marketCap = coin.market_cap;
+					if(window.innerWidth <= 960) {
+						marketCap = abbreviateNumber(marketCap, 2);
+					}
 					let rank = coin.market_cap_rank;
 					let name = coin.name;
 					let icon = coin.image;
 					let priceChangeDay = coin.price_change_percentage_24h;
+					if(!empty(priceChangeDay)) {
+						priceChangeDay = priceChangeDay.toFixed(2);
+					} else {
+						priceChangeDay = "-";
+					}
 					let symbol = coin.symbol;
 					let volume = coin.total_volume;
 
-					if(symbol === "btc") {
-						bitcoinMarketCap = marketCap;
-					}
-
 					let div;
 
-					if(document.getElementById(id)) {
-						div = document.getElementById(id);
-						div.getElementsByClassName("price")[0].textContent = "$ " + price;
-						div.getElementsByClassName("market-cap")[0].textContent = "$ " + separateThousands(marketCap);
-						div.getElementsByClassName("day")[0].textContent = priceChangeDay.toFixed(2) + "%";
-					} else {
-						div = document.createElement("div");
-						div.id = id;
-						div.classList.add("coin-wrapper");
+					try {
+						if(document.getElementById(id)) {
+							div = document.getElementById(id);
+							div.getElementsByClassName("price")[0].textContent = "$ " + price;
+							div.getElementsByClassName("market-cap")[0].textContent = "$ " + separateThousands(marketCap);
+							div.getElementsByClassName("day")[0].textContent = priceChangeDay + "%";
+						} else {
+							div = document.createElement("div");
+							div.id = id;
+							div.classList.add("coin-wrapper");
 
-						div.innerHTML = '<span class="rank">' + rank + '</span><img src="' + icon + '"><span class="coin">' + symbol.toUpperCase() + '</span><span class="price">$ ' + price + '</span><span class="market-cap">$ ' + separateThousands(marketCap) + '</span><span class="day">' + priceChangeDay.toFixed(2) + '%</span>';
+							div.innerHTML = '<span class="rank">' + rank + '</span><img src="' + icon + '"><span class="coin">' + symbol.toUpperCase() + '</span><span class="price">$ ' + price + '</span><span class="market-cap">$ ' + separateThousands(marketCap) + '</span><span class="day">' + priceChangeDay + '%</span>';
 
-						divMarketList.appendChild(div);
+							divMarketList.appendChild(div);
+						}
+
+						divPageNavigation.classList.add("active");
+					} catch(e) {
+						console.log(e);
 					}
 				});
 
-				getGlobal().then(global => {
-					let marketCap = global.data.total_market_cap.usd;
-					let volume = global.data.total_volume.usd;
-					let dominance = (bitcoinMarketCap / marketCap) * 100;
+				getBitcoin().then(bitcoin => {
+					let bitcoinMarketCap = bitcoin.market_data.market_cap.usd;
 
-					spanGlobalMarketCap.textContent = "$ " + separateThousands(marketCap.toFixed(0));
-					spanGlobalVolume.textContent = "$ " + separateThousands(volume.toFixed(0));
-					spanGlobalDominance.textContent = dominance.toFixed(1) + "%";
-				}).catch(e => {
-					console.log(e);
+					getGlobal().then(global => {
+						globalData = global.data;
+
+						let marketCap = (global.data.total_market_cap.usd).toFixed(0);
+						let volume = (global.data.total_volume.usd).toFixed(0);
+						let dominance = ((bitcoinMarketCap / marketCap) * 100).toFixed(1);
+
+						if(window.innerWidth <= 1020) {
+							marketCap = abbreviateNumber(marketCap, 3);
+							volume = abbreviateNumber(volume, 0);
+						}
+
+						spanGlobalMarketCap.textContent = "$ " + separateThousands(marketCap);
+						spanGlobalVolume.textContent = "$ " + separateThousands(volume);
+						spanGlobalDominance.textContent = dominance + "%";
+					}).catch(e => {
+						console.log(e);
+					});
 				});
 			}).catch(e => {
 				console.log(e);
@@ -98,7 +188,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		});
 	}
 
-	function getMarket() {
+	function getBitcoin() {
 		return new Promise((resolve, reject) => {
 			try {
 				let xhr = new XMLHttpRequest();
@@ -113,7 +203,30 @@ document.addEventListener("DOMContentLoaded", () => {
 					}
 				});
 
-				xhr.open("GET", "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1&sparkline=false", true);
+				xhr.open("GET", "https://api.coingecko.com/api/v3/coins/bitcoin", true);
+				xhr.send();
+			} catch(e) {
+				reject(e);
+			}
+		});
+	}
+
+	function getMarket(page) {
+		return new Promise((resolve, reject) => {
+			try {
+				let xhr = new XMLHttpRequest();
+
+				xhr.addEventListener("readystatechange", () => {
+					if(xhr.readyState === XMLHttpRequest.DONE) {
+						if(validJSON(xhr.responseText)) {
+							resolve(JSON.parse(xhr.responseText));
+						} else {
+							reject("Invalid JSON.");
+						}
+					}
+				});
+
+				xhr.open("GET", "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=" + page + "&sparkline=false", true);
 				xhr.send();
 			} catch(e) {
 				reject(e);
@@ -121,6 +234,16 @@ document.addEventListener("DOMContentLoaded", () => {
 		});
 	}
 });
+
+function empty(value) {
+	if (typeof value === "object" && value !== null && Object.keys(value).length === 0) {
+		return true;
+	}
+	if (value === null || typeof value === "undefined" || value.toString().trim() === "") {
+		return true;
+	}
+	return false;
+}
 
 function validJSON(json) {
 	try {
@@ -136,6 +259,26 @@ function validJSON(json) {
 // Separate number by thousands.
 function separateThousands(number) {
 	return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+
+function abbreviateNumber(num, digits) {
+	let si = [
+		{ value: 1, symbol: "" },
+		{ value: 1E3, symbol: "k" },
+		{ value: 1E6, symbol: "M" },
+		{ value: 1E9, symbol: "B" },
+		{ value: 1E12, symbol: "T" },
+		{ value: 1E15, symbol: "P" },
+		{ value: 1E18, symbol: "E" }
+	];
+	let rx = /\.0+$|(\.[0-9]*[1-9])0+$/;
+	let i;
+	for(i = si.length - 1; i > 0; i--) {
+		if(num >= si[i].value) {
+			break;
+		}
+	}
+	return (num / si[i].value).toFixed(digits).replace(rx, "$1") + si[i].symbol;
 }
 
 function detectMobile() {

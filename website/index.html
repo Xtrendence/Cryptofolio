@@ -12,6 +12,7 @@
 		<meta name="theme-color" content="#ffffff">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<link rel="stylesheet" href="./assets/css/light.css">
+		<link rel="stylesheet" href="./assets/css/style.css">
 		<link rel="stylesheet" href="./assets/css/resize.css">
 		<script src="./assets/js/chart.js"></script>
 		<script src="./assets/js/x-notify.js"></script>
@@ -41,15 +42,26 @@
 			<div class="stats-wrapper noselect">
 				<div class="stats-card market-cap">
 					<span class="stats-title">Market Cap</span>
-					<span class="stats-subtitle" id="global-market-cap">Loading...</span>
+					<span class="stats-subtitle" id="global-market-cap">...</span>
 				</div>
 				<div class="stats-card volume">
 					<span class="stats-title">24h Volume</span>
-					<span class="stats-subtitle" id="global-volume">Loading...</span>
+					<span class="stats-subtitle" id="global-volume">...</span>
 				</div>
 				<div class="stats-card dominance">
 					<span class="stats-title">BTC Dominance</span>
-					<span class="stats-subtitle" id="global-dominance">Loading...</span>
+					<span class="stats-subtitle" id="global-dominance">...</span>
+				</div>
+			</div>
+			<div class="page-navigation-wrapper noselect" id="page-navigation">
+				<div class="previous" id="previous-page">
+					<svg width="1792" height="1792" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1427 301l-531 531 531 531q19 19 19 45t-19 45l-166 166q-19 19-45 19t-45-19l-742-742q-19-19-19-45t19-45l742-742q19-19 45-19t45 19l166 166q19 19 19 45t-19 45z"/></svg>
+				</div>
+				<div class="number">
+					<span id="page-number">Page 1</span>
+				</div>
+				<div class="next" id="next-page">
+					<svg width="1792" height="1792" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1363 877l-742 742q-19 19-45 19t-45-19l-166-166q-19-19-19-45t19-45l531-531-531-531q-19-19-19-45t19-45l166-166q19-19 45-19t45 19l742 742q19 19 19 45t-19 45z"/></svg>
 				</div>
 			</div>
 			<div class="market-list-wrapper noselect">
@@ -60,7 +72,7 @@
 					<span class="header market-cap">Market Cap</span>
 					<span class="header day">24h Change</span>
 				</div>
-				<div class="market-list" id="market-list">
+				<div class="market-list loading" id="market-list" data-page="1">
 					<div class="coin-wrapper loading">
 						<span>Loading...</span>
 					</div>

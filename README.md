@@ -4,4 +4,5 @@
 
  A web, mobile, and desktop application to track your cryptocurrency holdings.
 
-![Cryptofolio](https://i.imgur.com/O8aoTt7.png)
+![Cryptofolio Light Mode](https://i.imgur.com/0fMPa8V.png)
+![Cryptofolio Dark Mode](https://i.imgur.com/NErnDOd.png)

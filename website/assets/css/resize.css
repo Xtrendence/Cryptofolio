@@ -1,4 +1,59 @@
-@media screen and (max-width:1040px) {
+@media screen and (max-width:1180px) {
+	.page-navigation-wrapper {
+		top:100px;
+		height:40px;
+		width:200px;
+	}
+	.page-navigation-wrapper .previous, .page-navigation-wrapper .next {
+		width:40px;
+	}
+	.page-navigation-wrapper svg {
+		width:24px;
+		height:24px;
+		top:8px;
+	}
+	.page-navigation-wrapper .previous svg {
+		left:6px;
+	}
+	.page-navigation-wrapper .next svg {
+		right:6px;
+	}
+	.page-navigation-wrapper .number {
+		line-height:40px;
+	}
+
+	.market .stats-wrapper {
+		left:auto;
+		right:20px;
+		padding:0 10px 0 0;
+		height:60px;
+		width:auto;
+	}
+	.market .stats-wrapper .stats-card {
+		width:auto;
+		height:calc(100% - 20px);
+		margin:10px 0 10px 10px;
+		padding:0 10px 0 10px;
+	}
+	.market .stats-wrapper .stats-title, .market .stats-wrapper .stats-subtitle {
+		display:inline-block;
+		position:relative;
+		top:auto;
+		left:auto;
+		bottom:auto;
+		width:auto;
+		vertical-align:top;
+		line-height:40px;
+		font-size:18px;
+		font-weight:bold;
+	}
+	.market .stats-wrapper .stats-title::after {
+		content:":";
+		margin-right:8px;
+	}
+}
+
+@media screen and (max-width:1120px) {
 	.navbar {
 		width:100px;
 	}
@@ -19,8 +74,45 @@
 	}
 }
 
+@media screen and (max-width:1020px) {
+
+}
+
+@media screen and (max-width:960px) {
+	.header.market-cap {
+		width:120px;
+	}
+	.coin-wrapper .market-cap {
+		width:120px;
+	}
+}
+
+@media screen and (max-width:860px) {
+	.header.day {
+		display:none;
+	}
+	.coin-wrapper .day {
+		display:none;
+	}
+}
+
+@media screen and (max-width:830px) {
+	.market .stats-wrapper .stats-card.dominance {
+		display:none;
+	}
+}
+
 @media screen and (min-width:1300px) {
+	.page-navigation-wrapper {
+		bottom:20px;
+		right:20px;
+		top:auto;
+	}
+
 	.market .stats-wrapper {
+		top:20px;
+		right:20px;
+		left:auto;
 		width:240px;
 		height:auto;
 		padding:0 0 20px 0;

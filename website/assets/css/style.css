@@ -487,6 +487,7 @@ input[type=number] {
 	height:40px;
 	border-radius:20px;
 	position:relative;
+	cursor:pointer;
 }
 .settings .section .toggle {
 	width:30px;

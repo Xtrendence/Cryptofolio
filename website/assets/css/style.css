@@ -317,6 +317,7 @@ input[type=number] {
 	border-color:var(--main-second);
 	border-width:0 0 1px 0;
 	border-style:solid;
+	position:relative;
 }
 .market-list-wrapper .coin-wrapper span, .holdings-list-wrapper .coin-wrapper span {
 	font-size:18px;
@@ -361,8 +362,8 @@ input[type=number] {
 	position:absolute;
 	top:20px;
 	left:20px;
-	width:500px;
-	height:400px;
+	width:530px;
+	height:304px;
 	border-radius:var(--border-radius);
 	box-shadow:var(--shadow-smooth);
 	background:var(--main-first);
@@ -400,6 +401,31 @@ input[type=number] {
 .holdings-list-wrapper .coin-wrapper .value {
 	width:120px;
 	text-align:left;
+}
+
+.holdings-list-wrapper .coin-wrapper .more {
+	position:absolute;
+	top:13px;
+	right:13px;
+	padding:4px;
+	border-radius:50%;
+	background:var(--main-third);
+	cursor:pointer;
+	transition:background 0.25s;
+}
+#desktop .holdings-list-wrapper .coin-wrapper .more:hover {
+	background:var(--main-fourth);
+}
+#desktop .holdings-list-wrapper .coin-wrapper .more:hover svg {
+	fill:var(--main-contrast);
+}
+.holdings-list-wrapper .coin-wrapper .more svg {
+	width:24px;
+	height:24px;
+	margin-top:2px;
+	vertical-align:middle;
+	fill:var(--main-contrast-light);
+	transition:fill 0.25s;
 }
 
 .settings .section {

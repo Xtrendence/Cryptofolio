@@ -205,6 +205,12 @@ document.addEventListener("DOMContentLoaded", () => {
 		if(document.getElementById("navbar-market").classList.contains("active")) {
 			divPageNavigation.classList.remove("active");
 
+			setTimeout(() => {
+				if(divMarketList.classList.contains("loading")) {
+					listMarket(page);
+				}
+			}, 5000);
+
 			getMarket(page).then(coins => {
 				if(divMarketList.getElementsByClassName("coin-wrapper loading").length > 0) {
 					divMarketList.getElementsByClassName("coin-wrapper loading")[0].remove();
@@ -249,7 +255,7 @@ document.addEventListener("DOMContentLoaded", () => {
 							div.id = id;
 							div.classList.add("coin-wrapper");
 
-							div.innerHTML = '<span class="rank">' + rank + '</span><img src="' + icon + '"><span class="coin">' + symbol.toUpperCase() + '</span><span class="price">$ ' + price + '</span><span class="market-cap">$ ' + separateThousands(marketCap) + '</span><span class="day">' + priceChangeDay + '%</span>';
+							div.innerHTML = '<span class="rank">' + rank + '</span><img draggable="false" src="' + icon + '"><span class="coin">' + symbol.toUpperCase() + '</span><span class="price">$ ' + price + '</span><span class="market-cap">$ ' + separateThousands(marketCap) + '</span><span class="day">' + priceChangeDay + '%</span>';
 
 							divMarketList.appendChild(div);
 						}
@@ -291,6 +297,12 @@ document.addEventListener("DOMContentLoaded", () => {
 	function listHoldings() {
 		if(document.getElementById("navbar-holdings").classList.contains("active")) {
 			divPageNavigation.classList.remove("active");
+
+			setTimeout(() => {
+				if(divHoldingsList.classList.contains("loading")) {
+					listMarket(page);
+				}
+			}, 5000);
 	
 			getHoldings().then(coins => {
 				parseHoldings(coins).then(holdings => {
@@ -320,7 +332,13 @@ document.addEventListener("DOMContentLoaded", () => {
 								div.id = id;
 								div.classList.add("coin-wrapper");
 
-								div.innerHTML = '<img src="' + icon + '"><span class="coin">' + symbol.toUpperCase() + '</span><span class="amount">' + amount + '</span><span class="value">$ ' + separateThousands(value) + '</span>';
+								let more = document.createElement("div");
+								more.classList.add("more");
+								more.innerHTML = '<svg width="1792" height="1792" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M576 736v192q0 40-28 68t-68 28h-192q-40 0-68-28t-28-68v-192q0-40 28-68t68-28h192q40 0 68 28t28 68zm512 0v192q0 40-28 68t-68 28h-192q-40 0-68-28t-28-68v-192q0-40 28-68t68-28h192q40 0 68 28t28 68zm512 0v192q0 40-28 68t-68 28h-192q-40 0-68-28t-28-68v-192q0-40 28-68t68-28h192q40 0 68 28t28 68z"/></svg>';
+
+								div.innerHTML = '<img draggable="false" src="' + icon + '"><span class="coin">' + symbol.toUpperCase() + '</span><span class="amount">' + amount + '</span><span class="value">$ ' + separateThousands(value) + '</span>';
+
+								div.appendChild(more);
 
 								divHoldingsList.appendChild(div);
 							}

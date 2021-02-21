@@ -1,4 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
+	let settings = {};
 	let globalData = {};
 
 	// TODO: Remove after development.
@@ -27,6 +28,8 @@ document.addEventListener("DOMContentLoaded", () => {
 	let spanGlobalVolume = document.getElementById("global-volume");
 	let spanGlobalDominance = document.getElementById("global-dominance");
 
+	let divLoadingOverlay = document.getElementById("loading-overlay");
+
 	let divPageDashboard = document.getElementById("page-dashboard");
 	let divPageMarket = document.getElementById("page-market");
 	let divPageHoldings = document.getElementById("page-holdings");
@@ -38,6 +41,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	let buttonPreviousPage = document.getElementById("previous-page");
 	let buttonNextPage = document.getElementById("next-page");
+
+	let buttonSettingsChoices = divPageSettings.getElementsByClassName("choice");
 
 	let divNavbarBackground = document.getElementById("navbar-background");
 	let divNavbarDashboard = document.getElementById("navbar-dashboard");
@@ -55,7 +60,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	adjustToScreen();
 
-	switchPage("settings");
+	empty(localStorage.getItem("defaultPage")) ? switchPage("market") : switchPage(localStorage.getItem("defaultPage"));
+
+	getSettings();
 
 	listMarket();
 
@@ -108,6 +115,15 @@ document.addEventListener("DOMContentLoaded", () => {
 		}
 	});
 
+	for(let i = 0; i < buttonSettingsChoices.length; i++) {
+		buttonSettingsChoices[i].addEventListener("click", () => {
+			let key = buttonSettingsChoices[i].parentElement.getAttribute("data-key");
+			let value = buttonSettingsChoices[i].getAttribute("data-value");
+			localStorage.setItem(key, value);
+			getSettings();
+		});
+	}
+
 	function switchTheme(theme) {
 		if(theme === "dark") {
 			localStorage.setItem("theme", "dark");
@@ -155,6 +171,7 @@ document.addEventListener("DOMContentLoaded", () => {
 				divNavbarSettings.classList.add("active");
 				divPageSettings.classList.add("active");
 				divNavbarBackground.setAttribute("class", "background settings");
+				getSettings();
 				break;
 		}
 	}
@@ -353,6 +370,29 @@ document.addEventListener("DOMContentLoaded", () => {
 				console.log(e);
 			});;
 		}
+	}
+
+	function getSettings() {
+		settings.theme = empty(localStorage.getItem("theme")) ? "light" : localStorage.getItem("theme");
+		settings.defaultPage = empty(localStorage.getItem("defaultPage")) ? "market" : localStorage.getItem("defaultPage");
+
+		switchTheme(settings.theme);
+
+		for(let i = 0; i < buttonSettingsChoices.length; i++) {
+			buttonSettingsChoices[i].classList.remove("active");
+		}
+
+		for(let i = 0; i < buttonSettingsChoices.length; i++) {
+			if(buttonSettingsChoices[i].getAttribute("data-value") === settings.defaultPage) {
+				buttonSettingsChoices[i].classList.add("active");
+			}
+		}
+
+		setTimeout(() => {
+			if(divLoadingOverlay.classList.contains("active")) {
+				divLoadingOverlay.classList.remove("active");
+			}
+		}, 250);
 	}
 
 	function getGlobal() {

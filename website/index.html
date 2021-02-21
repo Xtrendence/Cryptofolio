@@ -21,6 +21,7 @@
 		<title>Cryptofolio</title>
 	</head>
 	<body>
+		<div class="loading-overlay active noselect" id="loading-overlay"><span>Loading...</span></div>
 		<div class="navbar noselect">
 			<div class="background market" id="navbar-background"></div>
 			<div class="item" id="navbar-dashboard">
@@ -122,11 +123,11 @@
 				<div class="top">
 					<span class="title">Default Page</span>
 				</div>
-				<div class="bottom">
-					<button class="choice">Dashboard</button>
-					<button class="choice active">Market</button>
-					<button class="choice">Holdings</button>
-					<button class="choice">Settings</button>
+				<div class="bottom" data-key="defaultPage">
+					<button class="choice" data-value="dashboard">Dashboard</button>
+					<button class="choice" data-value="market">Market</button>
+					<button class="choice" data-value="holdings">Holdings</button>
+					<button class="choice" data-value="settings">Settings</button>
 				</div>
 			</div>
 		</div>

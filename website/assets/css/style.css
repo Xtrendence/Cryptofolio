@@ -13,6 +13,9 @@ input, button {
 	outline:none;
 	border:none;
 }
+div, span, input, button {
+	transition:background 0.25s, color 0.25s;
+}
 .noselect {
 	-webkit-user-select:none;
 	-khtml-user-select:none;
@@ -93,7 +96,6 @@ input[type=number] {
 	height:60px;
 	border-radius:var(--border-radius);
 	cursor:pointer;
-	transition:background 0.25s;
 	overflow:hidden;
 }
 #desktop .navbar .item:hover {
@@ -398,4 +400,83 @@ input[type=number] {
 .holdings-list-wrapper .coin-wrapper .value {
 	width:120px;
 	text-align:left;
+}
+
+.settings .section {
+	position:relative;
+	width:calc(50% - 40px - 30px);
+	margin:20px auto 0 20px;
+	padding:20px 20px 0 20px;
+	vertical-align:top;
+	height:auto;
+	min-height:100px;
+	border-radius:var(--border-radius);
+	display:inline-block;
+	background:var(--main-first);
+	box-shadow:var(--shadow-smooth);
+}
+.settings .section:last-of-type {
+	margin-bottom:20px;
+}
+.settings .section .title {
+	font-size:18px;
+	display:block;
+	font-weight:bold;
+	margin-bottom:20px;
+	line-height:20px;
+	color:var(--main-contrast);
+}
+.settings .section .toggle-wrapper {
+	background:var(--main-third);
+	margin-bottom:20px;
+	width:80px;
+	height:40px;
+	border-radius:20px;
+	position:relative;
+}
+.settings .section .toggle {
+	width:30px;
+	height:30px;
+	position:absolute;
+	top:5px;
+	left:5px;
+	background:var(--main-contrast);
+	border-radius:50%;
+	transition:left 0.25s, transform 0.75s;
+}
+.settings .section .toggle-wrapper.active .toggle {
+	left:calc(100% - 35px);
+	transform:rotate(360deg);
+}
+.settings .section .toggle-wrapper.active .sun, .settings .section .toggle-wrapper .moon {
+	display:block;
+}
+.settings .section .toggle-wrapper .sun, .settings .section .toggle-wrapper.active .moon {
+	display:none;
+}
+.settings .section .toggle svg {
+	width:20px;
+	height:20px;
+	fill:var(--main-third);
+	position:absolute;
+	top:5px;
+	left:5px;
+}
+.settings .section .choice {
+	padding:10px;
+	border-radius:var(--border-radius);
+	margin:0 20px 20px 0;
+	font-size:16px;
+	font-weight:bold;
+	background:var(--main-third);
+	color:var(--main-contrast);
+	cursor:pointer;
+}
+.settings .section .choice.active {
+	pointer-events:none;
+	cursor:default;
+}
+#desktop .settings .section .choice:hover, .settings .section .choice.active {
+	background:var(--accent-first);
+	color:var(--accent-contrast);
 }

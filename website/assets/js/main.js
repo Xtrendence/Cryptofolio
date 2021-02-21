@@ -49,11 +49,13 @@ document.addEventListener("DOMContentLoaded", () => {
 	let divMarketList = document.getElementById("market-list");
 	let divHoldingsList = document.getElementById("holdings-list");
 
+	let divThemeToggle = document.getElementById("theme-toggle");
+
 	detectMobile() ? body.id = "mobile" : body.id = "desktop";
 
 	adjustToScreen();
 
-	switchPage("holdings");
+	switchPage("settings");
 
 	listMarket();
 
@@ -95,6 +97,30 @@ document.addEventListener("DOMContentLoaded", () => {
 	buttonNextPage.addEventListener("click", () => {
 		nextPage();
 	});
+
+	divThemeToggle.addEventListener("click", () => {
+		if(divThemeToggle.classList.contains("active")) {
+			// Switch to dark mode.
+			switchTheme("dark");
+		} else {
+			// Switch to light mode.
+			switchTheme("light");
+		}
+	});
+
+	function switchTheme(theme) {
+		if(theme === "dark") {
+			localStorage.setItem("theme", "dark");
+			divThemeToggle.classList.remove("active");
+			document.documentElement.classList.add("dark");
+			document.documentElement.classList.remove("light");
+		} else {
+			localStorage.setItem("theme", "light");
+			divThemeToggle.classList.add("active");
+			document.documentElement.classList.remove("dark");
+			document.documentElement.classList.add("light");
+		}
+	}
 
 	function switchPage(page) {
 		divNavbarDashboard.classList.remove("active");

@@ -1,4 +1,4 @@
-:root {
+html.light:root {
 	--shadow-dark:0 6px 10px rgba(40,40,40,0.25);
 	--shadow-darker:0 6px 10px rgba(40,40,40,0.4);
 	--shadow-smooth:0 1px 1px rgba(0,0,0,0.08), 0 2px 2px rgba(0,0,0,0.05), 0 4px 4px rgba(0,0,0,0.06), 0 8px 8px rgba(0,0,0,0.1);

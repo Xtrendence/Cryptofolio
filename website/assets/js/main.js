@@ -608,16 +608,16 @@ document.addEventListener("DOMContentLoaded", () => {
 	function generateChart(dates, totals) {
 		let canvas = document.createElement("canvas");
 		canvas.classList.add("chart");
-		new Chart(canvas, {
+		let chart = new Chart(canvas, {
 			type:"line",
 			data: {
 				labels:dates,
 				datasets:[{
 					label:"Value ($)",
-					backgroundColor:"rgba(93,79,156,0.04)",
+					backgroundColor:"rgba(100,80,150,0.04)",
 					borderColor:"rgb(100,80,150)",
 					data:totals
-				}]
+				}],
 			},
 			options: {
 				responsive:true,

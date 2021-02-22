@@ -87,6 +87,10 @@
 	}
 }
 
+@media screen and (max-width:930px) {
+	
+}
+
 @media screen and (max-width:860px) {
 	.market-list-wrapper .header.day {
 		display:none;

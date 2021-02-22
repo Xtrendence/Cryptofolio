@@ -1,26 +1,83 @@
 document.addEventListener("DOMContentLoaded", () => {
 	let settings = {};
+
 	let globalData = {};
 
 	// TODO: Remove after development.
-	let holdingsData = {
-		"bitcoin": {
+	let transactionsData = {
+		"1613393109-CNWD": {
 			"symbol":"BTC",
-			"amount":6.66,
+			"id":"bitcoin",
+			"type":"buy",
+			"amount":1.5,
+			"price":30000
 		},
-		"polkadot": {
-			"symbol":"DOT",
-			"amount":420,
-		},
-		"cardano": {
-			"symbol":"ADA",
-			"amount":69
-		},
-		"ethereum": {
+		"1613885309-YJGZ": {
 			"symbol":"ETH",
-			"amount":2
-		}
+			"id":"ethereum",
+			"type":"buy",
+			"amount":3.5,
+			"price":1850
+		},
+		"1613569509-WTTF": {
+			"symbol":"DOT",
+			"id":"polkadot",
+			"type":"sell",
+			"amount":400,
+			"price":31.5
+		},
+		"1613655909-WYTF": {
+			"symbol":"BTC",
+			"id":"bitcoin",
+			"type":"sell",
+			"amount":1,
+			"price":35000
+		},
+		"1613763909-GDFD": {
+			"symbol":"BTC",
+			"id":"bitcoin",
+			"type":"buy",
+			"amount":0.5,
+			"price":36000
+		},
+		"1613886459-XMTO": {
+			"symbol":"ADA",
+			"id":"cardano",
+			"type":"sell",
+			"amount":150,
+			"price":0.93
+		},
+		"1613850309-GGFT": {
+			"symbol":"DOT",
+			"id":"polkadot",
+			"type":"buy",
+			"amount":25,
+			"price":28.5
+		},
+		"1613884309-XLBZ": {
+			"symbol":"ETH",
+			"id":"ethereum",
+			"type":"buy",
+			"amount":6.5,
+			"price":1800
+		},
+		"1613886309-TYTY": {
+			"symbol":"ETH",
+			"id":"ethereum",
+			"type":"sell",
+			"amount":5,
+			"price":1800
+		},
+		"1613884509-XTIL": {
+			"symbol":"ADA",
+			"id":"cardano",
+			"type":"buy",
+			"amount":250,
+			"price":0.91
+		},
 	};
+
+	let holdingsData = {};
 	
 	let body = document.body;
 
@@ -53,6 +110,11 @@ document.addEventListener("DOMContentLoaded", () => {
 	let divPageNavigation = document.getElementById("page-navigation");
 	let divMarketList = document.getElementById("market-list");
 	let divHoldingsList = document.getElementById("holdings-list");
+
+	let divChartWrapper = document.getElementById("chart-wrapper");
+	let divChartContainer = document.getElementById("chart-container");
+
+	let spanHoldingsTotalValue = document.getElementById("holdings-total-value");
 
 	let divThemeToggle = document.getElementById("theme-toggle");
 
@@ -321,16 +383,20 @@ document.addEventListener("DOMContentLoaded", () => {
 				}
 			}, 5000);
 	
-			getHoldings().then(coins => {
+			getTransactions().then(transactions => {
+				let coins = parseTransactions(transactions);
+
 				parseHoldings(coins).then(holdings => {
 					if(divHoldingsList.getElementsByClassName("coin-wrapper loading").length > 0) {
 						divHoldingsList.getElementsByClassName("coin-wrapper loading")[0].remove();
 						divHoldingsList.classList.remove("loading");
 					}
-	
+
+					spanHoldingsTotalValue.textContent = "$ " + separateThousands(globalData.totalValue.toFixed(2));
+
 					Object.keys(holdings).map(holding => {
 						let coin = holdings[holding];
-						
+					
 						let id = "holdings-coin-" + holding;
 						let icon = coin.image;
 						let amount = coin.amount;
@@ -464,10 +530,47 @@ document.addEventListener("DOMContentLoaded", () => {
 		});
 	}
 
+	function generateChart(dates, totals) {
+		let canvas = document.createElement("canvas");
+		canvas.classList.add("chart");
+		let contextChart = canvas.getContext("2d");
+		new Chart(contextChart, {
+			type:"line",
+			data: {
+				labels:dates,
+				datasets:[{
+					label:"Value ($)",
+					backgroundColor:"rgb(93,79,156)",
+					borderColor:"rgb(100,150,250)",
+					data:totals
+				}]
+			},
+			options: {
+				responsive:true,
+				legend:false,
+				scales: {
+					xAxes: [{
+						gridLines: {
+							color: "rgba(0,0,0,0)"
+						}
+					}],
+					yAxes: [{
+						gridLines: {
+							color: "rgba(0,0,0,0)"
+						}
+					}]
+				}
+			}
+		});
+
+		divChartContainer.innerHTML = "";
+		divChartContainer.appendChild(canvas);
+	}
+
 	// TODO: Modify after development.
-	function getHoldings() {
+	function getTransactions() {
 		return new Promise((resolve, reject) => {
-			resolve(holdingsData);
+			resolve(transactionsData);
 			try {
 				let xhr = new XMLHttpRequest();
 
@@ -489,6 +592,54 @@ document.addEventListener("DOMContentLoaded", () => {
 		});
 	}
 
+	function parseTransactions(transactions) {
+		let holdings = {};
+
+		let txs = Object.keys(transactions).sort((a, b) => a.split("-")[0].localeCompare(b.split("-")[0]));
+
+		txs.map(tx => {
+			let timestamp = tx.split("-")[0];
+			let date = new Date(timestamp * 1000);
+
+			let transaction = transactions[tx];
+
+			let amount = transaction.amount;
+			let id = transaction.id;
+			let price = transaction.price;
+			let symbol = transaction.symbol;
+			let type = transaction.type;
+
+			if(id in holdings) {
+				let holding = holdings[id];
+				let currentAmount = holding.amount;
+
+				if(type === "sell") {
+					amount = currentAmount - amount;
+					if(amount < 0) {
+						amount = 0;
+					}
+				} else {
+					amount = currentAmount + amount;
+				}
+
+				holdings[id].amount = amount;
+				holdings[id].value = amount * price;
+			} else {
+				if(amount > 0) {
+					if(type === "buy") {
+						holdings[id] = {
+							"symbol":symbol,
+							"amount":amount,
+							"value":amount * price
+						};
+					}
+				}
+			}
+		});
+
+		return holdings;
+	}
+
 	function parseHoldings(coins) {
 		return new Promise((resolve, reject) => {
 			try {
@@ -498,13 +649,18 @@ document.addEventListener("DOMContentLoaded", () => {
 					if(xhr.readyState === XMLHttpRequest.DONE) {
 						if(validJSON(xhr.responseText)) {
 							let response = JSON.parse(xhr.responseText);
+
+							globalData.totalValue = 0;
+
 							let holdings = {};
+
 							Object.keys(response).map(index => {
 								let coin = response[index];
 								let id = coin.id;
 								let price = coin.current_price;
 								let amount = coins[id].amount;
 								let value = price * amount;
+
 								holdings[id] = {
 									symbol:coins[id].symbol,
 									amount:amount,
@@ -512,7 +668,10 @@ document.addEventListener("DOMContentLoaded", () => {
 									price:price,
 									image:coin.image
 								};
+
+								globalData.totalValue += value;
 							});
+
 							resolve(Object.fromEntries(
 								Object.entries(holdings).sort(([,a],[,b]) => b.value - a.value)
 							));

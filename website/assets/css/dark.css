@@ -16,8 +16,9 @@ html.dark {
 	--accent-fourth:rgb(61,212,219);
 	--accent-gradient:linear-gradient(15deg, var(--accent-first) 25%, var(--accent-second) 50%, var(--accent-third) 75%, var(--accent-fourth) 100%);
 	--colorful-gradient:linear-gradient(300deg, #8a2387, #e94057, #f27121);
-	--orange-gradient:linear-gradient(150deg, rgb(245,175,25) 30%,
-	rgb(241,39,17) 100%);
+	--orange-gradient:linear-gradient(150deg, rgb(245,175,25) 30%, rgb(241,39,17) 100%);
+	--green-gradient:linear-gradient(20deg, #67b26f, #4ca2cd);
+	--calm-gradient:linear-gradient(20deg, #5f2c82, #49a09d);
 	--accent-contrast:rgb(255,255,255);
 	--border-radius:10px;
 	--font-family:"Helvetica Neue", "Lucida Grande", "Arial", "Verdana", "Tahoma", sans-serif;

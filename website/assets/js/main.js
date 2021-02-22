@@ -530,43 +530,6 @@ document.addEventListener("DOMContentLoaded", () => {
 		});
 	}
 
-	function generateChart(dates, totals) {
-		let canvas = document.createElement("canvas");
-		canvas.classList.add("chart");
-		let contextChart = canvas.getContext("2d");
-		new Chart(contextChart, {
-			type:"line",
-			data: {
-				labels:dates,
-				datasets:[{
-					label:"Value ($)",
-					backgroundColor:"rgb(93,79,156)",
-					borderColor:"rgb(100,150,250)",
-					data:totals
-				}]
-			},
-			options: {
-				responsive:true,
-				legend:false,
-				scales: {
-					xAxes: [{
-						gridLines: {
-							color: "rgba(0,0,0,0)"
-						}
-					}],
-					yAxes: [{
-						gridLines: {
-							color: "rgba(0,0,0,0)"
-						}
-					}]
-				}
-			}
-		});
-
-		divChartContainer.innerHTML = "";
-		divChartContainer.appendChild(canvas);
-	}
-
 	// TODO: Modify after development.
 	function getTransactions() {
 		return new Promise((resolve, reject) => {
@@ -637,7 +600,45 @@ document.addEventListener("DOMContentLoaded", () => {
 			}
 		});
 
+		generateChart([1, 2, 3, 4, 5, 6, 7], [25000, 27600, 23000, 4000, 5000, 6000, 2000]);
+
 		return holdings;
+	}
+
+	function generateChart(dates, totals) {
+		let canvas = document.createElement("canvas");
+		canvas.classList.add("chart");
+		new Chart(canvas, {
+			type:"line",
+			data: {
+				labels:dates,
+				datasets:[{
+					label:"Value ($)",
+					backgroundColor:"rgba(93,79,156,0.04)",
+					borderColor:"rgb(100,80,150)",
+					data:totals
+				}]
+			},
+			options: {
+				responsive:true,
+				legend:false,
+				scales: {
+					xAxes: [{
+						gridLines: {
+							color:"rgba(0,0,0,0)"
+						}
+					}],
+					yAxes: [{
+						gridLines: {
+							color:"rgba(0,0,0,0)"
+						}
+					}]
+				}
+			}
+		});
+
+		divChartContainer.innerHTML = "";
+		divChartContainer.appendChild(canvas);
 	}
 
 	function parseHoldings(coins) {

@@ -555,8 +555,89 @@ document.addEventListener("DOMContentLoaded", () => {
 		});
 	}
 
+	function getHistoricalData(id, from, to) {
+		return new Promise((resolve, reject) => {
+			try {
+				let xhr = new XMLHttpRequest();
+
+				xhr.addEventListener("readystatechange", () => {
+					if(xhr.readyState === XMLHttpRequest.DONE) {
+						if(validJSON(xhr.responseText)) {
+							resolve(JSON.parse(xhr.responseText));
+						} else {
+							reject("Invalid JSON.");
+						}
+					}
+				});
+
+				xhr.open("GET", "https://api.coingecko.com/api/v3/coins/" + id + "/market_chart/range?vs_currency=usd&from=" + from + "&to=" + to, true);
+				xhr.send();
+			} catch(e) {
+				reject(e);
+			}
+		});
+	}
+
+
 	function parseTransactions(transactions) {
 		let holdings = {};
+
+		let timeframe = "week";
+
+		let now = Date.now();
+
+		let timeHour = 3600 * 1000;
+		let timeDay = timeHour * 24;
+		let timeWeek = timeDay * 7;
+		let timeMonth = timeDay * 30;
+		let timeYear = timeDay * 365;
+
+		let pastDay = {};
+		let pastWeek = {};
+		let pastMonth = {};
+		let pastYear = {};
+
+		let startDay = now - timeDay;
+		let startWeek = now - timeWeek;
+		let startMonth = now - timeMonth;
+		let startYear = now - timeYear;
+
+		for(let i = startDay; i < now; i += timeHour) {
+			let format = formatHour(new Date(i));
+			pastDay[format] = null;
+		}
+
+		for(let i = startWeek; i < now; i += timeDay) {
+			let format = formatDate(new Date(i));
+			pastWeek[format] = null;
+		}
+
+		for(let i = startMonth; i < now; i += timeDay) {
+			let format = formatDate(new Date(i));
+			pastMonth[format] = null;
+		}
+
+		for(let i = startYear; i < now; i += timeWeek) {
+			let format = formatDate(new Date(i));
+			pastYear[format] = null;
+		}
+
+		let dates;
+
+		switch(timeframe) {
+			case "day":
+				dates = pastDay;
+				break;
+			case "week":
+				dates = pastWeek;
+				break;
+			case "month":
+				dates = pastMonth;
+				break;
+			case "year":
+				dates = pastYear;
+				break;
+		}
 
 		let txs = Object.keys(transactions).sort((a, b) => a.split("-")[0].localeCompare(b.split("-")[0]));
 
@@ -599,8 +680,6 @@ document.addEventListener("DOMContentLoaded", () => {
 				}
 			}
 		});
-
-		generateChart([1, 2, 3, 4, 5, 6, 7], [25000, 27600, 23000, 4000, 5000, 6000, 2000]);
 
 		return holdings;
 	}
@@ -692,6 +771,23 @@ document.addEventListener("DOMContentLoaded", () => {
 		});
 	}
 });
+
+function sum(total, num) {
+	return total + num;
+}
+
+function formatHour(date) {
+	let hours = ("00" + date.getHours()).slice(-2);
+	let minutes = ("00" + date.getMinutes()).slice(-2);
+	return hours + ":" + minutes;
+}
+
+function formatDate(date) {
+	let day = date.getDate();
+	let month = date.getMonth() + 1;
+	let year = date.getFullYear();
+	return year + " / " + month + " / " + day;
+}
 
 function empty(value) {
 	if (typeof value === "object" && value !== null && Object.keys(value).length === 0) {

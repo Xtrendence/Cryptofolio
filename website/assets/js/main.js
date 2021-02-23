@@ -53,6 +53,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	let divMarketList = document.getElementById("market-list");
 	let divHoldingsList = document.getElementById("holdings-list");
 
+	let divHoldingsAddCard = document.getElementById("holdings-add-card");
 	let divHoldingsMoreMenu = document.getElementById("holdings-more-menu");
 
 	let spanHoldingsTotalValue = document.getElementById("holdings-total-value");
@@ -122,6 +123,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	buttonNextPage.addEventListener("click", () => {
 		nextPage();
+	});
+
+	divHoldingsAddCard.addEventListener("click", () => {
+		
 	});
 
 	divThemeToggle.addEventListener("click", () => {
@@ -353,7 +358,11 @@ document.addEventListener("DOMContentLoaded", () => {
 						divHoldingsList.classList.remove("loading");
 					}
 
-					spanHoldingsTotalValue.textContent = "$ " + separateThousands(globalData.totalValue.toFixed(2));
+					if(window.innerWidth > 480) {
+						spanHoldingsTotalValue.textContent = "$ " + separateThousands(globalData.totalValue.toFixed(2));
+					} else {
+						spanHoldingsTotalValue.textContent = "$ " + abbreviateNumber(globalData.totalValue, 2);
+					}
 
 					Object.keys(holdings).map(holding => {
 						let coin = holdings[holding];
@@ -366,8 +375,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 						if(window.innerWidth <= 600 && window.innerWidth > 440) {
 							value = abbreviateNumber(value, 2);
-						}
-						else if(window.innerWidth <= 440) {
+						} else if(window.innerWidth <= 440) {
 							value = abbreviateNumber(value, 0);
 						}
 
@@ -392,16 +400,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
 								more.addEventListener("click", (e) => {
 									divHoldingsMoreMenu.classList.remove("hidden");
-									divHoldingsMoreMenu.style.top = e.clientY + "px";
-									divHoldingsMoreMenu.style.left = e.clientX - 200 + "px";
+
+									divHoldingsMoreMenu.style.top = e.clientY - 2 + "px";
+									divHoldingsMoreMenu.style.left = e.clientX - 2 - 200 + "px";
+
 									if(window.innerWidth <= 1230 && window.innerWidth > 700) {
-										divHoldingsMoreMenu.style.left = e.clientX - 200 - divHoldingsMoreMenu.clientWidth + "px";
+										divHoldingsMoreMenu.style.left = e.clientX - 2 - 200 - divHoldingsMoreMenu.clientWidth + "px";
 									}
 									if(window.innerWidth <= 1120 && window.innerWidth > 700) {
-										divHoldingsMoreMenu.style.left = e.clientX - 100 - divHoldingsMoreMenu.clientWidth + "px";
+										divHoldingsMoreMenu.style.left = e.clientX - 2 - 100 - divHoldingsMoreMenu.clientWidth + "px";
 									}
 									else if(window.innerWidth <= 700) {
-										divHoldingsMoreMenu.style.left = e.clientX - divHoldingsMoreMenu.clientWidth + "px";
+										divHoldingsMoreMenu.style.left = e.clientX - 2 - divHoldingsMoreMenu.clientWidth + "px";
 									}
 								});
 

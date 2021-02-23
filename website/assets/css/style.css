@@ -494,7 +494,7 @@ input[type=number] {
 
 .holdings-card-wrapper {
 	width:200px;
-	height:80px;
+	height:180px;
 	padding:20px;
 	background:var(--main-first);
 	box-shadow:var(--shadow-smooth);
@@ -503,14 +503,31 @@ input[type=number] {
 	right:20px;
 	border-radius:var(--border-radius);
 }
-.holdings-value-card {
-	width:100%;
+.holdings-add-card, .holdings-value-card {
+	width:200px;
 	height:80px;
 	background:var(--green-gradient);
 	border-radius:var(--border-radius);
 	text-align:center;
 	display:block;
 	position:relative;
+}
+.holdings-add-card {
+	margin-top:20px;
+	cursor:pointer;
+	transition:transform 0.25s;
+	background:var(--calm-gradient);
+}
+#desktop .holdings-add-card:hover {
+	transform:scale(0.95);
+}
+.holdings-add-card svg {
+	width:28px;
+	height:28px;
+	position:absolute;
+	bottom:10px;
+	left:calc(50% - 28px / 2);
+	fill:var(--accent-contrast);
 }
 .holdings-card-wrapper .title {
 	width:100%;

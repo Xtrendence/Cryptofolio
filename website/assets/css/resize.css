@@ -7,6 +7,16 @@
 		top:auto;
 		bottom:20px;
 		right:20px;
+		width:auto;
+		height:80px;
+	}
+	.holdings-add-card, .holdings-value-card {
+		display:inline-block;
+		vertical-align:top;
+	}
+	.holdings-add-card {
+		margin-left:20px;
+		margin-top:0;
 	}
 }
 
@@ -211,7 +221,11 @@
 
 @media screen and (max-width:550px) {
 	.holdings-card-wrapper {
-		right:calc(50% - 240px / 2);
+		width:calc(100% - 80px);
+		font-size:0;
+	}
+	.holdings-add-card, .holdings-value-card {
+		width:calc(50% - 10px);
 	}
 
 	.holdings-list-wrapper .header {

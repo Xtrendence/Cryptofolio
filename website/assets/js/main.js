@@ -71,6 +71,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	listMarket();
 
 	let updateMarketListInterval = setInterval(listMarket, 30000);
+	let updateHoldingsListInterval = setInterval(listHoldings, 30000);
 
 	window.addEventListener("resize", () => {
 		clearStats();
@@ -126,7 +127,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	});
 
 	divHoldingsAddCard.addEventListener("click", () => {
-		
+
 	});
 
 	divThemeToggle.addEventListener("click", () => {

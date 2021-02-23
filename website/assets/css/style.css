@@ -386,12 +386,40 @@ input[type=number] {
 	width:120px;
 }
 
+.holdings .more-menu {
+	position:absolute;
+	z-index:3;
+	width:100px;
+	height:80px;
+	overflow:hidden;
+	border-radius:var(--border-radius);
+	background:var(--main-fifth);
+	box-shadow:var(--shadow-smooth);
+}
+.holdings .more-menu button {
+	display:block;
+	height:40px;
+	padding:0 10px 0 10px;
+	background:none;
+	width:100%;
+	font-weight:bold;
+	font-size:16px;
+	color:var(--main-contrast);
+	cursor:pointer;
+}
+.holdings .more-menu button:nth-of-type(even) {
+	background:var(--main-fourth);
+}
+#desktop .holdings .more-menu button:hover {
+	background:var(--main-third);
+}
+
 .holdings-list-wrapper {
 	position:absolute;
 	top:20px;
 	left:20px;
-	width:530px;
-	height:304px;
+	width:730px;
+	height:calc(100% - 40px);
 	border-radius:var(--border-radius);
 	box-shadow:var(--shadow-smooth);
 	background:var(--main-first);
@@ -405,6 +433,10 @@ input[type=number] {
 }
 .holdings-list-wrapper .header.value {
 	width:120px;
+}
+.holdings-list-wrapper .header.day {
+	width:170px;
+	text-align:center;
 }
 
 .holdings-list-wrapper .coin-wrapper img {
@@ -429,6 +461,10 @@ input[type=number] {
 .holdings-list-wrapper .coin-wrapper .value {
 	width:120px;
 	text-align:left;
+}
+.holdings-list-wrapper .coin-wrapper .day {
+	width:170px;
+	text-align:center;
 }
 
 .holdings-list-wrapper .coin-wrapper .more {

@@ -2,82 +2,24 @@ document.addEventListener("DOMContentLoaded", () => {
 	let settings = {};
 
 	let globalData = {};
-
-	// TODO: Remove after development.
-	let transactionsData = {
-		"1613393109-CNWD": {
+	let holdingsData = {
+		"bitcoin": {
 			"symbol":"BTC",
-			"id":"bitcoin",
-			"type":"buy",
-			"amount":1.5,
-			"price":30000
+			"amount":6.66,
 		},
-		"1613885309-YJGZ": {
-			"symbol":"ETH",
-			"id":"ethereum",
-			"type":"buy",
-			"amount":3.5,
-			"price":1850
-		},
-		"1613569509-WTTF": {
+		"polkadot": {
 			"symbol":"DOT",
-			"id":"polkadot",
-			"type":"sell",
-			"amount":400,
-			"price":31.5
+			"amount":420,
 		},
-		"1613655909-WYTF": {
-			"symbol":"BTC",
-			"id":"bitcoin",
-			"type":"sell",
-			"amount":1,
-			"price":35000
-		},
-		"1613763909-GDFD": {
-			"symbol":"BTC",
-			"id":"bitcoin",
-			"type":"buy",
-			"amount":0.5,
-			"price":36000
-		},
-		"1613886459-XMTO": {
+		"cardano": {
 			"symbol":"ADA",
-			"id":"cardano",
-			"type":"sell",
-			"amount":150,
-			"price":0.93
+			"amount":69
 		},
-		"1613850309-GGFT": {
-			"symbol":"DOT",
-			"id":"polkadot",
-			"type":"buy",
-			"amount":25,
-			"price":28.5
-		},
-		"1613884309-XLBZ": {
+		"ethereum": {
 			"symbol":"ETH",
-			"id":"ethereum",
-			"type":"buy",
-			"amount":6.5,
-			"price":1800
-		},
-		"1613886309-TYTY": {
-			"symbol":"ETH",
-			"id":"ethereum",
-			"type":"sell",
-			"amount":5,
-			"price":1800
-		},
-		"1613884509-XTIL": {
-			"symbol":"ADA",
-			"id":"cardano",
-			"type":"buy",
-			"amount":250,
-			"price":0.91
-		},
+			"amount":2
+		}
 	};
-
-	let holdingsData = {};
 	
 	let body = document.body;
 
@@ -111,8 +53,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	let divMarketList = document.getElementById("market-list");
 	let divHoldingsList = document.getElementById("holdings-list");
 
-	let divChartWrapper = document.getElementById("chart-wrapper");
-	let divChartContainer = document.getElementById("chart-container");
+	let divHoldingsMoreMenu = document.getElementById("holdings-more-menu");
 
 	let spanHoldingsTotalValue = document.getElementById("holdings-total-value");
 
@@ -136,11 +77,27 @@ document.addEventListener("DOMContentLoaded", () => {
 
 		clearTimeout(window.resizedFinished);
 		window.resizedFinished = setTimeout(() => {
-			let page = parseInt(divMarketList.getAttribute("data-page"));
-			listMarket(page);
+			if(divNavbarMarket.classList.contains("active")) {
+				let page = parseInt(divMarketList.getAttribute("data-page"));
+				listMarket(page);
+			}
+			if(divNavbarHoldings.classList.contains("active")) {
+				listHoldings();
+			}
 		}, 1000);
 
 		adjustToScreen();
+	});
+
+	document.addEventListener("click", (e) => {
+		if(divNavbarHoldings.classList.contains("active")) {
+			if(!divHoldingsMoreMenu.classList.contains("hidden")) {
+				let whitelist = ["more-menu", "more-menu", "more", "more-icon", "more-path"];
+				if(!whitelist.includes(e.target.classList[0]) && !whitelist.includes(e.target.parentElement.classList[0])) {
+					divHoldingsMoreMenu.classList.add("hidden");
+				}
+			}
+		}
 	});
 
 	divNavbarDashboard.addEventListener("click", () => {
@@ -281,7 +238,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	}
 
 	function listMarket(page) {
-		if(document.getElementById("navbar-market").classList.contains("active")) {
+		if(divNavbarMarket.classList.contains("active")) {
 			divPageNavigation.classList.remove("active");
 
 			setTimeout(() => {
@@ -298,26 +255,32 @@ document.addEventListener("DOMContentLoaded", () => {
 
 				coins.map(coin => {
 					let price = parseFloat(coin.current_price);
+
 					if(price > 1) {
 						price = separateThousands(price);
 					}
+
 					let id = "market-coin-" + coin.id;
 					let marketCap = coin.market_cap;
+
 					if(window.innerWidth <= 960 && window.innerWidth > 440) {
 						marketCap = abbreviateNumber(marketCap, 2);
 					}
 					else if(window.innerWidth <= 440) {
 						marketCap = abbreviateNumber(marketCap, 0);
 					}
+
 					let rank = coin.market_cap_rank;
 					let name = coin.name;
 					let icon = coin.image;
 					let priceChangeDay = coin.price_change_percentage_24h;
+
 					if(!empty(priceChangeDay)) {
 						priceChangeDay = priceChangeDay.toFixed(2);
 					} else {
 						priceChangeDay = "-";
 					}
+
 					let symbol = coin.symbol;
 					let volume = coin.total_volume;
 
@@ -374,7 +337,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	}
 
 	function listHoldings() {
-		if(document.getElementById("navbar-holdings").classList.contains("active")) {
+		if(divNavbarHoldings.classList.contains("active")) {
 			divPageNavigation.classList.remove("active");
 
 			setTimeout(() => {
@@ -382,10 +345,8 @@ document.addEventListener("DOMContentLoaded", () => {
 					listMarket(page);
 				}
 			}, 5000);
-	
-			getTransactions().then(transactions => {
-				let coins = parseTransactions(transactions);
 
+			getHoldings().then(coins => {
 				parseHoldings(coins).then(holdings => {
 					if(divHoldingsList.getElementsByClassName("coin-wrapper loading").length > 0) {
 						divHoldingsList.getElementsByClassName("coin-wrapper loading")[0].remove();
@@ -396,12 +357,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
 					Object.keys(holdings).map(holding => {
 						let coin = holdings[holding];
-					
+				
 						let id = "holdings-coin-" + holding;
 						let icon = coin.image;
 						let amount = coin.amount;
 						let symbol = coin.symbol;
 						let value = coin.value.toFixed(2);
+
+						if(window.innerWidth <= 600 && window.innerWidth > 440) {
+							value = abbreviateNumber(value, 2);
+						}
+						else if(window.innerWidth <= 440) {
+							value = abbreviateNumber(value, 0);
+						}
+
+						let day = coin.change + "%";
 
 						let div;
 
@@ -410,6 +380,7 @@ document.addEventListener("DOMContentLoaded", () => {
 								div = document.getElementById(id);
 								div.getElementsByClassName("amount")[0].textContent = amount;
 								div.getElementsByClassName("value")[0].textContent = "$ " + separateThousands(value);
+								div.getElementsByClassName("day")[0].textContent = day;
 							} else {
 								div = document.createElement("div");
 								div.id = id;
@@ -417,9 +388,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
 								let more = document.createElement("div");
 								more.classList.add("more");
-								more.innerHTML = '<svg width="1792" height="1792" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M576 736v192q0 40-28 68t-68 28h-192q-40 0-68-28t-28-68v-192q0-40 28-68t68-28h192q40 0 68 28t28 68zm512 0v192q0 40-28 68t-68 28h-192q-40 0-68-28t-28-68v-192q0-40 28-68t68-28h192q40 0 68 28t28 68zm512 0v192q0 40-28 68t-68 28h-192q-40 0-68-28t-28-68v-192q0-40 28-68t68-28h192q40 0 68 28t28 68z"/></svg>';
+								more.innerHTML = '<svg class="more-icon" width="1792" height="1792" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path class="more-path" d="M576 736v192q0 40-28 68t-68 28h-192q-40 0-68-28t-28-68v-192q0-40 28-68t68-28h192q40 0 68 28t28 68zm512 0v192q0 40-28 68t-68 28h-192q-40 0-68-28t-28-68v-192q0-40 28-68t68-28h192q40 0 68 28t28 68zm512 0v192q0 40-28 68t-68 28h-192q-40 0-68-28t-28-68v-192q0-40 28-68t68-28h192q40 0 68 28t28 68z"/></svg>';
 
-								div.innerHTML = '<img draggable="false" src="' + icon + '"><span class="coin">' + symbol.toUpperCase() + '</span><span class="amount">' + amount + '</span><span class="value">$ ' + separateThousands(value) + '</span>';
+								more.addEventListener("click", (e) => {
+									divHoldingsMoreMenu.classList.remove("hidden");
+									divHoldingsMoreMenu.style.top = e.clientY + "px";
+									divHoldingsMoreMenu.style.left = e.clientX - 200 + "px";
+									if(window.innerWidth <= 1230 && window.innerWidth > 700) {
+										divHoldingsMoreMenu.style.left = e.clientX - 200 - divHoldingsMoreMenu.clientWidth + "px";
+									}
+									if(window.innerWidth <= 1120 && window.innerWidth > 700) {
+										divHoldingsMoreMenu.style.left = e.clientX - 100 - divHoldingsMoreMenu.clientWidth + "px";
+									}
+									else if(window.innerWidth <= 700) {
+										divHoldingsMoreMenu.style.left = e.clientX - divHoldingsMoreMenu.clientWidth + "px";
+									}
+								});
+
+								div.innerHTML = '<img draggable="false" src="' + icon + '"><span class="coin">' + symbol.toUpperCase() + '</span><span class="amount">' + amount + '</span><span class="value">$ ' + separateThousands(value) + '</span><span class="day">' + day + '</span>';
 
 								div.appendChild(more);
 
@@ -434,7 +420,7 @@ document.addEventListener("DOMContentLoaded", () => {
 				});
 			}).catch(e => {
 				console.log(e);
-			});;
+			});
 		}
 	}
 
@@ -531,9 +517,9 @@ document.addEventListener("DOMContentLoaded", () => {
 	}
 
 	// TODO: Modify after development.
-	function getTransactions() {
+	function getHoldings() {
 		return new Promise((resolve, reject) => {
-			resolve(transactionsData);
+			resolve(holdingsData);
 			try {
 				let xhr = new XMLHttpRequest();
 
@@ -553,171 +539,6 @@ document.addEventListener("DOMContentLoaded", () => {
 				reject(e);
 			}
 		});
-	}
-
-	function getHistoricalData(id, from, to) {
-		return new Promise((resolve, reject) => {
-			try {
-				let xhr = new XMLHttpRequest();
-
-				xhr.addEventListener("readystatechange", () => {
-					if(xhr.readyState === XMLHttpRequest.DONE) {
-						if(validJSON(xhr.responseText)) {
-							resolve(JSON.parse(xhr.responseText));
-						} else {
-							reject("Invalid JSON.");
-						}
-					}
-				});
-
-				xhr.open("GET", "https://api.coingecko.com/api/v3/coins/" + id + "/market_chart/range?vs_currency=usd&from=" + from + "&to=" + to, true);
-				xhr.send();
-			} catch(e) {
-				reject(e);
-			}
-		});
-	}
-
-
-	function parseTransactions(transactions) {
-		let holdings = {};
-
-		let timeframe = "week";
-
-		let now = Date.now();
-
-		let timeHour = 3600 * 1000;
-		let timeDay = timeHour * 24;
-		let timeWeek = timeDay * 7;
-		let timeMonth = timeDay * 30;
-		let timeYear = timeDay * 365;
-
-		let pastDay = {};
-		let pastWeek = {};
-		let pastMonth = {};
-		let pastYear = {};
-
-		let startDay = now - timeDay;
-		let startWeek = now - timeWeek;
-		let startMonth = now - timeMonth;
-		let startYear = now - timeYear;
-
-		for(let i = startDay; i < now; i += timeHour) {
-			let format = formatHour(new Date(i));
-			pastDay[format] = null;
-		}
-
-		for(let i = startWeek; i < now; i += timeDay) {
-			let format = formatDate(new Date(i));
-			pastWeek[format] = null;
-		}
-
-		for(let i = startMonth; i < now; i += timeDay) {
-			let format = formatDate(new Date(i));
-			pastMonth[format] = null;
-		}
-
-		for(let i = startYear; i < now; i += timeWeek) {
-			let format = formatDate(new Date(i));
-			pastYear[format] = null;
-		}
-
-		let dates;
-
-		switch(timeframe) {
-			case "day":
-				dates = pastDay;
-				break;
-			case "week":
-				dates = pastWeek;
-				break;
-			case "month":
-				dates = pastMonth;
-				break;
-			case "year":
-				dates = pastYear;
-				break;
-		}
-
-		let txs = Object.keys(transactions).sort((a, b) => a.split("-")[0].localeCompare(b.split("-")[0]));
-
-		txs.map(tx => {
-			let timestamp = tx.split("-")[0];
-			let date = new Date(timestamp * 1000);
-
-			let transaction = transactions[tx];
-
-			let amount = transaction.amount;
-			let id = transaction.id;
-			let price = transaction.price;
-			let symbol = transaction.symbol;
-			let type = transaction.type;
-
-			if(id in holdings) {
-				let holding = holdings[id];
-				let currentAmount = holding.amount;
-
-				if(type === "sell") {
-					amount = currentAmount - amount;
-					if(amount < 0) {
-						amount = 0;
-					}
-				} else {
-					amount = currentAmount + amount;
-				}
-
-				holdings[id].amount = amount;
-				holdings[id].value = amount * price;
-			} else {
-				if(amount > 0) {
-					if(type === "buy") {
-						holdings[id] = {
-							"symbol":symbol,
-							"amount":amount,
-							"value":amount * price
-						};
-					}
-				}
-			}
-		});
-
-		return holdings;
-	}
-
-	function generateChart(dates, totals) {
-		let canvas = document.createElement("canvas");
-		canvas.classList.add("chart");
-		let chart = new Chart(canvas, {
-			type:"line",
-			data: {
-				labels:dates,
-				datasets:[{
-					label:"Value ($)",
-					backgroundColor:"rgba(100,80,150,0.04)",
-					borderColor:"rgb(100,80,150)",
-					data:totals
-				}],
-			},
-			options: {
-				responsive:true,
-				legend:false,
-				scales: {
-					xAxes: [{
-						gridLines: {
-							color:"rgba(0,0,0,0)"
-						}
-					}],
-					yAxes: [{
-						gridLines: {
-							color:"rgba(0,0,0,0)"
-						}
-					}]
-				}
-			}
-		});
-
-		divChartContainer.innerHTML = "";
-		divChartContainer.appendChild(canvas);
 	}
 
 	function parseHoldings(coins) {
@@ -740,12 +561,20 @@ document.addEventListener("DOMContentLoaded", () => {
 								let price = coin.current_price;
 								let amount = coins[id].amount;
 								let value = price * amount;
+								let priceChangeDay = coin.price_change_percentage_24h;
+
+								if(!empty(priceChangeDay)) {
+									priceChangeDay = priceChangeDay.toFixed(2);
+								} else {
+									priceChangeDay = "-";
+								}
 
 								holdings[id] = {
 									symbol:coins[id].symbol,
 									amount:amount,
 									value:value,
 									price:price,
+									change:priceChangeDay,
 									image:coin.image
 								};
 

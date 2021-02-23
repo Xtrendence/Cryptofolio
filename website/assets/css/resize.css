@@ -1,3 +1,15 @@
+@media screen and (max-width:1230px) {
+	.holdings-list-wrapper {
+		width:calc(100% - 40px);
+		height:calc(100% - 40px - 140px);
+	}
+	.holdings-card-wrapper {
+		top:auto;
+		bottom:20px;
+		right:20px;
+	}
+}
+
 @media screen and (max-width:1180px) {
 	.page-navigation-wrapper {
 		top:100px;
@@ -89,6 +101,15 @@
 
 @media screen and (max-width:930px) {
 	
+}
+
+@media screen and (max-width:880px) {
+	.holdings-list-wrapper .header.day {
+		display:none;
+	}
+	.holdings-list-wrapper .coin-wrapper .day {
+		display:none;
+	}
 }
 
 @media screen and (max-width:860px) {
@@ -188,6 +209,35 @@
 	}
 }
 
+@media screen and (max-width:550px) {
+	.holdings-card-wrapper {
+		right:calc(50% - 240px / 2);
+	}
+
+	.holdings-list-wrapper .header {
+		font-size:16px;
+		padding:0 10px 0 10px;
+	}
+	.holdings-list-wrapper .header.coin {
+		width:80px;
+		padding-left:30px;
+	}
+	.holdings-list-wrapper .header.amount {
+		width:80px;
+	}
+
+	.holdings-list-wrapper .coin-wrapper span {
+		font-size:16px;
+		padding:0 10px 0 10px;
+	}
+	.holdings-list-wrapper .coin-wrapper .coin {
+		width:62px;
+	}
+	.holdings-list-wrapper .coin-wrapper .amount {
+		width:80px;
+	}
+}
+
 @media screen and (max-width:480px) {
 	.page-navigation-wrapper {
 		right:auto;
@@ -240,6 +290,13 @@
 	}
 	.market-list-wrapper .coin-wrapper img {
 		margin-left:10px;
+	}
+
+	.holdings-list-wrapper .header.amount {
+		display:none;
+	}
+	.holdings-list-wrapper .coin-wrapper .amount {
+		display:none;
 	}
 }
 

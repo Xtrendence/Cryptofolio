@@ -13,7 +13,7 @@ input, button {
 	outline:none;
 	border:none;
 }
-div, span, input, button {
+div, span, input, button, textarea {
 	transition:background 0.25s, color 0.25s;
 }
 .noselect {
@@ -666,6 +666,12 @@ input[type=number] {
 	display:block;
 }
 
+.settings {
+	overflow:hidden auto;
+	-webkit-overflow-scrolling:touch;
+	scroll-behavior:smooth;
+}
+
 .settings .section {
 	position:relative;
 	width:calc(50% - 40px - 30px);
@@ -728,6 +734,22 @@ input[type=number] {
 	top:5px;
 	left:5px;
 }
+.settings .section textarea {
+	height:200px;
+	width:300px;
+	margin-bottom:20px;
+	padding:10px;
+	border-radius:var(--border-radius);
+	outline:none;
+	color:var(--main-contrast);
+	background:var(--main-third);
+	box-shadow:var(--shadow-smooth);
+	border:none;
+	font-size:12px;
+}
+.settings .section textarea::-webkit-scrollbar {
+	display:none;
+}
 .settings .section .choice, .settings .section .submit {
 	padding:10px;
 	border-radius:var(--border-radius);
@@ -738,6 +760,9 @@ input[type=number] {
 	color:var(--main-contrast);
 	cursor:pointer;
 	box-shadow:var(--shadow-smooth);
+}
+.settings .section .submit {
+	display:block;
 }
 .settings .section .choice.active {
 	pointer-events:none;

@@ -71,6 +71,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	let divThemeToggle = document.getElementById("theme-toggle");
 
+	let inputThemeCSS = document.getElementById("theme-css-input");
+
+	let buttonApplyCSS = document.getElementById("theme-css-confirm");
+
 	let inputCurrentPassword = document.getElementById("input-current-password");
 	let inputNewPassword = document.getElementById("input-new-password");
 	let inputRepeatPassword = document.getElementById("input-repeat-password");
@@ -245,6 +249,23 @@ document.addEventListener("DOMContentLoaded", () => {
 		}
 	});
 
+	buttonApplyCSS.addEventListener("click", () => {
+		let css = "html.light, html.dark { " + inputThemeCSS.value + "}";
+
+		if(document.getElementById("custom-css")) {
+			document.getElementById("custom-css").textContent = css;
+		} else {
+			let style = document.createElement("style");
+			style.id = "custom-css";
+			style.textContent = css;
+			document.head.appendChild(style);
+		}
+
+		localStorage.setItem("theme", "custom");
+
+		// TODO: Add API interaction.
+	});
+
 	for(let i = 0; i < buttonSettingsChoices.length; i++) {
 		buttonSettingsChoices[i].addEventListener("click", () => {
 			let key = buttonSettingsChoices[i].parentElement.getAttribute("data-key");
@@ -296,6 +317,10 @@ document.addEventListener("DOMContentLoaded", () => {
 	}
 
 	function switchTheme(theme) {
+		if(document.getElementById("custom-css")) {
+			document.getElementById("custom-css").remove();
+		}
+
 		if(theme === "dark") {
 			localStorage.setItem("theme", "dark");
 			divThemeToggle.classList.remove("active");
@@ -603,6 +628,8 @@ document.addEventListener("DOMContentLoaded", () => {
 				buttonSettingsChoices[i].classList.add("active");
 			}
 		}
+
+		// TODO: Fetch custom CSS from API.
 
 		setTimeout(() => {
 			if(divLoadingOverlay.classList.contains("active")) {

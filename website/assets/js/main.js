@@ -71,6 +71,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	let divThemeToggle = document.getElementById("theme-toggle");
 
+	let inputCurrentPassword = document.getElementById("input-current-password");
+	let inputNewPassword = document.getElementById("input-new-password");
+	let inputRepeatPassword = document.getElementById("input-repeat-password");
+
+	let buttonChangePassword = document.getElementById("change-password-button");
+
 	detectMobile() ? body.id = "mobile" : body.id = "desktop";
 
 	adjustToScreen();
@@ -247,6 +253,29 @@ document.addEventListener("DOMContentLoaded", () => {
 			getSettings();
 		});
 	}
+
+	buttonChangePassword.addEventListener("click", () => {
+		let currentPassword = inputCurrentPassword.value;
+		let newPassword = inputNewPassword.value;
+		let repeatPassword = inputRepeatPassword.value;
+
+		if(newPassword === repeatPassword) {
+			changePassword(currentPassword, newPassword).then(() => {
+				logout();
+			}).catch(e => {
+				console.log(e);
+				Notify.error({
+					title:"Error",
+					description:"Couldn't change password."
+				});
+			});
+		} else {
+			Notify.error({
+				title:"Error",
+				description:"The passwords don't match."
+			});
+		}
+	});
 
 	function popup(title, html, width, height) {
 		divPopupOverlay.classList.add("active");
@@ -582,6 +611,30 @@ document.addEventListener("DOMContentLoaded", () => {
 		}, 250);
 	}
 
+	// TODO: Add API interaction.
+	function changePassword(currentPassword, newPassword) {
+		return new Promise((resolve, reject) => {
+			try {
+				let xhr = new XMLHttpRequest();
+
+				xhr.addEventListener("readystatechange", () => {
+					if(xhr.readyState === XMLHttpRequest.DONE) {
+						if(validJSON(xhr.responseText)) {
+							resolve(JSON.parse(xhr.responseText));
+						} else {
+							reject("Invalid JSON.");
+						}
+					}
+				});
+
+				xhr.open("GET", "", true);
+				xhr.send();
+			} catch(e) {
+				reject(e);
+			}
+		});
+	}
+
 	function getGlobal() {
 		return new Promise((resolve, reject) => {
 			try {
@@ -651,7 +704,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		});
 	}
 
-	// TODO: Modify after development.
+	// TODO: Modify after development, and add API interaction.
 	function getHoldings() {
 		return new Promise((resolve, reject) => {
 			resolve(holdingsData);

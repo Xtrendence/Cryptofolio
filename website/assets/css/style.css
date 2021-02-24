@@ -727,7 +727,7 @@ input[type=number] {
 	top:5px;
 	left:5px;
 }
-.settings .section .choice {
+.settings .section .choice, .settings .section .submit {
 	padding:10px;
 	border-radius:var(--border-radius);
 	margin:0 20px 20px 0;
@@ -741,7 +741,19 @@ input[type=number] {
 	pointer-events:none;
 	cursor:default;
 }
-#desktop .settings .section .choice:hover, .settings .section .choice.active {
+#desktop .settings .section .choice:hover, .settings .section .choice.active, #desktop .settings .section .submit:hover {
 	background:var(--accent-first);
 	color:var(--accent-contrast);
+}
+.settings .section input {
+	display:block;
+	padding:0 10px 0 10px;
+	height:40px;
+	width:200px;
+	border-radius:var(--border-radius);
+	margin:0 0 20px 0;
+	background:var(--main-third);
+	color:var(--main-contrast);
+	font-size:16px;
+	box-shadow:var(--shadow-smooth);
 }

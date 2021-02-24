@@ -698,6 +698,7 @@ input[type=number] {
 	border-radius:20px;
 	position:relative;
 	cursor:pointer;
+	box-shadow:var(--shadow-smooth);
 }
 .settings .section .toggle {
 	width:30px;
@@ -736,6 +737,7 @@ input[type=number] {
 	background:var(--main-third);
 	color:var(--main-contrast);
 	cursor:pointer;
+	box-shadow:var(--shadow-smooth);
 }
 .settings .section .choice.active {
 	pointer-events:none;

@@ -745,6 +745,7 @@ input[type=number] {
 	background:var(--main-third);
 	box-shadow:var(--shadow-smooth);
 	border:none;
+	display:block;
 	font-size:12px;
 }
 .settings .section textarea::-webkit-scrollbar {
@@ -760,9 +761,6 @@ input[type=number] {
 	color:var(--main-contrast);
 	cursor:pointer;
 	box-shadow:var(--shadow-smooth);
-}
-.settings .section .submit {
-	display:block;
 }
 .settings .section .choice.active {
 	pointer-events:none;

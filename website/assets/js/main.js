@@ -73,6 +73,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	let inputThemeCSS = document.getElementById("theme-css-input");
 
+	let buttonResetCSS = document.getElementById("theme-css-reset");
 	let buttonApplyCSS = document.getElementById("theme-css-confirm");
 
 	let inputCurrentPassword = document.getElementById("input-current-password");
@@ -247,6 +248,16 @@ document.addEventListener("DOMContentLoaded", () => {
 			// Switch to light mode.
 			switchTheme("light");
 		}
+	});
+
+	buttonResetCSS.addEventListener("click", () => {
+		if(document.getElementById("custom-css")) {
+			document.getElementById("custom-css").remove();
+		}
+
+		switchTheme("light");
+
+		// TODO: Add API interaction.
 	});
 
 	buttonApplyCSS.addEventListener("click", () => {

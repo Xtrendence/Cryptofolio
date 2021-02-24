@@ -129,7 +129,7 @@
 		</div>
 		<div class="page settings" id="page-settings">
 			<div class="section">
-				<div class="top">
+				<div class="top noselect">
 					<span class="title">Theme</span>
 				</div>
 				<div class="bottom">
@@ -162,11 +162,14 @@
 						--accent-contrast:rgb(255,255,255);
 						--border-radius:10px;
 						--font-family:"Helvetica Neue", "Lucida Grande", "Arial", "Verdana", "Tahoma", sans-serif;</textarea>
-					<button class="submit" id="theme-css-confirm">Apply CSS</button>
+					<div class="button-wrapper">
+						<button class="submit" id="theme-css-reset">Reset</button>
+						<button class="submit" id="theme-css-confirm">Apply CSS</button>
+					</div>
 				</div>
 			</div>
 			<div class="section">
-				<div class="top">
+				<div class="top noselect">
 					<span class="title">Default Page</span>
 				</div>
 				<div class="bottom" data-key="defaultPage">
@@ -177,7 +180,7 @@
 				</div>
 			</div>
 			<div class="section">
-				<div class="top">
+				<div class="top noselect">
 					<span class="title">Password</span>
 				</div>
 				<div class="bottom">

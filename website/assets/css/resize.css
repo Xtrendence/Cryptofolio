@@ -120,6 +120,10 @@
 	.holdings-list-wrapper .coin-wrapper .day {
 		display:none;
 	}
+
+	.settings .section {
+		width:calc(100% - 40px - 40px);
+	}
 }
 
 @media screen and (max-width:860px) {
@@ -134,9 +138,6 @@
 @media screen and (max-width:830px) {
 	.market .stats-wrapper .stats-card.dominance {
 		display:none;
-	}
-	.settings .section {
-		width:calc(100% - 40px - 40px);
 	}
 }
 
@@ -311,6 +312,10 @@
 	}
 	.holdings-list-wrapper .coin-wrapper .amount {
 		display:none;
+	}
+
+	.settings .section textarea {
+		width:calc(100% - 20px);
 	}
 }
 

@@ -145,7 +145,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 		let html = '<button class="reject" id="popup-cancel">Cancel</button><button class="resolve warning" id="popup-confirm">Delete</button>';
 
-		popup("Deleting Asset", html, 300, 120);
+		popup("Deleting Asset", html, 240, 120);
 
 		document.getElementById("popup-cancel").addEventListener("click", () => {
 			hidePopup();

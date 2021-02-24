@@ -55,7 +55,7 @@ input[type=number] {
 	-moz-appearance:textfield;
 }
 
-.loading-overlay {
+.loading-overlay, .popup-overlay {
 	display:none;
 	pointer-events:none;
 	top:0;
@@ -67,7 +67,11 @@ input[type=number] {
 	transition:none;
 	z-index:99;
 }
-.loading-overlay.active {
+.popup-overlay {
+	z-index:97;
+	background:rgba(20,20,20,0.95);
+}
+.loading-overlay.active, .popup-overlay.active {
 	display:block;
 	pointer-events:all;
 }
@@ -81,6 +85,89 @@ input[type=number] {
 	text-align:center;
 	display:block;
 	position:absolute;
+}
+
+.popup-wrapper {
+	position:absolute;
+	width:400px;
+	height:400px;
+	left:calc(50% - 400px / 2);
+	top:calc(50% - 400px / 2);
+	background:var(--main-second);
+	z-index:98;
+	overflow:hidden;
+	border-radius:var(--border-radius);
+	box-shadow:var(--shadow-smooth);
+	display:none;
+}
+.popup-wrapper.active {
+	display:block;
+}
+.popup-wrapper .top, .popup-wrapper .bottom {
+	position:absolute;
+	left:0;
+	width:100%;
+}
+.popup-wrapper .top {
+	top:0;
+	height:40px;
+	background:var(--main-third);
+	box-shadow:var(--shadow-smooth);
+}
+.popup-wrapper .top span {
+	font-size:18px;
+	font-weight:bold;
+	color:var(--main-contrast);
+	line-height:40px;
+	padding-left:10px;
+}
+.popup-wrapper .bottom {
+	top:40px;
+	padding-top:20px;
+	height:calc(100% - 40px);
+	overflow:hidden auto;
+	-webkit-overflow-scrolling:touch;
+	scroll-behavior:smooth;
+	text-align:center;
+}
+.popup-wrapper .bottom input {
+	display:block;
+	padding:0 10px 0 10px;
+	height:40px;
+	width:calc(100% - 60px);
+	border-radius:var(--border-radius);
+	margin:0 auto 20px auto;
+	background:var(--main-first);
+	color:var(--main-contrast);
+	font-size:16px;
+}
+.popup-wrapper .bottom button {
+	display:block;
+	padding:0 10px 0 10px;
+	height:40px;
+	font-size:16px;
+	font-weight:bold;
+	background:var(--main-first);
+	color:var(--main-contrast);
+	border-radius:var(--border-radius);
+	cursor:pointer;
+}
+#desktop .popup-wrapper .bottom button:hover {
+	background:var(--main-third);
+}
+.popup-wrapper button.reject {
+	display:inline-block;
+	width:calc(50% - 30px);
+}
+.popup-wrapper button.resolve {
+	display:inline-block;
+	margin-left:20px;
+	width:calc(50% - 30px);
+	background:var(--accent-first);
+	color:var(--accent-contrast);
+}
+#desktop .popup-wrapper .bottom button.resolve:hover {
+	background:var(--accent-second);
 }
 
 .navbar {

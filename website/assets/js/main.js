@@ -1,4 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
+	const Notify = new XNotify("BottomRight");
+
 	let settings = {};
 
 	let globalData = {};
@@ -28,7 +30,13 @@ document.addEventListener("DOMContentLoaded", () => {
 	let spanGlobalDominance = document.getElementById("global-dominance");
 
 	let divLoadingOverlay = document.getElementById("loading-overlay");
+	let divPopupOverlay = document.getElementById("popup-overlay");
 
+	let divPopupWrapper = document.getElementById("popup-wrapper");
+	let divPopupBottom = divPopupWrapper.getElementsByClassName("bottom")[0];
+
+	let spanPopupTitle = divPopupWrapper.getElementsByClassName("title")[0];
+	
 	let divPageDashboard = document.getElementById("page-dashboard");
 	let divPageMarket = document.getElementById("page-market");
 	let divPageHoldings = document.getElementById("page-holdings");
@@ -102,6 +110,10 @@ document.addEventListener("DOMContentLoaded", () => {
 		}
 	});
 
+	divPopupOverlay.addEventListener("click", () => {
+		hidePopup();
+	});
+
 	divNavbarDashboard.addEventListener("click", () => {
 		switchPage("dashboard");
 	});
@@ -127,7 +139,50 @@ document.addEventListener("DOMContentLoaded", () => {
 	});
 
 	divHoldingsAddCard.addEventListener("click", () => {
+		let html = '<input id="popup-coin" placeholder="Coin ID... (e.g. Bitcoin)"><input id="popup-amount" placeholder="Amount... (e.g. 2.5)"><button class="reject" id="popup-cancel">Cancel</button><button class="resolve" id="popup-confirm">Confirm</button>';
 
+		popup("Adding Asset", html, 300, 240);
+
+		document.getElementById("popup-cancel").addEventListener("click", () => {
+			hidePopup();
+		});
+
+		document.getElementById("popup-confirm").addEventListener("click", () => {
+			let id = document.getElementById("popup-coin").value;
+			let amount = document.getElementById("popup-amount").value;
+
+			if(empty(id) || empty(amount)) {
+				Notify.error({
+					title:"Error",
+					description:"Both fields must be filled out."
+				});
+			} else {
+				if(isNaN(amount)) {
+					Notify.error({
+						title:"Error",
+						description:"The amount field must be a number."
+					});
+				} else {
+					let coinID = id.toLowerCase();
+					getCoin(coinID).then(coin => {
+						if(!empty(coin.error)) {
+							Notify.error({
+								title:"Error",
+								description:"Coin not found."
+							});
+						} else {
+							// TODO: Add API interaction.
+							Notify.success({
+								title:"Added Coin",
+								description:"The coin has been added to your holdings."
+							});
+						}
+					}).catch(e => {
+						console.log(e);
+					});
+				}
+			}
+		});
 	});
 
 	divThemeToggle.addEventListener("click", () => {
@@ -147,6 +202,24 @@ document.addEventListener("DOMContentLoaded", () => {
 			localStorage.setItem(key, value);
 			getSettings();
 		});
+	}
+
+	function popup(title, html, width, height) {
+		divPopupOverlay.classList.add("active");
+		divPopupWrapper.style.width = width + "px";
+		divPopupWrapper.style.height = height + "px";
+		divPopupWrapper.style.left = "calc(50% - " + width + "px / 2)";
+		divPopupWrapper.style.top = "calc(50% - " + height + "px / 2)";
+		divPopupWrapper.classList.add("active");
+		spanPopupTitle.textContent = title;
+		divPopupBottom.innerHTML = html;
+	}
+
+	function hidePopup() {
+		divPopupOverlay.classList.remove("active");
+		divPopupWrapper.classList.remove("active");
+		spanPopupTitle.textContent = "Popup Title";
+		divPopupBottom.innerHTML = "";
 	}
 
 	function switchTheme(theme) {
@@ -316,7 +389,7 @@ document.addEventListener("DOMContentLoaded", () => {
 					}
 				});
 
-				getBitcoin().then(bitcoin => {
+				getCoin("bitcoin").then(bitcoin => {
 					let bitcoinMarketCap = bitcoin.market_data.market_cap.usd;
 
 					getGlobal().then(global => {
@@ -485,7 +558,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		});
 	}
 
-	function getBitcoin() {
+	function getCoin(id) {
 		return new Promise((resolve, reject) => {
 			try {
 				let xhr = new XMLHttpRequest();
@@ -500,7 +573,7 @@ document.addEventListener("DOMContentLoaded", () => {
 					}
 				});
 
-				xhr.open("GET", "https://api.coingecko.com/api/v3/coins/bitcoin", true);
+				xhr.open("GET", "https://api.coingecko.com/api/v3/coins/" + id, true);
 				xhr.send();
 			} catch(e) {
 				reject(e);

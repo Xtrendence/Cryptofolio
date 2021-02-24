@@ -69,7 +69,7 @@ input[type=number] {
 }
 .popup-overlay {
 	z-index:97;
-	background:rgba(20,20,20,0.95);
+	background:rgba(0,0,0,0.95);
 }
 .loading-overlay.active, .popup-overlay.active {
 	display:block;
@@ -93,7 +93,7 @@ input[type=number] {
 	height:400px;
 	left:calc(50% - 400px / 2);
 	top:calc(50% - 400px / 2);
-	background:var(--main-second);
+	background:var(--main-first);
 	z-index:98;
 	overflow:hidden;
 	border-radius:var(--border-radius);
@@ -137,9 +137,14 @@ input[type=number] {
 	width:calc(100% - 60px);
 	border-radius:var(--border-radius);
 	margin:0 auto 20px auto;
-	background:var(--main-first);
+	background:var(--main-third);
 	color:var(--main-contrast);
 	font-size:16px;
+	box-shadow:var(--shadow-smooth);
+}
+.popup-wrapper .bottom input:read-only {
+	color:var(--main-fifth);
+	pointer-events:none;
 }
 .popup-wrapper .bottom button {
 	display:block;
@@ -147,13 +152,14 @@ input[type=number] {
 	height:40px;
 	font-size:16px;
 	font-weight:bold;
-	background:var(--main-first);
+	background:var(--main-third);
 	color:var(--main-contrast);
 	border-radius:var(--border-radius);
 	cursor:pointer;
+	box-shadow:var(--shadow-smooth);
 }
 #desktop .popup-wrapper .bottom button:hover {
-	background:var(--main-third);
+	background:var(--main-fourth);
 }
 .popup-wrapper button.reject {
 	display:inline-block;
@@ -166,8 +172,14 @@ input[type=number] {
 	background:var(--accent-first);
 	color:var(--accent-contrast);
 }
-#desktop .popup-wrapper .bottom button.resolve:hover {
+#desktop .popup-wrapper button.resolve:hover {
 	background:var(--accent-second);
+}
+.popup-wrapper button.resolve.warning {
+	background:rgb(230,50,50);
+}
+#desktop .popup-wrapper button.resolve.warning:hover {
+	background:rgb(150,30,30);
 }
 
 .navbar {

@@ -64,6 +64,9 @@ document.addEventListener("DOMContentLoaded", () => {
 	let divHoldingsAddCard = document.getElementById("holdings-add-card");
 	let divHoldingsMoreMenu = document.getElementById("holdings-more-menu");
 
+	let buttonMoreEdit = document.getElementById("more-edit");
+	let buttonMoreRemove = document.getElementById("more-remove");
+
 	let spanHoldingsTotalValue = document.getElementById("holdings-total-value");
 
 	let divThemeToggle = document.getElementById("theme-toggle");
@@ -112,6 +115,45 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	divPopupOverlay.addEventListener("click", () => {
 		hidePopup();
+	});
+
+	buttonMoreEdit.addEventListener("click", () => {
+		let id = capitalizeFirstLetter(divHoldingsMoreMenu.getAttribute("data-coin"));
+		let currentAmount = divHoldingsMoreMenu.getAttribute("data-amount");
+
+		let html = '<input id="popup-coin" placeholder="Coin ID... (e.g. Bitcoin)" value="' + id + '" readonly><input id="popup-amount" placeholder="Amount... (e.g. 2.5)" value="' + currentAmount + '"><button class="reject" id="popup-cancel">Cancel</button><button class="resolve" id="popup-confirm">Confirm</button>';
+
+		popup("Editing Asset", html, 300, 240);
+
+		document.getElementById("popup-cancel").addEventListener("click", () => {
+			hidePopup();
+		});
+
+		document.getElementById("popup-confirm").addEventListener("click", () => {
+			let amount = document.getElementById("popup-amount").value;
+
+			// TODO: Add API interaction.
+		});
+
+		divHoldingsMoreMenu.classList.add("hidden");
+	});
+
+	buttonMoreRemove.addEventListener("click", () => {
+		let id = divHoldingsMoreMenu.getAttribute("data-coin");
+
+		divHoldingsMoreMenu.classList.add("hidden");
+
+		let html = '<button class="reject" id="popup-cancel">Cancel</button><button class="resolve warning" id="popup-confirm">Delete</button>';
+
+		popup("Deleting Asset", html, 300, 120);
+
+		document.getElementById("popup-cancel").addEventListener("click", () => {
+			hidePopup();
+		});
+
+		document.getElementById("popup-confirm").addEventListener("click", () => {
+			// TODO: Add API interaction.
+		});
 	});
 
 	divNavbarDashboard.addEventListener("click", () => {
@@ -176,6 +218,8 @@ document.addEventListener("DOMContentLoaded", () => {
 								title:"Added Coin",
 								description:"The coin has been added to your holdings."
 							});
+
+							hidePopup();
 						}
 					}).catch(e => {
 						console.log(e);
@@ -477,6 +521,9 @@ document.addEventListener("DOMContentLoaded", () => {
 								more.innerHTML = '<svg class="more-icon" width="1792" height="1792" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path class="more-path" d="M576 736v192q0 40-28 68t-68 28h-192q-40 0-68-28t-28-68v-192q0-40 28-68t68-28h192q40 0 68 28t28 68zm512 0v192q0 40-28 68t-68 28h-192q-40 0-68-28t-28-68v-192q0-40 28-68t68-28h192q40 0 68 28t28 68zm512 0v192q0 40-28 68t-68 28h-192q-40 0-68-28t-28-68v-192q0-40 28-68t68-28h192q40 0 68 28t28 68z"/></svg>';
 
 								more.addEventListener("click", (e) => {
+									divHoldingsMoreMenu.setAttribute("data-coin", holding);
+									divHoldingsMoreMenu.setAttribute("data-amount", amount);
+
 									divHoldingsMoreMenu.classList.remove("hidden");
 
 									divHoldingsMoreMenu.style.top = e.clientY - 2 + "px";
@@ -750,6 +797,10 @@ function abbreviateNumber(num, digits) {
 		}
 	}
 	return (num / si[i].value).toFixed(digits).replace(rx, "$1") + si[i].symbol;
+}
+
+function capitalizeFirstLetter(string) {
+	return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
 function detectMobile() {

@@ -245,6 +245,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	function listMarket(page) {
 		if(divNavbarMarket.classList.contains("active")) {
+			clearInterval(updateMarketListInterval);
+
 			divPageNavigation.classList.remove("active");
 
 			setTimeout(() => {
@@ -336,6 +338,8 @@ document.addEventListener("DOMContentLoaded", () => {
 						console.log(e);
 					});
 				});
+
+				updateMarketListInterval = setInterval(listMarket, 30000);
 			}).catch(e => {
 				console.log(e);
 			});

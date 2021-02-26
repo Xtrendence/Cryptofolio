@@ -1,6 +1,9 @@
 document.addEventListener("DOMContentLoaded", () => {
 	const Notify = new XNotify("BottomRight");
 
+	let updateMarketListInterval = setInterval(listMarket, 30000);
+	let updateHoldingsListInterval = setInterval(listHoldings, 30000);
+
 	let settings = {};
 
 	let globalData = {};
@@ -91,9 +94,6 @@ document.addEventListener("DOMContentLoaded", () => {
 	getSettings();
 
 	listMarket();
-
-	let updateMarketListInterval = setInterval(listMarket, 30000);
-	let updateHoldingsListInterval = setInterval(listHoldings, 30000);
 
 	window.addEventListener("resize", () => {
 		clearStats();

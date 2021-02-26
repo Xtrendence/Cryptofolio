@@ -465,6 +465,10 @@ input[type=number] {
 	height:28px;
 	border-radius:50%;
 }
+.market-list-wrapper.backdrop .coin-wrapper img {
+	padding:2px;
+	background:rgb(255,255,255);
+}
 .market-list-wrapper .coin-wrapper .coin {
 	width:88px;
 	text-align:left;
@@ -544,6 +548,10 @@ input[type=number] {
 	height:28px;
 	border-radius:50%;
 	margin-left:10px;
+}
+.holdings-list.backdrop .coin-wrapper img {
+	padding:2px;
+	background:rgb(255,255,255);
 }
 .holdings-list-wrapper .coin-wrapper .coin {
 	width:82px;

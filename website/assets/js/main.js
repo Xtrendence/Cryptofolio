@@ -644,6 +644,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	function getSettings() {
 		settings.theme = empty(localStorage.getItem("theme")) ? "light" : localStorage.getItem("theme");
+
+		settings.coinBackdrop = empty(localStorage.getItem("coinBackdrop")) ? "disabled" : localStorage.getItem("coinBackdrop");
+
 		settings.defaultPage = empty(localStorage.getItem("defaultPage")) ? "market" : localStorage.getItem("defaultPage");
 
 		switchTheme(settings.theme);
@@ -652,10 +655,26 @@ document.addEventListener("DOMContentLoaded", () => {
 			buttonSettingsChoices[i].classList.remove("active");
 		}
 
-		for(let i = 0; i < buttonSettingsChoices.length; i++) {
-			if(buttonSettingsChoices[i].getAttribute("data-value") === settings.defaultPage) {
-				buttonSettingsChoices[i].classList.add("active");
+		let keys = [];
+
+		for(let i = 0; i < document.getElementsByClassName("settings-choices-wrapper").length; i++) {
+			keys.push(document.getElementsByClassName("settings-choices-wrapper")[i].getAttribute("data-key"));
+		}
+
+		keys.map(key => {
+			for(let i = 0; i < buttonSettingsChoices.length; i++) {
+				if(buttonSettingsChoices[i].getAttribute("data-value") === settings[key]) {
+					buttonSettingsChoices[i].classList.add("active");
+				}
 			}
+		});
+
+		if(settings.coinBackdrop === "enabled") {
+			divMarketList.classList.add("backdrop");
+			divHoldingsList.classList.add("backdrop");
+		} else {
+			divMarketList.classList.remove("backdrop");
+			divHoldingsList.classList.remove("backdrop");
 		}
 
 		// TODO: Fetch custom CSS from API.

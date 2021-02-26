@@ -443,7 +443,15 @@ document.addEventListener("DOMContentLoaded", () => {
 					divMarketList.classList.remove("loading");
 				}
 
-				coins.map(coin => {
+				let keys = Object.keys(coins);
+				keys.sort((a, b) => {
+					return coins[keys[b]].market_cap - coins[keys[a]].market_cap;
+				});
+
+				let index = 1;
+
+				keys.map(key => {
+					let coin = coins[key];
 					let price = parseFloat(coin.current_price);
 
 					if(price > 1) {
@@ -460,7 +468,15 @@ document.addEventListener("DOMContentLoaded", () => {
 						marketCap = abbreviateNumber(marketCap, 0);
 					}
 
-					let rank = coin.market_cap_rank;
+					if(empty(page)) {
+						page = 1;
+					}
+					
+					let rank = (page * 100) + index;
+
+					if(page === 1) {
+						rank = index;
+					}
 					let name = coin.name;
 					let icon = coin.image;
 					let priceChangeDay = coin.price_change_percentage_24h;
@@ -491,6 +507,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
 							divMarketList.appendChild(div);
 						}
+
+						index += 1;
 
 						divPageNavigation.classList.add("active");
 					} catch(e) {

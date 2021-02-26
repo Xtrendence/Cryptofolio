@@ -465,7 +465,7 @@ input[type=number] {
 	height:28px;
 	border-radius:50%;
 }
-.market-list-wrapper.backdrop .coin-wrapper img {
+.market-list.backdrop .coin-wrapper img {
 	padding:2px;
 	background:rgb(255,255,255);
 }

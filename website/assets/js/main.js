@@ -557,6 +557,16 @@ document.addEventListener("DOMContentLoaded", () => {
 			}, 5000);
 
 			getHoldings().then(coins => {
+				try {
+					if(Object.keys(coins).length === 0) {
+						if(divHoldingsList.getElementsByClassName("coin-wrapper loading").length > 0) {
+							divHoldingsList.getElementsByClassName("coin-wrapper loading")[0].innerHTML = '<span>No Holdings Found...</span>';
+						}
+					}
+				} catch(e) {
+					console.log(e);
+				}
+
 				parseHoldings(coins).then(holdings => {
 					if(divHoldingsList.getElementsByClassName("coin-wrapper loading").length > 0) {
 						divHoldingsList.getElementsByClassName("coin-wrapper loading")[0].remove();

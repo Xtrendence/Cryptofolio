@@ -9,7 +9,6 @@ document.addEventListener("DOMContentLoaded", () => {
 	let settings = {};
 
 	let globalData = {};
-	let holdingsData = {};
 	
 	let body = document.body;
 
@@ -75,17 +74,52 @@ document.addEventListener("DOMContentLoaded", () => {
 	let inputNewPassword = document.getElementById("input-new-password");
 	let inputRepeatPassword = document.getElementById("input-repeat-password");
 
+	let inputAccessPIN = document.getElementById("input-access-pin");
+	let inputSharingURL = document.getElementById("sharing-url");
+
 	let buttonChangePassword = document.getElementById("change-password-button");
+
+	let buttonChangePIN = document.getElementById("change-pin-button");
+	let buttonCopyURL = document.getElementById("copy-url-button");
 
 	detectMobile() ? body.id = "mobile" : body.id = "desktop";
 
 	adjustToScreen();
 
-	empty(localStorage.getItem("defaultPage")) ? switchPage("market") : switchPage(localStorage.getItem("defaultPage"));
+	let url = new URL(window.location.href);
+	if(url.searchParams.get("access") === "view") {
+		divLoadingOverlay.classList.add("active");
 
-	getSettings();
+		body.classList.add("view-mode");
+		document.head.innerHTML += '<link rel="stylesheet" href="./assets/css/view.css">';
 
-	listMarket();
+		setTimeout(() => {
+			if(divLoadingOverlay.classList.contains("active")) {
+				divLoadingOverlay.classList.remove("active");
+			}
+
+			switchPage("holdings");
+
+			let pin = url.searchParams.get("pin");
+			if(empty(pin)) {
+				if(empty(sessionToken)) {
+					Notify.error({
+						title:"Error",
+						description:"Access PIN not found in the URL."
+					});
+				}
+			} else {
+				sessionToken = pin;
+				listHoldings();
+			}
+		}, 500)
+	} else {
+		empty(localStorage.getItem("defaultPage")) ? switchPage("market") : switchPage(localStorage.getItem("defaultPage"));
+
+		getSettings();
+
+		listMarket();
+	}
 
 	window.addEventListener("resize", () => {
 		clearStats();
@@ -354,12 +388,14 @@ document.addEventListener("DOMContentLoaded", () => {
 	});
 
 	for(let i = 0; i < buttonSettingsChoices.length; i++) {
-		buttonSettingsChoices[i].addEventListener("click", () => {
-			let key = buttonSettingsChoices[i].parentElement.getAttribute("data-key");
-			let value = buttonSettingsChoices[i].getAttribute("data-value");
-			localStorage.setItem(key, value);
-			getSettings();
-		});
+		if(buttonSettingsChoices[i].parentElement.getAttribute("data-key") !== "shareHoldings") {
+			buttonSettingsChoices[i].addEventListener("click", () => {
+				let key = buttonSettingsChoices[i].parentElement.getAttribute("data-key");
+				let value = buttonSettingsChoices[i].getAttribute("data-value");
+				localStorage.setItem(key, value);
+				getSettings();
+			});
+		}
 	}
 
 	buttonChangePassword.addEventListener("click", () => {
@@ -383,6 +419,24 @@ document.addEventListener("DOMContentLoaded", () => {
 				description:"The passwords don't match."
 			});
 		}
+	});
+
+	buttonCopyURL.addEventListener("click", () => {
+		inputSharingURL.select();
+		inputSharingURL.setSelectionRange(0, 99999);
+
+		document.execCommand("copy");
+		
+		if(window.getSelection) {
+			window.getSelection().removeAllRanges();
+		} else if(document.selection) {
+			document.selection.empty();
+		}
+
+		Notify.success({
+			title:"Copied To Clipboard",
+			description:"The URL has been copied to your clipboard."
+		});
 	});
 
 	function login(password) {
@@ -872,6 +926,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
 		switchTheme(settings.theme);
 
+		inputThemeCSS.value = inputThemeCSS.value.replaceAll("	", "");
+
 		for(let i = 0; i < buttonSettingsChoices.length; i++) {
 			buttonSettingsChoices[i].classList.remove("active");
 		}
@@ -897,6 +953,8 @@ document.addEventListener("DOMContentLoaded", () => {
 			divMarketList.classList.remove("backdrop");
 			divHoldingsList.classList.remove("backdrop");
 		}
+
+		inputSharingURL.value = window.location.href.replaceAll("index.html", "") + "index.html?access=view";
 
 		// TODO: Fetch custom CSS from API.
 	}

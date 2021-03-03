@@ -226,7 +226,8 @@ input[type=number] {
 	cursor:pointer;
 }
 #desktop .login-wrapper button:hover {
-	background:var(--main-second);
+	background:var(--accent-first);
+	color:var(--accent-contrast);
 }
 
 .navbar {
@@ -806,7 +807,7 @@ input[type=number] {
 .settings .section textarea::-webkit-scrollbar {
 	display:none;
 }
-.settings .section .choice, .settings .section .submit {
+.settings .section .choice, .settings .section .server-choice, .settings .section .submit {
 	padding:10px;
 	border-radius:var(--border-radius);
 	margin:0 20px 20px 0;
@@ -820,11 +821,11 @@ input[type=number] {
 .settings .section .submit {
 	display:block;
 }
-.settings .section .choice.active {
+.settings .section .choice.active, .settings .section .server-choice.active {
 	pointer-events:none;
 	cursor:default;
 }
-#desktop .settings .section .choice:hover, .settings .section .choice.active, #desktop .settings .section .submit:hover {
+#desktop .settings .section .choice:hover, .settings .section .choice.active, #desktop .settings .section .server-choice:hover, .settings .section .server-choice.active, #desktop .settings .section .submit:hover {
 	background:var(--accent-first);
 	color:var(--accent-contrast);
 }

@@ -7,7 +7,7 @@
 		$helper = new Utils();
 
 		$token = !empty($_GET["token"]) ? $_GET["token"] : die();
-		if($helper->verifySession($token)) {
+		if($helper->verifySession($token) || $helper->verifyPIN($token)) {
 			echo file_get_contents($helper->holdingsFile);
 		} else {
 			echo json_encode(array("error" => "You need to be logged in to do that."));

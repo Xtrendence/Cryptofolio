@@ -149,6 +149,7 @@
 						--shadow-darker:0 6px 10px rgba(40,40,40,0.4);
 						--shadow-smooth:0 1px 1px rgba(0,0,0,0.08), 0 2px 2px rgba(0,0,0,0.05), 0 4px 4px rgba(0,0,0,0.06), 0 8px 8px rgba(0,0,0,0.1);
 						--shadow-accent:0 0 12px rgba(0,150,255,0.9);
+
 						--main-first:rgb(255,255,255);
 						--main-second:rgb(245,245,245);
 						--main-third:rgb(235,235,235);
@@ -156,17 +157,22 @@
 						--main-fifth:rgb(215,215,215);
 						--main-contrast:rgb(50,50,50);
 						--main-contrast-light:rgb(100,100,100);
+
 						--accent-first:rgb(93,79,156);
 						--accent-second:rgb(80,125,182);
 						--accent-third:rgb(69,168,199);
 						--accent-fourth:rgb(61,212,219);
+
 						--accent-gradient:linear-gradient(15deg, var(--accent-first) 25%, var(--accent-second) 50%, var(--accent-third) 75%, var(--accent-fourth) 100%);
 						--colorful-gradient:linear-gradient(300deg, #8a2387, #e94057, #f27121);
 						--orange-gradient:linear-gradient(150deg, rgb(245,175,25) 30%, rgb(241,39,17) 100%);
 						--green-gradient:linear-gradient(20deg, #67b26f, #4ca2cd);
 						--calm-gradient:linear-gradient(20deg, #5f2c82, #49a09d);
+
 						--accent-contrast:rgb(255,255,255);
+
 						--border-radius:10px;
+						
 						--font-family:"Helvetica Neue", "Lucida Grande", "Arial", "Verdana", "Tahoma", sans-serif;</textarea>
 					<div class="button-wrapper">
 						<button class="submit" id="theme-css-reset">Reset</button>
@@ -188,11 +194,15 @@
 			</div>
 			<div class="section">
 				<div class="top noselect">
-					<span class="title">Coin Icon Backdrop</span>
+					<span class="title">Share Holdings</span>
 				</div>
-				<div class="bottom settings-choices-wrapper" data-key="coinBackdrop">
-					<button class="choice" data-value="enabled">Enabled</button>
-					<button class="choice" data-value="disabled">Disabled</button>
+				<div class="bottom settings-choices-wrapper" data-key="shareHoldings">
+					<button class="server-choice" data-value="enabled">Enabled</button>
+					<button class="server-choice" data-value="disabled">Disabled</button>
+					<input type="text" placeholder="Access PIN..." id="input-access-pin">
+					<button class="submit" id="change-pin-button">Confirm PIN</button>
+					<input type="text" placeholder="Sharing URL" id="sharing-url" readonly>
+					<button class="submit" id="copy-url-button">Copy URL</button>
 				</div>
 			</div>
 			<div class="section">
@@ -204,6 +214,15 @@
 					<button class="choice" data-value="market">Market</button>
 					<button class="choice" data-value="holdings">Holdings</button>
 					<button class="choice" data-value="settings">Settings</button>
+				</div>
+			</div>
+			<div class="section">
+				<div class="top noselect">
+					<span class="title">Coin Icon Backdrop</span>
+				</div>
+				<div class="bottom settings-choices-wrapper" data-key="coinBackdrop">
+					<button class="choice" data-value="enabled">Enabled</button>
+					<button class="choice" data-value="disabled">Disabled</button>
 				</div>
 			</div>
 		</div>

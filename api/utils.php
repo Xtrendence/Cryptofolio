@@ -19,6 +19,15 @@
 			return false;
 		}
 
+		function verifyPIN($pin) {
+			$settings = json_decode(file_get_contents($this->settingsFile), true);
+			$valid = $settings["pin"];
+			if($settings["shareHoldings"] && $pin == $valid) {
+				return true;
+			}
+			return false;
+		}
+
 		function generateAccount() {
 			$content = file_get_contents($this->accountFile);
 			$current = json_decode($content, true);
@@ -26,6 +35,11 @@
 				$password = password_hash("admin", PASSWORD_DEFAULT);
 				$account = json_encode(array("password" => $password, "token" => $this->generateToken()));
 				file_put_contents($this->accountFile, $account);
+			}
+
+			if(empty(file_get_contents($this->settingsFile))) {
+				$settings = json_encode(array("shareHoldings" => false, "pin" => "0000", "css" => ""));
+				file_put_contents($this->settingsFile, $settings);
 			}
 		}
 

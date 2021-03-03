@@ -7,24 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	let settings = {};
 
 	let globalData = {};
-	let holdingsData = {
-		"bitcoin": {
-			"symbol":"BTC",
-			"amount":6.66,
-		},
-		"polkadot": {
-			"symbol":"DOT",
-			"amount":420,
-		},
-		"cardano": {
-			"symbol":"ADA",
-			"amount":69
-		},
-		"ethereum": {
-			"symbol":"ETH",
-			"amount":2
-		}
-	};
+	let holdingsData = {};
 	
 	let body = document.body;
 
@@ -163,7 +146,25 @@ document.addEventListener("DOMContentLoaded", () => {
 		});
 
 		document.getElementById("popup-confirm").addEventListener("click", () => {
-			// TODO: Add API interaction.
+			deleteHolding(id).then(response => {
+				clearHoldingsList();
+
+				hidePopup();
+
+				if("message" in response) {
+					Notify.success({
+						title:"Asset Deleted",
+						description:response.message
+					});
+				} else {
+					Notify.error({
+						title:"Error",
+						description:response.error
+					});
+				}
+				
+				listHoldings();
+			});
 		});
 	});
 
@@ -216,7 +217,7 @@ document.addEventListener("DOMContentLoaded", () => {
 						description:"The amount field must be a number."
 					});
 				} else {
-					let coinID = id.toLowerCase();
+					let coinID = id.toLowerCase().replaceAll(" ", "");
 					getCoin(coinID).then(coin => {
 						if(!empty(coin.error)) {
 							Notify.error({
@@ -419,6 +420,11 @@ document.addEventListener("DOMContentLoaded", () => {
 		divMarketList.innerHTML = '<div class="coin-wrapper loading"><span>Loading...</span></div>';
 	}
 
+	function clearHoldingsList() {
+		divHoldingsList.classList.add("loading");
+		divHoldingsList.innerHTML = '<div class="coin-wrapper loading"><span>Loading...</span></div>';
+	}
+
 	function clearStats() {
 		spanGlobalMarketCap.textContent = "...";
 		spanGlobalVolume.textContent = "...";
@@ -503,7 +509,7 @@ document.addEventListener("DOMContentLoaded", () => {
 							div.id = id;
 							div.classList.add("coin-wrapper");
 
-							div.innerHTML = '<span class="rank">' + rank + '</span><img draggable="false" src="' + icon + '"><span class="coin">' + symbol.toUpperCase() + '</span><span class="price">$ ' + price + '</span><span class="market-cap">$ ' + separateThousands(marketCap) + '</span><span class="day">' + priceChangeDay + '%</span>';
+							div.innerHTML = '<span class="rank">' + rank + '</span><img draggable="false" src="' + icon + '" title="' + name + '"><span class="coin" title="' + name + '">' + symbol.toUpperCase() + '</span><span class="price">$ ' + price + '</span><span class="market-cap">$ ' + separateThousands(marketCap) + '</span><span class="day">' + priceChangeDay + '%</span>';
 
 							divMarketList.appendChild(div);
 						}
@@ -552,100 +558,100 @@ document.addEventListener("DOMContentLoaded", () => {
 
 			setTimeout(() => {
 				if(divHoldingsList.classList.contains("loading")) {
-					listMarket(page);
+					listHoldings();
 				}
 			}, 5000);
 
-			getHoldings().then(coins => {
+			getHoldings().then((coins) => {
 				try {
 					if(Object.keys(coins).length === 0) {
 						if(divHoldingsList.getElementsByClassName("coin-wrapper loading").length > 0) {
 							divHoldingsList.getElementsByClassName("coin-wrapper loading")[0].innerHTML = '<span>No Holdings Found...</span>';
 						}
+					} else {
+						parseHoldings(coins).then(holdings => {
+							if(divHoldingsList.getElementsByClassName("coin-wrapper loading").length > 0) {
+								divHoldingsList.getElementsByClassName("coin-wrapper loading")[0].remove();
+								divHoldingsList.classList.remove("loading");
+							}
+
+							if(window.innerWidth > 480) {
+								spanHoldingsTotalValue.textContent = "$ " + separateThousands(globalData.totalValue.toFixed(2));
+							} else {
+								spanHoldingsTotalValue.textContent = "$ " + abbreviateNumber(globalData.totalValue, 2);
+							}
+
+							Object.keys(holdings).map(holding => {
+								let coin = holdings[holding];
+				
+								let id = "holdings-coin-" + holding;
+								let icon = coin.image;
+								let amount = coin.amount;
+								let symbol = coin.symbol;
+								let value = coin.value.toFixed(2);
+
+								if(window.innerWidth <= 600 && window.innerWidth > 440) {
+									value = abbreviateNumber(value, 2);
+								} else if(window.innerWidth <= 440) {
+									value = abbreviateNumber(value, 0);
+								}
+
+								let day = coin.change + "%";
+
+								let div;
+
+								try {
+									if(document.getElementById(id)) {
+										div = document.getElementById(id);
+										div.getElementsByClassName("amount")[0].textContent = amount;
+										div.getElementsByClassName("value")[0].textContent = "$ " + separateThousands(value);
+										div.getElementsByClassName("day")[0].textContent = day;
+									} else {
+										div = document.createElement("div");
+										div.id = id;
+										div.classList.add("coin-wrapper");
+
+										let more = document.createElement("div");
+										more.classList.add("more");
+										more.innerHTML = '<svg class="more-icon" width="1792" height="1792" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path class="more-path" d="M576 736v192q0 40-28 68t-68 28h-192q-40 0-68-28t-28-68v-192q0-40 28-68t68-28h192q40 0 68 28t28 68zm512 0v192q0 40-28 68t-68 28h-192q-40 0-68-28t-28-68v-192q0-40 28-68t68-28h192q40 0 68 28t28 68zm512 0v192q0 40-28 68t-68 28h-192q-40 0-68-28t-28-68v-192q0-40 28-68t68-28h192q40 0 68 28t28 68z"/></svg>';
+
+										more.addEventListener("click", (e) => {
+											divHoldingsMoreMenu.setAttribute("data-coin", holding);
+											divHoldingsMoreMenu.setAttribute("data-amount", amount);
+
+											divHoldingsMoreMenu.classList.remove("hidden");
+
+											divHoldingsMoreMenu.style.top = e.clientY - 2 + "px";
+											divHoldingsMoreMenu.style.left = e.clientX - 2 - 200 + "px";
+
+											if(window.innerWidth <= 1230 && window.innerWidth > 700) {
+												divHoldingsMoreMenu.style.left = e.clientX - 2 - 200 - divHoldingsMoreMenu.clientWidth + "px";
+											}
+											if(window.innerWidth <= 1120 && window.innerWidth > 700) {
+												divHoldingsMoreMenu.style.left = e.clientX - 2 - 100 - divHoldingsMoreMenu.clientWidth + "px";
+											}
+											else if(window.innerWidth <= 700) {
+												divHoldingsMoreMenu.style.left = e.clientX - 2 - divHoldingsMoreMenu.clientWidth + "px";
+											}
+										});
+
+										div.innerHTML = '<img draggable="false" src="' + icon + '"><span class="coin">' + symbol.toUpperCase() + '</span><span class="amount">' + amount + '</span><span class="value">$ ' + separateThousands(value) + '</span><span class="day">' + day + '</span>';
+
+										div.appendChild(more);
+
+										divHoldingsList.appendChild(div);
+									}
+								} catch(e) {
+									console.log(e);
+								}
+							});
+						}).catch(e => {
+							console.log(e);
+						});
 					}
 				} catch(e) {
 					console.log(e);
 				}
-
-				parseHoldings(coins).then(holdings => {
-					if(divHoldingsList.getElementsByClassName("coin-wrapper loading").length > 0) {
-						divHoldingsList.getElementsByClassName("coin-wrapper loading")[0].remove();
-						divHoldingsList.classList.remove("loading");
-					}
-
-					if(window.innerWidth > 480) {
-						spanHoldingsTotalValue.textContent = "$ " + separateThousands(globalData.totalValue.toFixed(2));
-					} else {
-						spanHoldingsTotalValue.textContent = "$ " + abbreviateNumber(globalData.totalValue, 2);
-					}
-
-					Object.keys(holdings).map(holding => {
-						let coin = holdings[holding];
-				
-						let id = "holdings-coin-" + holding;
-						let icon = coin.image;
-						let amount = coin.amount;
-						let symbol = coin.symbol;
-						let value = coin.value.toFixed(2);
-
-						if(window.innerWidth <= 600 && window.innerWidth > 440) {
-							value = abbreviateNumber(value, 2);
-						} else if(window.innerWidth <= 440) {
-							value = abbreviateNumber(value, 0);
-						}
-
-						let day = coin.change + "%";
-
-						let div;
-
-						try {
-							if(document.getElementById(id)) {
-								div = document.getElementById(id);
-								div.getElementsByClassName("amount")[0].textContent = amount;
-								div.getElementsByClassName("value")[0].textContent = "$ " + separateThousands(value);
-								div.getElementsByClassName("day")[0].textContent = day;
-							} else {
-								div = document.createElement("div");
-								div.id = id;
-								div.classList.add("coin-wrapper");
-
-								let more = document.createElement("div");
-								more.classList.add("more");
-								more.innerHTML = '<svg class="more-icon" width="1792" height="1792" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path class="more-path" d="M576 736v192q0 40-28 68t-68 28h-192q-40 0-68-28t-28-68v-192q0-40 28-68t68-28h192q40 0 68 28t28 68zm512 0v192q0 40-28 68t-68 28h-192q-40 0-68-28t-28-68v-192q0-40 28-68t68-28h192q40 0 68 28t28 68zm512 0v192q0 40-28 68t-68 28h-192q-40 0-68-28t-28-68v-192q0-40 28-68t68-28h192q40 0 68 28t28 68z"/></svg>';
-
-								more.addEventListener("click", (e) => {
-									divHoldingsMoreMenu.setAttribute("data-coin", holding);
-									divHoldingsMoreMenu.setAttribute("data-amount", amount);
-
-									divHoldingsMoreMenu.classList.remove("hidden");
-
-									divHoldingsMoreMenu.style.top = e.clientY - 2 + "px";
-									divHoldingsMoreMenu.style.left = e.clientX - 2 - 200 + "px";
-
-									if(window.innerWidth <= 1230 && window.innerWidth > 700) {
-										divHoldingsMoreMenu.style.left = e.clientX - 2 - 200 - divHoldingsMoreMenu.clientWidth + "px";
-									}
-									if(window.innerWidth <= 1120 && window.innerWidth > 700) {
-										divHoldingsMoreMenu.style.left = e.clientX - 2 - 100 - divHoldingsMoreMenu.clientWidth + "px";
-									}
-									else if(window.innerWidth <= 700) {
-										divHoldingsMoreMenu.style.left = e.clientX - 2 - divHoldingsMoreMenu.clientWidth + "px";
-									}
-								});
-
-								div.innerHTML = '<img draggable="false" src="' + icon + '"><span class="coin">' + symbol.toUpperCase() + '</span><span class="amount">' + amount + '</span><span class="value">$ ' + separateThousands(value) + '</span><span class="day">' + day + '</span>';
-
-								div.appendChild(more);
-
-								divHoldingsList.appendChild(div);
-							}
-						} catch(e) {
-							console.log(e);
-						}
-					});
-				}).catch(e => {
-					console.log(e);
-				});
 			}).catch(e => {
 				console.log(e);
 			});
@@ -743,6 +749,29 @@ document.addEventListener("DOMContentLoaded", () => {
 		});
 	}
 
+	function deleteHolding(id) {
+		return new Promise((resolve, reject) => {
+			try {
+				let xhr = new XMLHttpRequest();
+
+				xhr.addEventListener("readystatechange", () => {
+					if(xhr.readyState === XMLHttpRequest.DONE) {
+						if(validJSON(xhr.responseText)) {
+							resolve(JSON.parse(xhr.responseText));
+						} else {
+							reject("Invalid JSON.");
+						}
+					}
+				});
+
+				xhr.open("DELETE", "../api/holdings/delete.php", true);
+				xhr.send(JSON.stringify({ id:id }));
+			} catch(e) {
+				reject(e);
+			}
+		});
+	}
+
 	function getCoin(id) {
 		return new Promise((resolve, reject) => {
 			try {
@@ -789,10 +818,8 @@ document.addEventListener("DOMContentLoaded", () => {
 		});
 	}
 
-	// TODO: Modify after development, and add API interaction.
 	function getHoldings() {
 		return new Promise((resolve, reject) => {
-			resolve(holdingsData);
 			try {
 				let xhr = new XMLHttpRequest();
 
@@ -806,7 +833,7 @@ document.addEventListener("DOMContentLoaded", () => {
 					}
 				});
 
-				xhr.open("GET", "", true);
+				xhr.open("GET", "../api/holdings/read.php", true);
 				xhr.send();
 			} catch(e) {
 				reject(e);
@@ -939,6 +966,10 @@ function abbreviateNumber(num, digits) {
 
 function capitalizeFirstLetter(string) {
 	return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
+String.prototype.replaceAll = function(str1, str2, ignore) {
+	return this.replace(new RegExp(str1.replace(/([\/\,\!\\\^\$\{\}\[\]\(\)\.\*\+\?\|\<\>\-\&])/g,"\\$&"),(ignore?"gi":"g")),(typeof(str2)=="string")?str2.replace(/\$/g,"$$$$"):str2);
 }
 
 function detectMobile() {

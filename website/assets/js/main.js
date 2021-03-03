@@ -112,10 +112,10 @@ document.addEventListener("DOMContentLoaded", () => {
 	});
 
 	buttonMoreEdit.addEventListener("click", () => {
-		let id = capitalizeFirstLetter(divHoldingsMoreMenu.getAttribute("data-coin"));
+		let id = divHoldingsMoreMenu.getAttribute("data-coin");
 		let currentAmount = divHoldingsMoreMenu.getAttribute("data-amount");
 
-		let html = '<input id="popup-coin" placeholder="Coin ID... (e.g. Bitcoin)" value="' + id + '" readonly><input id="popup-amount" placeholder="Amount... (e.g. 2.5)" value="' + currentAmount + '"><button class="reject" id="popup-cancel">Cancel</button><button class="resolve" id="popup-confirm">Confirm</button>';
+		let html = '<input id="popup-coin" placeholder="Coin ID... (e.g. Bitcoin)" value="' + capitalizeFirstLetter(id) + '" readonly><input id="popup-amount" placeholder="Amount... (e.g. 2.5)" value="' + currentAmount + '"><button class="reject" id="popup-cancel">Cancel</button><button class="resolve" id="popup-confirm">Confirm</button>';
 
 		popup("Editing Asset", html, 300, 240);
 
@@ -126,7 +126,30 @@ document.addEventListener("DOMContentLoaded", () => {
 		document.getElementById("popup-confirm").addEventListener("click", () => {
 			let amount = document.getElementById("popup-amount").value;
 
-			// TODO: Add API interaction.
+			updateHolding(id, amount).then(response => {
+				clearHoldingsList();
+
+				hidePopup();
+
+				if("message" in response) {
+					Notify.success({
+						title:"Asset Updated",
+						description:response.message
+					});
+				} else {
+					Notify.error({
+						title:"Error",
+						description:response.error
+					});
+				}
+				
+				listHoldings();
+			}).catch(e => {
+				Notify.error({
+					title:"Error",
+					description:"Asset couldn't be updated."
+				});
+			});
 		});
 
 		divHoldingsMoreMenu.classList.add("hidden");
@@ -788,6 +811,29 @@ document.addEventListener("DOMContentLoaded", () => {
 
 				xhr.open("POST", "../api/holdings/create.php", true);
 				xhr.send(JSON.stringify({ id:id, symbol:symbol, amount:amount }));
+			} catch(e) {
+				reject(e);
+			}
+		});
+	}
+
+	function updateHolding(id, amount) {
+		return new Promise((resolve, reject) => {
+			try {
+				let xhr = new XMLHttpRequest();
+
+				xhr.addEventListener("readystatechange", () => {
+					if(xhr.readyState === XMLHttpRequest.DONE) {
+						if(validJSON(xhr.responseText)) {
+							resolve(JSON.parse(xhr.responseText));
+						} else {
+							reject("Invalid JSON.");
+						}
+					}
+				});
+
+				xhr.open("UPDATE", "../api/holdings/update.php", true);
+				xhr.send(JSON.stringify({ id:id, amount:amount }));
 			} catch(e) {
 				reject(e);
 			}

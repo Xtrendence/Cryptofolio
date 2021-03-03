@@ -107,6 +107,14 @@ document.addEventListener("DOMContentLoaded", () => {
 		}
 	});
 
+	document.addEventListener("keydown", (e) => {
+		if(e.key.toLocaleLowerCase() === "enter") {
+			if(divPopupWrapper.classList.contains("active") && document.getElementById("popup-confirm")) {
+				document.getElementById("popup-confirm").click();
+			}
+		}
+	});
+
 	divPopupOverlay.addEventListener("click", () => {
 		hidePopup();
 	});

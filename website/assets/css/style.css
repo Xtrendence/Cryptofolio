@@ -193,7 +193,7 @@ input[type=number] {
 }
 .login-wrapper div {
 	position:absolute;
-	width:200px;
+	width:calc(200px - 40px);
 	height:100px;
 	padding:20px;
 	top:calc(50% - 100px / 2);

@@ -44,8 +44,11 @@
 		}
 
 		function generateToken() {
-			$token = $this->getRandomHex(64);
 			$account = json_decode(file_get_contents($this->accountFile), true);
+			$token = $this->getRandomHex(64);
+			while($account["token"] == $token) {
+				$token = $this->getRandomHex(64);
+			}
 			$account["token"] = $token;
 			file_put_contents($this->accountFile, json_encode($account));
 			return $token;

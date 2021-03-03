@@ -309,7 +309,7 @@ document.addEventListener("DOMContentLoaded", () => {
 						description:"The amount field must be a number."
 					});
 				} else {
-					let coinID = id.toLowerCase().replaceAll(" ", "");
+					let coinID = id.toLowerCase().replaceAll(" ", "-");
 					getCoin(coinID).then(coin => {
 						if(!empty(coin.error)) {
 							Notify.error({
@@ -745,7 +745,7 @@ document.addEventListener("DOMContentLoaded", () => {
 					let priceChangeDay = coin.price_change_percentage_24h;
 
 					if(!empty(priceChangeDay)) {
-						priceChangeDay = priceChangeDay.toFixed(2);
+						priceChangeDay = priceChangeDay.toFixed(2).includes("-") ? priceChangeDay.toFixed(2) : "+" + priceChangeDay.toFixed(2);
 					} else {
 						priceChangeDay = "-";
 					}
@@ -832,10 +832,12 @@ document.addEventListener("DOMContentLoaded", () => {
 								divHoldingsList.classList.remove("loading");
 							}
 
-							if(window.innerWidth > 480) {
-								spanHoldingsTotalValue.textContent = "$ " + separateThousands(globalData.totalValue.toFixed(2));
-							} else {
-								spanHoldingsTotalValue.textContent = "$ " + abbreviateNumber(globalData.totalValue, 2);
+							if(globalData.totalValue > 0) {
+								if(window.innerWidth > 480) {
+									spanHoldingsTotalValue.textContent = "$ " + separateThousands(globalData.totalValue.toFixed(2));
+								} else {
+									spanHoldingsTotalValue.textContent = "$ " + abbreviateNumber(globalData.totalValue, 2);
+								}
 							}
 
 							Object.keys(holdings).map(holding => {
@@ -853,7 +855,7 @@ document.addEventListener("DOMContentLoaded", () => {
 									value = abbreviateNumber(value, 0);
 								}
 
-								let day = coin.change + "%";
+								let day = coin.change.includes("-") ? coin.change + "%" : "+" + coin.change + "%";
 
 								let div;
 

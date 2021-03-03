@@ -21,6 +21,12 @@
 		<title>Cryptofolio</title>
 	</head>
 	<body>
+		<div class="login-wrapper" id="login-wrapper">
+			<div>
+				<input id="login-password" type="password" placeholder="Password...">
+				<button id="login-button">Login</button>
+			</div>
+		</div>
 		<div class="loading-overlay active noselect" id="loading-overlay"><span>Loading...</span></div>
 		<div class="popup-overlay noselect" id="popup-overlay"></div>
 		<div class="popup-wrapper" id="popup-wrapper">
@@ -170,13 +176,14 @@
 			</div>
 			<div class="section">
 				<div class="top noselect">
-					<span class="title">Password</span>
+					<span class="title">Account</span>
 				</div>
 				<div class="bottom">
 					<input type="password" placeholder="Current Password..." id="input-current-password">
 					<input type="password" placeholder="New Password..." id="input-new-password">
 					<input type="password" placeholder="Repeat New Password..." id="input-repeat-password">
 					<button class="submit" id="change-password-button">Change Password</button>
+					<button class="submit" id="logout-button">Logout</button>
 				</div>
 			</div>
 			<div class="section">

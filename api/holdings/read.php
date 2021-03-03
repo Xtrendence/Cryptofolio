@@ -6,7 +6,12 @@
 		$utils = require_once("../utils.php");
 		$helper = new Utils();
 
-		echo file_get_contents($helper->holdingsFile);
+		$token = !empty($_GET["token"]) ? $_GET["token"] : die();
+		if($helper->verifySession($token)) {
+			echo file_get_contents($helper->holdingsFile);
+		} else {
+			echo json_encode(array("error" => "You need to be logged in to do that."));
+		}
 	} else {
 		echo json_encode(array("error" => "Wrong request method. Please use GET."));
 	}

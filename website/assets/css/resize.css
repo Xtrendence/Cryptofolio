@@ -5,8 +5,9 @@
 	}
 	.holdings-card-wrapper {
 		top:auto;
+		right:auto;
 		bottom:20px;
-		right:20px;
+		left:20px;
 		width:auto;
 		height:80px;
 	}

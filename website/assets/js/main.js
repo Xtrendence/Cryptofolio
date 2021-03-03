@@ -4,6 +4,8 @@ document.addEventListener("DOMContentLoaded", () => {
 	let updateMarketListInterval = setInterval(listMarket, 30000);
 	let updateHoldingsListInterval = setInterval(listHoldings, 30000);
 
+	let sessionToken = localStorage.getItem("token");
+
 	let settings = {};
 
 	let globalData = {};
@@ -14,6 +16,13 @@ document.addEventListener("DOMContentLoaded", () => {
 	let spanGlobalMarketCap = document.getElementById("global-market-cap");
 	let spanGlobalVolume = document.getElementById("global-volume");
 	let spanGlobalDominance = document.getElementById("global-dominance");
+
+	let divLoginWrapper = document.getElementById("login-wrapper");
+
+	let inputLoginPassword = document.getElementById("login-password");
+
+	let buttonLogin = document.getElementById("login-button");
+	let buttonLogout = document.getElementById("logout-button");
 
 	let divLoadingOverlay = document.getElementById("loading-overlay");
 	let divPopupOverlay = document.getElementById("popup-overlay");
@@ -109,10 +118,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	document.addEventListener("keydown", (e) => {
 		if(e.key.toLocaleLowerCase() === "enter") {
+			if(divLoginWrapper.classList.contains("active")) {
+				buttonLogin.click();
+			}
+
 			if(divPopupWrapper.classList.contains("active") && document.getElementById("popup-confirm")) {
 				document.getElementById("popup-confirm").click();
 			}
 		}
+	});
+
+	buttonLogin.addEventListener("click", () => {
+		let password = inputLoginPassword.value;
+		login(password);
+	});
+
+	buttonLogout.addEventListener("click", () => {
+		logout();
 	});
 
 	divPopupOverlay.addEventListener("click", () => {
@@ -363,6 +385,134 @@ document.addEventListener("DOMContentLoaded", () => {
 		}
 	});
 
+	function login(password) {
+		try {
+			let xhr = new XMLHttpRequest();
+
+			xhr.addEventListener("readystatechange", () => {
+				if(xhr.readyState === XMLHttpRequest.DONE) {
+					if(validJSON(xhr.responseText)) {
+						let response = JSON.parse(xhr.responseText);
+
+						if("error" in response) {
+							Notify.error({
+								title:"Error",
+								description:response.error
+							});
+						} else {
+							if(response.valid) {
+								sessionToken = response.token;
+
+								localStorage.setItem("token", response.token);
+
+								Notify.success({
+									title:"Logging In...",
+									description:response.message
+								});
+
+								listMarket();
+								listHoldings();
+
+								divLoginWrapper.classList.remove("active");
+
+								inputLoginPassword.value = "";
+							}
+						}
+					} else {
+						Notify.error({
+							title:"Error",
+							description:"Invalid JSON."
+						});
+					}
+				}
+			});
+
+			xhr.open("POST", "../api/account/login.php", true);
+			xhr.send(JSON.stringify({ password:password }));
+		} catch(e) {
+			reject(e);
+		}
+	}
+
+	function logout() {
+		try {
+			let xhr = new XMLHttpRequest();
+
+			xhr.addEventListener("readystatechange", () => {
+				if(xhr.readyState === XMLHttpRequest.DONE) {
+					if(validJSON(xhr.responseText)) {
+						let response = JSON.parse(xhr.responseText);
+
+						if("error" in response) {
+							Notify.error({
+								title:"Error",
+								description:response.error
+							});
+						} else {
+							sessionToken = null;
+
+							localStorage.removeItem("token");
+
+							Notify.success({
+								title:"Logging Out...",
+								description:response.message
+							});
+
+							clearMarketList();
+							clearHoldingsList();
+
+							spanHoldingsTotalValue.textContent = "...";
+
+							divLoginWrapper.classList.add("active");
+						}
+					} else {
+						Notify.error({
+							title:"Error",
+							description:"Invalid JSON."
+						});
+					}
+				}
+			});
+
+			xhr.open("GET", "../api/account/logout.php?token=" + sessionToken, true);
+			xhr.send();
+		} catch(e) {
+			reject(e);
+		}
+	}
+
+	function checkSession() {
+		if(empty(sessionToken)) {
+			if(divLoadingOverlay.classList.contains("active")) {
+				divLoadingOverlay.classList.remove("active");
+			}
+
+			if(!divLoginWrapper.classList.contains("active")) {
+				divLoginWrapper.classList.add("active");
+			}
+		} else {
+			verifySession(sessionToken).then(response => {
+				setTimeout(() => {
+					if(divLoadingOverlay.classList.contains("active")) {
+						divLoadingOverlay.classList.remove("active");
+					}
+				}, 250);
+
+				if("valid" in response) {
+					if(divLoginWrapper.classList.contains("active")) {
+						divLoginWrapper.classList.remove("active");
+					}
+				} else {
+					if(!divLoginWrapper.classList.contains("active")) {
+						divLoginWrapper.classList.add("active");
+					}
+				}
+			}).catch(e => {
+				console.log(e);
+			});
+		}
+	}
+
 	function popup(title, html, width, height) {
 		divPopupOverlay.classList.add("active");
 		divPopupWrapper.style.width = width + "px";
@@ -485,7 +635,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	}
 
 	function listMarket(page) {
-		if(divNavbarMarket.classList.contains("active")) {
+		if(!divLoginWrapper.classList.contains("active") && divNavbarMarket.classList.contains("active")) {
 			clearInterval(updateMarketListInterval);
 
 			divPageNavigation.classList.remove("active");
@@ -606,7 +756,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	}
 
 	function listHoldings() {
-		if(divNavbarHoldings.classList.contains("active")) {
+		if(!divLoginWrapper.classList.contains("active") && divNavbarHoldings.classList.contains("active")) {
 			divPageNavigation.classList.remove("active");
 
 			setTimeout(() => {
@@ -615,7 +765,7 @@ document.addEventListener("DOMContentLoaded", () => {
 				}
 			}, 5000);
 
-			getHoldings().then((coins) => {
+			getHoldings().then(coins => {
 				try {
 					if(Object.keys(coins).length === 0) {
 						if(divHoldingsList.getElementsByClassName("coin-wrapper loading").length > 0) {
@@ -712,6 +862,8 @@ document.addEventListener("DOMContentLoaded", () => {
 	}
 
 	function getSettings() {
+		checkSession();
+
 		settings.theme = empty(localStorage.getItem("theme")) ? "light" : localStorage.getItem("theme");
 
 		settings.coinBackdrop = empty(localStorage.getItem("coinBackdrop")) ? "disabled" : localStorage.getItem("coinBackdrop");
@@ -747,12 +899,6 @@ document.addEventListener("DOMContentLoaded", () => {
 		}
 
 		// TODO: Fetch custom CSS from API.
-
-		setTimeout(() => {
-			if(divLoadingOverlay.classList.contains("active")) {
-				divLoadingOverlay.classList.remove("active");
-			}
-		}, 250);
 	}
 
 	// TODO: Add API interaction.
@@ -818,7 +964,7 @@ document.addEventListener("DOMContentLoaded", () => {
 				});
 
 				xhr.open("POST", "../api/holdings/create.php", true);
-				xhr.send(JSON.stringify({ id:id, symbol:symbol, amount:amount }));
+				xhr.send(JSON.stringify({ token:sessionToken, id:id, symbol:symbol, amount:amount }));
 			} catch(e) {
 				reject(e);
 			}
@@ -841,7 +987,7 @@ document.addEventListener("DOMContentLoaded", () => {
 				});
 
 				xhr.open("UPDATE", "../api/holdings/update.php", true);
-				xhr.send(JSON.stringify({ id:id, amount:amount }));
+				xhr.send(JSON.stringify({ token:sessionToken, id:id, amount:amount }));
 			} catch(e) {
 				reject(e);
 			}
@@ -864,7 +1010,7 @@ document.addEventListener("DOMContentLoaded", () => {
 				});
 
 				xhr.open("DELETE", "../api/holdings/delete.php", true);
-				xhr.send(JSON.stringify({ id:id }));
+				xhr.send(JSON.stringify({ token:sessionToken, id:id }));
 			} catch(e) {
 				reject(e);
 			}
@@ -917,6 +1063,29 @@ document.addEventListener("DOMContentLoaded", () => {
 		});
 	}
 
+	function verifySession(token) {
+		return new Promise((resolve, reject) => {
+			try {
+				let xhr = new XMLHttpRequest();
+
+				xhr.addEventListener("readystatechange", () => {
+					if(xhr.readyState === XMLHttpRequest.DONE) {
+						if(validJSON(xhr.responseText)) {
+							resolve(JSON.parse(xhr.responseText));
+						} else {
+							reject("Invalid JSON.");
+						}
+					}
+				});
+
+				xhr.open("POST", "../api/account/login.php", true);
+				xhr.send(JSON.stringify({ token:token }));
+			} catch(e) {
+				reject(e);
+			}
+		});
+	}
+
 	function getHoldings() {
 		return new Promise((resolve, reject) => {
 			try {
@@ -932,7 +1101,7 @@ document.addEventListener("DOMContentLoaded", () => {
 					}
 				});
 
-				xhr.open("GET", "../api/holdings/read.php", true);
+				xhr.open("GET", "../api/holdings/read.php?token=" + sessionToken, true);
 				xhr.send();
 			} catch(e) {
 				reject(e);

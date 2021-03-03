@@ -182,6 +182,53 @@ input[type=number] {
 	background:rgb(150,30,30);
 }
 
+.login-wrapper.active {
+	position:absolute;
+	top:0;
+	left:0;
+	width:100%;
+	height:100%;
+	z-index:98;
+	background:var(--main-first);
+}
+.login-wrapper div {
+	position:absolute;
+	width:200px;
+	height:100px;
+	padding:20px;
+	top:calc(50% - 100px / 2);
+	left:calc(50% - 200px / 2);
+	background:var(--main-third);
+	box-shadow:var(--shadow-smooth);
+	border-radius:var(--border-radius);
+}
+.login-wrapper input {
+	display:block;
+	width:calc(100% - 20px);
+	padding:0 10px 0 10px;
+	height:40px;
+	color:var(--main-contrast);
+	font-size:16px;
+	border-radius:var(--border-radius);
+	background:var(--main-first);
+}
+.login-wrapper button {
+	display:block;
+	width:100%;
+	padding:0 10px 0 10px;
+	height:40px;
+	font-weight:bold;
+	color:var(--main-contrast);
+	font-size:16px;
+	margin-top:20px;
+	border-radius:var(--border-radius);
+	background:var(--main-first);
+	cursor:pointer;
+}
+#desktop .login-wrapper button:hover {
+	background:var(--main-second);
+}
+
 .navbar {
 	position:absolute;
 	top:0;
@@ -769,6 +816,9 @@ input[type=number] {
 	color:var(--main-contrast);
 	cursor:pointer;
 	box-shadow:var(--shadow-smooth);
+}
+.settings .section .submit {
+	display:block;
 }
 .settings .section .choice.active {
 	pointer-events:none;

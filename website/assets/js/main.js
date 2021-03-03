@@ -164,6 +164,11 @@ document.addEventListener("DOMContentLoaded", () => {
 				}
 				
 				listHoldings();
+			}).catch(e => {
+				Notify.error({
+					title:"Error",
+					description:"Asset couldn't be deleted."
+				});
 			});
 		});
 	});
@@ -225,13 +230,30 @@ document.addEventListener("DOMContentLoaded", () => {
 								description:"Coin not found."
 							});
 						} else {
-							// TODO: Add API interaction.
-							Notify.success({
-								title:"Added Coin",
-								description:"The coin has been added to your holdings."
-							});
+							createHolding(coinID, coin.symbol, amount).then(response => {
+								clearHoldingsList();
 
-							hidePopup();
+								hidePopup();
+
+								if("message" in response) {
+									Notify.success({
+										title:"Asset Created",
+										description:response.message
+									});
+								} else {
+									Notify.error({
+										title:"Error",
+										description:response.error
+									});
+								}
+				
+								listHoldings();
+							}).catch(e => {
+								Notify.error({
+									title:"Error",
+									description:"Asset couldn't be created."
+								});
+							});
 						}
 					}).catch(e => {
 						console.log(e);
@@ -743,6 +765,29 @@ document.addEventListener("DOMContentLoaded", () => {
 
 				xhr.open("GET", "https://api.coingecko.com/api/v3/global", true);
 				xhr.send();
+			} catch(e) {
+				reject(e);
+			}
+		});
+	}
+
+	function createHolding(id, symbol, amount) {
+		return new Promise((resolve, reject) => {
+			try {
+				let xhr = new XMLHttpRequest();
+
+				xhr.addEventListener("readystatechange", () => {
+					if(xhr.readyState === XMLHttpRequest.DONE) {
+						if(validJSON(xhr.responseText)) {
+							resolve(JSON.parse(xhr.responseText));
+						} else {
+							reject("Invalid JSON.");
+						}
+					}
+				});
+
+				xhr.open("POST", "../api/holdings/create.php", true);
+				xhr.send(JSON.stringify({ id:id, symbol:symbol, amount:amount }));
 			} catch(e) {
 				reject(e);
 			}

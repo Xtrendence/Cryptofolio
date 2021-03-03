@@ -1,6 +1,7 @@
 <?php
-	ini_set('display_errors', 'On');
-	error_reporting(E_ALL);
+	header("Access-Control-Allow-Origin: *");
+	header("Content-Type: application/json");
+
 	if($_SERVER["REQUEST_METHOD"] == "DELETE") {
 		$input = json_decode(file_get_contents("php://input"), true);
 

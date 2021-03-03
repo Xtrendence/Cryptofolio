@@ -528,6 +528,9 @@ input[type=number] {
 .market-list-wrapper .coin-wrapper .price {
 	width:120px;
 	text-align:left;
+	text-overflow:ellipsis;
+	white-space:nowrap;
+	overflow:hidden;
 }
 .market-list-wrapper .coin-wrapper .market-cap {
 	width:200px;

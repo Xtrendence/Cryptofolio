@@ -5,13 +5,13 @@
 	if($_SERVER["REQUEST_METHOD"] == "UPDATE") {
 		$input = json_decode(file_get_contents("php://input"), true);
 
+		$utils = require_once("../utils.php");
+		$helper = new Utils();
+
 		$token = !empty($input["token"]) ? $input["token"] : die();
 		if($helper->verifySession($token)) {
 			$id = !empty($input["id"]) ? $input["id"] : die();
 			$amount = !empty($input["amount"]) ? $input["amount"] : die();
-
-			$utils = require_once("../utils.php");
-			$helper = new Utils();
 
 			$current = json_decode(file_get_contents($helper->holdingsFile), true);
 		

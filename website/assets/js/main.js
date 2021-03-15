@@ -390,24 +390,41 @@ document.addEventListener("DOMContentLoaded", () => {
 
 		switchTheme("light");
 
-		// TODO: Add API interaction.
+		changeSetting("css", "").then((response) => {
+			if("error" in response) {
+				Notify.error({
+					title:"Error",
+					description:response.error
+				});
+			} else {
+				getLocalSettings();
+			}
+		}).catch(e => {
+			console.log(e);
+			Notify.error({
+				title:"Error",
+				description:"Couldn't remove CSS."
+			});
+		});
 	});
 
 	buttonApplyCSS.addEventListener("click", () => {
-		let css = "html.light, html.dark { " + inputThemeCSS.value + "}";
-
-		if(document.getElementById("custom-css")) {
-			document.getElementById("custom-css").textContent = css;
-		} else {
-			let style = document.createElement("style");
-			style.id = "custom-css";
-			style.textContent = css;
-			document.head.appendChild(style);
-		}
-
-		localStorage.setItem("theme", "custom");
-
-		// TODO: Add API interaction.
+		changeSetting("css", inputThemeCSS.value).then((response) => {
+			if("error" in response) {
+				Notify.error({
+					title:"Error",
+					description:response.error
+				});
+			} else {
+				getLocalSettings();
+			}
+		}).catch(e => {
+			console.log(e);
+			Notify.error({
+				title:"Error",
+				description:"Couldn't apply CSS."
+			});
+		});
 	});
 
 	for(let i = 0; i < buttonSettingsChoices.length; i++) {
@@ -1002,6 +1019,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
 			if(!empty(settings.css)) {
 				inputThemeCSS.value = settings.css;
+
+				let css = "html.light, html.dark { " + inputThemeCSS.value + "}";
+
+				if(document.getElementById("custom-css")) {
+					document.getElementById("custom-css").textContent = css;
+				} else {
+					let style = document.createElement("style");
+					style.id = "custom-css";
+					style.textContent = css;
+					document.head.appendChild(style);
+				}
+
+				localStorage.setItem("theme", "custom");
 			}
 
 			inputThemeCSS.value = inputThemeCSS.value.replaceAll("	", "");

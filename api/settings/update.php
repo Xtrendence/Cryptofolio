@@ -11,7 +11,7 @@
 		$token = !empty($input["token"]) ? $input["token"] : die();
 		if($helper->verifySession($token)) {
 			$key = !empty($input["key"]) ? $input["key"] : die();
-			$value = !empty($input["value"]) ? $input["value"] : die();
+			$value = isset($input["value"]) ? $input["value"] : die();
 
 			$current = json_decode(file_get_contents($helper->settingsFile), true);
 		

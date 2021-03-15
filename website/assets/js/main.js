@@ -3,6 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	const updateInterval = 30000;
 
+	let updateDashboardListInterval = setInterval(listDashboard, updateInterval);
 	let updateMarketListInterval = setInterval(listMarket, updateInterval);
 	let updateHoldingsListInterval = setInterval(listHoldings, updateInterval);
 
@@ -793,6 +794,16 @@ document.addEventListener("DOMContentLoaded", () => {
 		spanGlobalDominance.textContent = "...";
 	}
 
+	function listDashboard() {
+		if(!divLoginWrapper.classList.contains("active") && divNavbarMarket.classList.contains("active")) {
+			clearInterval(updateDashboardListInterval);
+
+			// Fetch market and holdings.
+
+			updateDashboardListInterval = setInterval(listDashboard, updateInterval);
+		}
+	}
+
 	function listMarket(page) {
 		if(!divLoginWrapper.classList.contains("active") && divNavbarMarket.classList.contains("active")) {
 			clearInterval(updateMarketListInterval);
@@ -884,27 +895,23 @@ document.addEventListener("DOMContentLoaded", () => {
 					}
 				});
 
-				getCoin("bitcoin").then(bitcoin => {
-					let bitcoinMarketCap = bitcoin.market_data.market_cap.usd;
+				getGlobal().then(global => {
+					globalData = global.data;
 
-					getGlobal().then(global => {
-						globalData = global.data;
+					let marketCap = (global.data.total_market_cap.usd).toFixed(0);
+					let volume = (global.data.total_volume.usd).toFixed(0);
+					let dominance = (global.data.market_cap_percentage.btc).toFixed(1);
 
-						let marketCap = (global.data.total_market_cap.usd).toFixed(0);
-						let volume = (global.data.total_volume.usd).toFixed(0);
-						let dominance = ((bitcoinMarketCap / marketCap) * 100).toFixed(1);
+					if(window.innerWidth <= 1020) {
+						marketCap = abbreviateNumber(marketCap, 3);
+						volume = abbreviateNumber(volume, 0);
+					}
 
-						if(window.innerWidth <= 1020) {
-							marketCap = abbreviateNumber(marketCap, 3);
-							volume = abbreviateNumber(volume, 0);
-						}
-
-						spanGlobalMarketCap.textContent = "$ " + separateThousands(marketCap);
-						spanGlobalVolume.textContent = "$ " + separateThousands(volume);
-						spanGlobalDominance.textContent = dominance + "%";
-					}).catch(e => {
-						console.log(e);
-					});
+					spanGlobalMarketCap.textContent = "$ " + separateThousands(marketCap);
+					spanGlobalVolume.textContent = "$ " + separateThousands(volume);
+					spanGlobalDominance.textContent = dominance + "%";
+				}).catch(e => {
+					console.log(e);
 				});
 
 				updateMarketListInterval = setInterval(listMarket, updateInterval);

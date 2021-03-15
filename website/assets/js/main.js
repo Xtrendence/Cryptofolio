@@ -1,8 +1,10 @@
 document.addEventListener("DOMContentLoaded", () => {
 	const Notify = new XNotify("BottomRight");
 
-	let updateMarketListInterval = setInterval(listMarket, 30000);
-	let updateHoldingsListInterval = setInterval(listHoldings, 30000);
+	const updateInterval = 30000;
+
+	let updateMarketListInterval = setInterval(listMarket, updateInterval);
+	let updateHoldingsListInterval = setInterval(listHoldings, updateInterval);
 
 	let sessionToken = localStorage.getItem("token");
 
@@ -374,13 +376,30 @@ document.addEventListener("DOMContentLoaded", () => {
 	});
 
 	divThemeToggle.addEventListener("click", () => {
-		if(divThemeToggle.classList.contains("active")) {
-			// Switch to dark mode.
-			switchTheme("dark");
-		} else {
-			// Switch to light mode.
-			switchTheme("light");
-		}
+		changeSetting("css", "").then((response) => {
+			if("error" in response) {
+				Notify.error({
+					title:"Error",
+					description:response.error
+				});
+			} else {
+				if(divThemeToggle.classList.contains("active")) {
+					// Switch to dark mode.
+					switchTheme("dark");
+				} else {
+					// Switch to light mode.
+					switchTheme("light");
+				}
+
+				getLocalSettings();
+			}
+		}).catch(e => {
+			console.log(e);
+			Notify.error({
+				title:"Error",
+				description:"Couldn't remove CSS."
+			});
+		});
 	});
 
 	buttonResetCSS.addEventListener("click", () => {
@@ -409,6 +428,8 @@ document.addEventListener("DOMContentLoaded", () => {
 	});
 
 	buttonApplyCSS.addEventListener("click", () => {
+		switchTheme("light");
+
 		changeSetting("css", inputThemeCSS.value).then((response) => {
 			if("error" in response) {
 				Notify.error({
@@ -886,7 +907,7 @@ document.addEventListener("DOMContentLoaded", () => {
 					});
 				});
 
-				updateMarketListInterval = setInterval(listMarket, 30000);
+				updateMarketListInterval = setInterval(listMarket, updateInterval);
 			}).catch(e => {
 				console.log(e);
 			});
@@ -895,6 +916,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	function listHoldings() {
 		if(!divLoginWrapper.classList.contains("active") && divNavbarHoldings.classList.contains("active")) {
+			clearInterval(updateHoldingsListInterval);
+
 			divPageNavigation.classList.remove("active");
 
 			setTimeout(() => {
@@ -998,6 +1021,8 @@ document.addEventListener("DOMContentLoaded", () => {
 			}).catch(e => {
 				console.log(e);
 			});
+
+			updateHoldingsListInterval = setInterval(listHoldings, updateInterval);
 		}
 	}
 

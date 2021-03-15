@@ -800,6 +800,7 @@ input[type=number] {
 	padding:10px;
 	border-radius:var(--border-radius);
 	outline:none;
+	resize:none;
 	color:var(--main-contrast);
 	background:var(--main-third);
 	box-shadow:var(--shadow-smooth);

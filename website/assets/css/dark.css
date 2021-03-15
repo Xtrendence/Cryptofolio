@@ -19,6 +19,9 @@ html.dark {
 	--orange-gradient:linear-gradient(150deg, rgb(245,175,25) 30%, rgb(241,39,17) 100%);
 	--green-gradient:linear-gradient(20deg, #67b26f, #4ca2cd);
 	--calm-gradient:linear-gradient(20deg, #5f2c82, #49a09d);
+	--blue-gradient:linear-gradient(to right, #4facfe 0%, #00bdc7 100%);
+	--purple-gradient:linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+	--greener-gradient:linear-gradient(to right, #11998e, #38ef7d);
 	--accent-contrast:rgb(255,255,255);
 	--border-radius:10px;
 	--font-family:"Helvetica Neue", "Lucida Grande", "Arial", "Verdana", "Tahoma", sans-serif;

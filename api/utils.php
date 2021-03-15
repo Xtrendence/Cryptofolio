@@ -41,6 +41,10 @@
 				$settings = json_encode(array("shareHoldings" => "disabled", "pin" => "0000", "css" => ""));
 				file_put_contents($this->settingsFile, $settings);
 			}
+
+			if(!file_exists($this->holdingsFile)) {
+				file_put_contents($this->holdingsFile, "{}");
+			}
 		}
 
 		function generateToken() {

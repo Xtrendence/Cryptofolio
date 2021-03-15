@@ -657,7 +657,7 @@ document.addEventListener("DOMContentLoaded", () => {
 					}
 				}, 250);
 
-				if("valid" in response) {
+				if("valid" in response && response.valid) {
 					if(divLoginWrapper.classList.contains("active")) {
 						divLoginWrapper.classList.remove("active");
 					}

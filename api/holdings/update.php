@@ -2,7 +2,7 @@
 	header("Access-Control-Allow-Origin: *");
 	header("Content-Type: application/json");
 
-	if($_SERVER["REQUEST_METHOD"] == "UPDATE") {
+	if($_SERVER["REQUEST_METHOD"] == "PUT") {
 		$input = json_decode(file_get_contents("php://input"), true);
 
 		$utils = require_once("../utils.php");
@@ -32,6 +32,6 @@
 			echo json_encode(array("error" => "You need to be logged in to do that."));
 		}
 	} else {
-		echo json_encode(array("error" => "Wrong request method. Please use UPDATE."));
+		echo json_encode(array("error" => "Wrong request method. Please use PUT."));
 	}
 ?>

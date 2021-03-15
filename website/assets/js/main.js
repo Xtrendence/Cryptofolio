@@ -179,7 +179,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		let id = divHoldingsMoreMenu.getAttribute("data-coin");
 		let currentAmount = divHoldingsMoreMenu.getAttribute("data-amount");
 
-		let html = '<input id="popup-coin" placeholder="Coin ID... (e.g. Bitcoin)" value="' + capitalizeFirstLetter(id) + '" readonly><input id="popup-amount" placeholder="Amount... (e.g. 2.5)" value="' + currentAmount + '"><button class="reject" id="popup-cancel">Cancel</button><button class="resolve" id="popup-confirm">Confirm</button>';
+		let html = '<input id="popup-coin" placeholder="Coin ID... (e.g. Bitcoin)" value="' + capitalizeFirstLetter(id) + '" readonly><input id="popup-amount" placeholder="Amount... (e.g. 2.5)" value="' + currentAmount + '" type="number"><button class="reject" id="popup-cancel">Cancel</button><button class="resolve" id="popup-confirm">Confirm</button>';
 
 		popup("Editing Asset", html, 300, 240);
 
@@ -285,7 +285,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	});
 
 	divHoldingsAddCard.addEventListener("click", () => {
-		let html = '<input id="popup-coin" placeholder="Coin ID... (e.g. Bitcoin)"><input id="popup-amount" placeholder="Amount... (e.g. 2.5)"><button class="reject" id="popup-cancel">Cancel</button><button class="resolve" id="popup-confirm">Confirm</button>';
+		let html = '<input id="popup-coin" placeholder="Coin ID... (e.g. Bitcoin)"><input id="popup-amount" placeholder="Amount... (e.g. 2.5)" type="number"><button class="reject" id="popup-cancel">Cancel</button><button class="resolve" id="popup-confirm">Confirm</button>';
 
 		popup("Adding Asset", html, 300, 240);
 
@@ -403,20 +403,38 @@ document.addEventListener("DOMContentLoaded", () => {
 		let newPassword = inputNewPassword.value;
 		let repeatPassword = inputRepeatPassword.value;
 
-		if(newPassword === repeatPassword) {
-			changePassword(currentPassword, newPassword).then(() => {
-				logout();
-			}).catch(e => {
-				console.log(e);
+		if(!empty(currentPassword) && !empty(newPassword) && !empty(repeatPassword)) {
+			if(newPassword === repeatPassword) {
+				changePassword(currentPassword, newPassword).then((response) => {
+					if("error" in response) {
+						Notify.error({
+							title:"Error",
+							description:response.error
+						});
+					} else {
+						Notify.success({
+							title:"Password Changed",
+							description:response.message
+						});
+						logout();
+					}
+				}).catch(e => {
+					console.log(e);
+					Notify.error({
+						title:"Error",
+						description:"Couldn't change password."
+					});
+				});
+			} else {
 				Notify.error({
 					title:"Error",
-					description:"Couldn't change password."
+					description:"The passwords don't match."
 				});
-			});
+			}
 		} else {
 			Notify.error({
 				title:"Error",
-				description:"The passwords don't match."
+				description:"All fields must be filled out."
 			});
 		}
 	});
@@ -516,6 +534,11 @@ document.addEventListener("DOMContentLoaded", () => {
 							clearHoldingsList();
 
 							spanHoldingsTotalValue.textContent = "...";
+
+							inputAccessPIN.value = "";
+							inputCurrentPassword.value = "";
+							inputNewPassword.value = "";
+							inputRepeatPassword.value = "";
 
 							divLoginWrapper.classList.add("active");
 						}
@@ -961,7 +984,6 @@ document.addEventListener("DOMContentLoaded", () => {
 		// TODO: Fetch custom CSS from API.
 	}
 
-	// TODO: Add API interaction.
 	function changePassword(currentPassword, newPassword) {
 		return new Promise((resolve, reject) => {
 			try {
@@ -977,8 +999,8 @@ document.addEventListener("DOMContentLoaded", () => {
 					}
 				});
 
-				xhr.open("GET", "", true);
-				xhr.send();
+				xhr.open("PUT", "../api/account/update.php", true);
+				xhr.send(JSON.stringify({ currentPassword:currentPassword, newPassword:newPassword }));
 			} catch(e) {
 				reject(e);
 			}
@@ -1046,7 +1068,7 @@ document.addEventListener("DOMContentLoaded", () => {
 					}
 				});
 
-				xhr.open("UPDATE", "../api/holdings/update.php", true);
+				xhr.open("PUT", "../api/holdings/update.php", true);
 				xhr.send(JSON.stringify({ token:sessionToken, id:id, amount:amount }));
 			} catch(e) {
 				reject(e);

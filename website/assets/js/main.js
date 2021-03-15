@@ -1,7 +1,9 @@
 document.addEventListener("DOMContentLoaded", () => {
+	// Begin Changeable Variables
+	const api = "../api/"; // Default: "../api/"
+	const updateInterval = 30000; // Default: 30000
+	
 	const Notify = new XNotify("BottomRight");
-
-	const updateInterval = 30000;
 
 	let updateDashboardListInterval = setInterval(listDashboard, updateInterval);
 	let updateMarketListInterval = setInterval(listMarket, updateInterval);
@@ -589,7 +591,7 @@ document.addEventListener("DOMContentLoaded", () => {
 				}
 			});
 
-			xhr.open("POST", "../api/account/login.php", true);
+			xhr.open("POST", api + "account/login.php", true);
 			xhr.send(JSON.stringify({ password:password }));
 		} catch(e) {
 			reject(e);
@@ -641,7 +643,7 @@ document.addEventListener("DOMContentLoaded", () => {
 				}
 			});
 
-			xhr.open("GET", "../api/account/logout.php?token=" + sessionToken, true);
+			xhr.open("GET", api + "account/logout.php?token=" + sessionToken, true);
 			xhr.send();
 		} catch(e) {
 			reject(e);
@@ -1272,7 +1274,7 @@ document.addEventListener("DOMContentLoaded", () => {
 					}
 				});
 
-				xhr.open("GET", "../api/settings/read.php?token=" + sessionToken, true);
+				xhr.open("GET", api + "settings/read.php?token=" + sessionToken, true);
 				xhr.send();
 			} catch(e) {
 				reject(e);
@@ -1295,7 +1297,7 @@ document.addEventListener("DOMContentLoaded", () => {
 					}
 				});
 
-				xhr.open("PUT", "../api/account/update.php", true);
+				xhr.open("PUT", api + "account/update.php", true);
 				xhr.send(JSON.stringify({ currentPassword:currentPassword, newPassword:newPassword }));
 			} catch(e) {
 				reject(e);
@@ -1318,7 +1320,7 @@ document.addEventListener("DOMContentLoaded", () => {
 					}
 				});
 
-				xhr.open("PUT", "../api/settings/update.php", true);
+				xhr.open("PUT", api + "settings/update.php", true);
 				xhr.send(JSON.stringify({ token:sessionToken, key:key, value:value }));
 			} catch(e) {
 				reject(e);
@@ -1364,7 +1366,7 @@ document.addEventListener("DOMContentLoaded", () => {
 					}
 				});
 
-				xhr.open("POST", "../api/holdings/create.php", true);
+				xhr.open("POST", api + "holdings/create.php", true);
 				xhr.send(JSON.stringify({ token:sessionToken, id:id, symbol:symbol, amount:amount }));
 			} catch(e) {
 				reject(e);
@@ -1387,7 +1389,7 @@ document.addEventListener("DOMContentLoaded", () => {
 					}
 				});
 
-				xhr.open("PUT", "../api/holdings/update.php", true);
+				xhr.open("PUT", api + "holdings/update.php", true);
 				xhr.send(JSON.stringify({ token:sessionToken, id:id, amount:amount }));
 			} catch(e) {
 				reject(e);
@@ -1410,7 +1412,7 @@ document.addEventListener("DOMContentLoaded", () => {
 					}
 				});
 
-				xhr.open("DELETE", "../api/holdings/delete.php", true);
+				xhr.open("DELETE", api + "holdings/delete.php", true);
 				xhr.send(JSON.stringify({ token:sessionToken, id:id }));
 			} catch(e) {
 				reject(e);
@@ -1479,7 +1481,7 @@ document.addEventListener("DOMContentLoaded", () => {
 					}
 				});
 
-				xhr.open("POST", "../api/account/login.php", true);
+				xhr.open("POST", api + "account/login.php", true);
 				xhr.send(JSON.stringify({ token:token }));
 			} catch(e) {
 				reject(e);
@@ -1502,7 +1504,7 @@ document.addEventListener("DOMContentLoaded", () => {
 					}
 				});
 
-				xhr.open("GET", "../api/holdings/read.php?token=" + sessionToken, true);
+				xhr.open("GET", api + "holdings/read.php?token=" + sessionToken, true);
 				xhr.send();
 			} catch(e) {
 				reject(e);

@@ -22,7 +22,7 @@
 		function verifyPIN($pin) {
 			$settings = json_decode(file_get_contents($this->settingsFile), true);
 			$valid = $settings["pin"];
-			if($settings["shareHoldings"] && $pin == $valid) {
+			if($settings["shareHoldings"] == "enabled" && $pin == $valid) {
 				return true;
 			}
 			return false;
@@ -38,7 +38,7 @@
 			}
 
 			if(empty(file_get_contents($this->settingsFile))) {
-				$settings = json_encode(array("shareHoldings" => false, "pin" => "0000", "css" => ""));
+				$settings = json_encode(array("shareHoldings" => "disabled", "pin" => "0000", "css" => ""));
 				file_put_contents($this->settingsFile, $settings);
 			}
 		}

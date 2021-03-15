@@ -44,6 +44,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	let buttonNextPage = document.getElementById("next-page");
 
 	let buttonSettingsChoices = divPageSettings.getElementsByClassName("choice");
+	let buttonSettingsServerChoices = divPageSettings.getElementsByClassName("server-choice");
 
 	let divNavbarBackground = document.getElementById("navbar-background");
 	let divNavbarDashboard = document.getElementById("navbar-dashboard");
@@ -116,7 +117,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	} else {
 		empty(localStorage.getItem("defaultPage")) ? switchPage("market") : switchPage(localStorage.getItem("defaultPage"));
 
-		getSettings();
+		getLocalSettings();
 
 		listMarket();
 	}
@@ -169,6 +170,28 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	buttonLogout.addEventListener("click", () => {
 		logout();
+	});
+
+	buttonChangePIN.addEventListener("click", () => {
+		changeSetting("pin", inputAccessPIN.value).then((response) => {
+			if("error" in response) {
+				Notify.error({
+					title:"Error",
+					description:response.error
+				});
+			} else {
+				Notify.success({
+					title:"PIN Changed",
+					description:response.message
+				});
+			}
+		}).catch(e => {
+			console.log(e);
+			Notify.error({
+				title:"Error",
+				description:"Couldn't change access PIN."
+			});
+		});
 	});
 
 	divPopupOverlay.addEventListener("click", () => {
@@ -388,14 +411,35 @@ document.addEventListener("DOMContentLoaded", () => {
 	});
 
 	for(let i = 0; i < buttonSettingsChoices.length; i++) {
-		if(buttonSettingsChoices[i].parentElement.getAttribute("data-key") !== "shareHoldings") {
-			buttonSettingsChoices[i].addEventListener("click", () => {
-				let key = buttonSettingsChoices[i].parentElement.getAttribute("data-key");
-				let value = buttonSettingsChoices[i].getAttribute("data-value");
-				localStorage.setItem(key, value);
-				getSettings();
+		buttonSettingsChoices[i].addEventListener("click", () => {
+			let key = buttonSettingsChoices[i].parentElement.getAttribute("data-key");
+			let value = buttonSettingsChoices[i].getAttribute("data-value");
+			localStorage.setItem(key, value);
+			getLocalSettings();
+		});
+	}
+
+	for(let i = 0; i < buttonSettingsServerChoices.length; i++) {
+		buttonSettingsServerChoices[i].addEventListener("click", () => {
+			let key = buttonSettingsServerChoices[i].parentElement.getAttribute("data-key");
+			let value = buttonSettingsServerChoices[i].getAttribute("data-value");
+			changeSetting(key, value).then((response) => {
+				if("error" in response) {
+					Notify.error({
+						title:"Error",
+						description:response.error
+					});
+				} else {
+					getLocalSettings();
+				}
+			}).catch(e => {
+				console.log(e);
+				Notify.error({
+					title:"Error",
+					description:"Couldn't change setting."
+				});
 			});
-		}
+		});
 	}
 
 	buttonChangePassword.addEventListener("click", () => {
@@ -659,7 +703,7 @@ document.addEventListener("DOMContentLoaded", () => {
 				divNavbarSettings.classList.add("active");
 				divPageSettings.classList.add("active");
 				divNavbarBackground.setAttribute("class", "background settings");
-				getSettings();
+				getLocalSettings();
 				break;
 		}
 	}
@@ -940,48 +984,91 @@ document.addEventListener("DOMContentLoaded", () => {
 		}
 	}
 
-	function getSettings() {
+	function getLocalSettings() {
 		checkSession();
 
-		settings.theme = empty(localStorage.getItem("theme")) ? "light" : localStorage.getItem("theme");
+		getServerSettings().then((response) => {
+			settings = response;
 
-		settings.coinBackdrop = empty(localStorage.getItem("coinBackdrop")) ? "disabled" : localStorage.getItem("coinBackdrop");
+			settings.theme = empty(localStorage.getItem("theme")) ? "light" : localStorage.getItem("theme");
 
-		settings.defaultPage = empty(localStorage.getItem("defaultPage")) ? "market" : localStorage.getItem("defaultPage");
+			settings.coinBackdrop = empty(localStorage.getItem("coinBackdrop")) ? "disabled" : localStorage.getItem("coinBackdrop");
 
-		switchTheme(settings.theme);
+			settings.defaultPage = empty(localStorage.getItem("defaultPage")) ? "market" : localStorage.getItem("defaultPage");
 
-		inputThemeCSS.value = inputThemeCSS.value.replaceAll("	", "");
+			switchTheme(settings.theme);
 
-		for(let i = 0; i < buttonSettingsChoices.length; i++) {
-			buttonSettingsChoices[i].classList.remove("active");
-		}
+			inputAccessPIN.value = settings.pin;
 
-		let keys = [];
+			if(!empty(settings.css)) {
+				inputThemeCSS.value = settings.css;
+			}
 
-		for(let i = 0; i < document.getElementsByClassName("settings-choices-wrapper").length; i++) {
-			keys.push(document.getElementsByClassName("settings-choices-wrapper")[i].getAttribute("data-key"));
-		}
+			inputThemeCSS.value = inputThemeCSS.value.replaceAll("	", "");
 
-		keys.map(key => {
 			for(let i = 0; i < buttonSettingsChoices.length; i++) {
-				if(buttonSettingsChoices[i].getAttribute("data-value") === settings[key]) {
-					buttonSettingsChoices[i].classList.add("active");
+				buttonSettingsChoices[i].classList.remove("active");
+			}
+
+			for(let i = 0; i < buttonSettingsServerChoices.length; i++) {
+				buttonSettingsServerChoices[i].classList.remove("active");
+			}
+
+			let keys = [];
+
+			for(let i = 0; i < document.getElementsByClassName("settings-choices-wrapper").length; i++) {
+				keys.push(document.getElementsByClassName("settings-choices-wrapper")[i].getAttribute("data-key"));
+			}
+
+			keys.map(key => {
+				for(let i = 0; i < buttonSettingsChoices.length; i++) {
+					if(buttonSettingsChoices[i].getAttribute("data-value") === settings[key] && buttonSettingsChoices[i].parentElement.getAttribute("data-key") === key) {
+						buttonSettingsChoices[i].classList.add("active");
+					}
 				}
+
+				for(let i = 0; i < buttonSettingsServerChoices.length; i++) {
+					if(buttonSettingsServerChoices[i].getAttribute("data-value") === settings[key] && buttonSettingsServerChoices[i].parentElement.getAttribute("data-key") === key) {
+						buttonSettingsServerChoices[i].classList.add("active");
+					}
+				}
+			});
+
+			if(settings.coinBackdrop === "enabled") {
+				divMarketList.classList.add("backdrop");
+				divHoldingsList.classList.add("backdrop");
+			} else {
+				divMarketList.classList.remove("backdrop");
+				divHoldingsList.classList.remove("backdrop");
+			}
+
+			inputSharingURL.value = window.location.href.replaceAll("index.html", "") + "index.html?access=view&pin=" + settings.pin;
+		}).catch(e => {
+			console.log(e);
+		});
+	}
+
+	function getServerSettings() {
+		return new Promise((resolve, reject) => {
+			try {
+				let xhr = new XMLHttpRequest();
+
+				xhr.addEventListener("readystatechange", () => {
+					if(xhr.readyState === XMLHttpRequest.DONE) {
+						if(validJSON(xhr.responseText)) {
+							resolve(JSON.parse(xhr.responseText));
+						} else {
+							reject("Invalid JSON.");
+						}
+					}
+				});
+
+				xhr.open("GET", "../api/settings/read.php?token=" + sessionToken, true);
+				xhr.send();
+			} catch(e) {
+				reject(e);
 			}
 		});
-
-		if(settings.coinBackdrop === "enabled") {
-			divMarketList.classList.add("backdrop");
-			divHoldingsList.classList.add("backdrop");
-		} else {
-			divMarketList.classList.remove("backdrop");
-			divHoldingsList.classList.remove("backdrop");
-		}
-
-		inputSharingURL.value = window.location.href.replaceAll("index.html", "") + "index.html?access=view";
-
-		// TODO: Fetch custom CSS from API.
 	}
 
 	function changePassword(currentPassword, newPassword) {
@@ -1001,6 +1088,29 @@ document.addEventListener("DOMContentLoaded", () => {
 
 				xhr.open("PUT", "../api/account/update.php", true);
 				xhr.send(JSON.stringify({ currentPassword:currentPassword, newPassword:newPassword }));
+			} catch(e) {
+				reject(e);
+			}
+		});
+	}
+
+	function changeSetting(key, value) {
+		return new Promise((resolve, reject) => {
+			try {
+				let xhr = new XMLHttpRequest();
+
+				xhr.addEventListener("readystatechange", () => {
+					if(xhr.readyState === XMLHttpRequest.DONE) {
+						if(validJSON(xhr.responseText)) {
+							resolve(JSON.parse(xhr.responseText));
+						} else {
+							reject("Invalid JSON.");
+						}
+					}
+				});
+
+				xhr.open("PUT", "../api/settings/update.php", true);
+				xhr.send(JSON.stringify({ token:sessionToken, key:key, value:value }));
 			} catch(e) {
 				reject(e);
 			}

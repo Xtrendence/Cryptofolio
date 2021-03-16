@@ -580,6 +580,7 @@ document.addEventListener("DOMContentLoaded", () => {
 								divLoginWrapper.classList.remove("active");
 
 								inputLoginPassword.value = "";
+								inputLoginPassword.blur();
 							}
 						}
 					} else {

@@ -1482,7 +1482,7 @@ document.addEventListener("DOMContentLoaded", () => {
 					}
 				});
 
-				xhr.open("POST", api + "account/login.php?platform=web", true);
+				xhr.open("POST", api + "account/login.php", true);
 				xhr.send(JSON.stringify({ token:token }));
 			} catch(e) {
 				reject(e);

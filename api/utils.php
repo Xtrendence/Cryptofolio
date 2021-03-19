@@ -11,7 +11,7 @@
 		}
 
 		function verifySession($token) {
-			$platform = explode($token, "$")[0];
+			$platform = explode("$", $token)[0];
 			$account = json_decode(file_get_contents($this->accountFile), true);
 			$valid = $account[$platform];
 			if($token == $valid) {

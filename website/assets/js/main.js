@@ -592,7 +592,7 @@ document.addEventListener("DOMContentLoaded", () => {
 				}
 			});
 
-			xhr.open("POST", api + "account/login.php", true);
+			xhr.open("POST", api + "account/login.php?platform=web", true);
 			xhr.send(JSON.stringify({ password:password }));
 		} catch(e) {
 			reject(e);
@@ -644,7 +644,7 @@ document.addEventListener("DOMContentLoaded", () => {
 				}
 			});
 
-			xhr.open("GET", api + "account/logout.php?token=" + sessionToken, true);
+			xhr.open("GET", api + "account/logout.php?platform=web&token=" + sessionToken, true);
 			xhr.send();
 		} catch(e) {
 			reject(e);

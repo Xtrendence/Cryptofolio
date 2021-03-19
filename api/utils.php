@@ -11,8 +11,9 @@
 		}
 
 		function verifySession($token) {
+			$platform = explode($token, "$")[0];
 			$account = json_decode(file_get_contents($this->accountFile), true);
-			$valid = $account["token"];
+			$valid = $account[$platform];
 			if($token == $valid) {
 				return true;
 			}
@@ -33,7 +34,7 @@
 			$current = json_decode($content, true);
 			if(!array_key_exists("password", $current) || empty($content)) {
 				$password = password_hash("admin", PASSWORD_DEFAULT);
-				$account = json_encode(array("password" => $password, "token" => $this->generateToken()));
+				$account = json_encode(array("password" => $password, "web" => $this->generateToken("web"), "app" => $this->generateToken("app"), "desktop" => $this->generateToken("desktop")));
 				file_put_contents($this->accountFile, $account);
 			}
 
@@ -47,13 +48,13 @@
 			}
 		}
 
-		function generateToken() {
+		function generateToken($platform) {
 			$account = json_decode(file_get_contents($this->accountFile), true);
-			$token = $this->getRandomHex(64);
-			while($account["token"] == $token) {
-				$token = $this->getRandomHex(64);
+			$token = $platform . "$" . $this->getRandomHex(64);
+			while($account[$platform] == $token) {
+				$token = $platform . "$" . $this->getRandomHex(64);
 			}
-			$account["token"] = $token;
+			$account[$platform] = $token;
 			file_put_contents($this->accountFile, json_encode($account));
 			return $token;
 		}

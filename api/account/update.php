@@ -16,7 +16,9 @@
 		
 			$current["password"] = password_hash($newPassword, PASSWORD_DEFAULT);
 
-			$helper->generateToken();
+			$helper->generateToken("web");
+			$helper->generateToken("app");
+			$helper->generateToken("desktop");
 
 			$update = file_put_contents($helper->accountFile, json_encode($current));
 

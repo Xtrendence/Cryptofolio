@@ -20,10 +20,13 @@
 				echo json_encode(array("error" => "Invalid token.", "valid" => false));
 			}
 		} else {
+			$platforms = ["web", "app", "desktop"];
+
+			$platform = !empty($_GET["platform"]) && in_array($_GET["platform"], $platforms) ? $_GET["platform"] : die();
 			$password = !empty($_POST["password"]) ? $_POST["password"] : die();
 
 			if($helper->verifyPassword($password)) {
-				$token = $helper->generateToken();
+				$token = $helper->generateToken($platform);
 				echo json_encode(array("message" => "You are now being logged in...", "token" => $token, "valid" => true));
 			} else {
 				echo json_encode(array("error" => "Invalid password.", "valid" => false));

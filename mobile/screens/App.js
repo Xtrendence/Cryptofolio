@@ -1,7 +1,7 @@
 import "react-native-gesture-handler";
 import { StatusBar } from "expo-status-bar";
-import React from "react";
-import { StyleSheet, Text, View } from "react-native";
+import React, { useEffect } from "react";
+import { StyleSheet } from "react-native";
 import BottomBar from "../components/BottomBar";
 import TopBar from "../components/TopBar";
 import { NavigationContainer } from "@react-navigation/native";
@@ -30,15 +30,19 @@ const horizontalAnimation = {
 	},
 };
 
-const navigationRef = React.createRef();
-
 function navigate(name, params) {
 	navigationRef.current?.navigate(name, params);
 }
 
 export default function App() {
+	const navigationRef = React.createRef();
+	const routeNameRef = React.createRef();
+
+	const [active, setActive] = React.useState("Dashboard");
+
 	return (
-		<NavigationContainer ref={navigationRef}>
+		<NavigationContainer ref={navigationRef} onStateChange={() => checkState()} onReady={() =>
+			(routeNameRef.current = navigationRef.current.getCurrentRoute().name)}>
 			<TopBar title="Login"></TopBar>
 			<Stack.Navigator initialRouteName="Login" screenOptions={{ headerShown:false }}>
 				<Stack.Screen name="Login" component={Login}></Stack.Screen>
@@ -47,10 +51,16 @@ export default function App() {
 				<Stack.Screen name="Holdings" component={Holdings} options={horizontalAnimation}></Stack.Screen>	
 				<Stack.Screen name="Settings" component={Settings} options={horizontalAnimation}></Stack.Screen>	
 			</Stack.Navigator>
-			<BottomBar navigation={navigationRef}></BottomBar>
+			<BottomBar navigation={navigationRef} screen={{ active:active, setActive:setActive }}></BottomBar>
 			<StatusBar style="dark"/>
 		</NavigationContainer>
 	);
+
+	function checkState() {
+		let currentRouteName = navigationRef.current.getCurrentRoute().name;
+
+		setActive(currentRouteName);
+	}
 }
 
 const styles = StyleSheet.create({

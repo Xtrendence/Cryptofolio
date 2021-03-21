@@ -5,30 +5,12 @@ import { globalColorsLight, globalColorsDark, globalStyles } from "../styles/glo
 
 let globalColors = globalColorsLight;
 
-export default function BottomBar({ navigation }) {
-	const [active, setActive] = React.useState();
+export default function BottomBar({ screen, navigation }) {
 	const [left, setLeft] = React.useState("0%");
 
 	useEffect(() => {
-		switch(active) {
-			case "dashboard":
-				animateLeft(0);
-				navigation.current.navigate("Dashboard");
-				break;
-			case "market":
-				animateLeft(25);
-				navigation.current.navigate("Market");
-				break;
-			case "holdings":
-				animateLeft(50);
-				navigation.current.navigate("Holdings");
-				break;
-			case "settings":
-				animateLeft(75);
-				navigation.current.navigate("Settings");
-				break;
-		}
-	}, [active]);
+		checkActive();
+	}, [screen.active]);
 
 	return (
 		<View style={styles.bar}>
@@ -36,28 +18,28 @@ export default function BottomBar({ navigation }) {
 				<View style={[styles.backdrop, { left:left }]}></View>
 			</View>
 			<View style={styles.foreground}>
-				<TouchableOpacity style={styles.tab} onPress={() => { setActive("dashboard") }}>
+				<TouchableOpacity style={styles.tab} onPress={() => { screen.setActive("Dashboard") }}>
 					<View style={styles.itemWrapper}>
 						<View style={styles.iconWrapper}>
 							<Icon name="th-large" size={iconSize} color={globalColors.mainContrastLight}></Icon>
 						</View>
 					</View>
 				</TouchableOpacity>
-				<TouchableOpacity style={styles.tab} onPress={() => { setActive("market") }}>
+				<TouchableOpacity style={styles.tab} onPress={() => { screen.setActive("Market") }}>
 					<View style={styles.itemWrapper}>
 						<View style={styles.iconWrapper}>
 							<Icon name="university" size={iconSize} color={globalColors.mainContrastLight}></Icon>
 						</View>
 					</View>
 				</TouchableOpacity>
-				<TouchableOpacity style={styles.tab} onPress={() => { setActive("holdings") }}>
+				<TouchableOpacity style={styles.tab} onPress={() => { screen.setActive("Holdings") }}>
 					<View style={styles.itemWrapper}>
 						<View style={styles.iconWrapper}>
 							<Icon name="wallet" size={iconSize} color={globalColors.mainContrastLight}></Icon>
 						</View>
 					</View>
 				</TouchableOpacity>
-				<TouchableOpacity style={styles.tab} onPress={() => { setActive("settings") }}>
+				<TouchableOpacity style={styles.tab} onPress={() => { screen.setActive("Settings") }}>
 					<View style={styles.itemWrapper}>
 						<View style={styles.iconWrapper}>
 							<Icon name="cog" size={iconSize} color={globalColors.mainContrastLight}></Icon>
@@ -67,6 +49,27 @@ export default function BottomBar({ navigation }) {
 			</View>
 		</View>
 	);
+
+	function checkActive() {
+		switch(screen.active) {
+			case "Dashboard":
+				animateLeft(0);
+				navigation.current.navigate("Dashboard");
+				break;
+			case "Market":
+				animateLeft(25);
+				navigation.current.navigate("Market");
+				break;
+			case "Holdings":
+				animateLeft(50);
+				navigation.current.navigate("Holdings");
+				break;
+			case "Settings":
+				animateLeft(75);
+				navigation.current.navigate("Settings");
+				break;
+		}
+	}
 
 	function animateLeft(to) {
 		let from = parseInt(left.replace("%", ""));

@@ -1,4 +1,5 @@
 import "react-native-gesture-handler";
+import FlashMessage from "react-native-flash-message";
 import { StatusBar } from "expo-status-bar";
 import React, { useEffect } from "react";
 import { StyleSheet } from "react-native";
@@ -63,6 +64,7 @@ export default function App() {
 			{ active !== "Login" && 
 				<BottomBar navigation={navigationRef} screen={{ active:active, setActive:setActive }}></BottomBar>
 			}
+			<FlashMessage position="top" hideStatusBar={true}/>
 			<StatusBar style="dark"/>
 		</NavigationContainer>
 	);

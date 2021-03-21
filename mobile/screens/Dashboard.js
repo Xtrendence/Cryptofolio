@@ -9,12 +9,14 @@ const screenWidth = Dimensions.get("screen").width;
 const screenHeight = Dimensions.get("screen").height;
 
 export default function Dashboard({ navigation }) {
-	const [marketCap, setMarketCap] = React.useState("Loading...");
-	const [marketChange, setMarketChange] = React.useState("Loading...");
-	const [holdingsValue, setHoldingsValue] = React.useState("Loading...");
+	const loadingText = "Loading...";
 
-	const [marketData, setMarketData] = React.useState([<Text style={styles.headerText}>Loading...</Text>]);
-	const [holdingsData, setHoldingsData] = React.useState([<Text style={styles.headerText}>Loading...</Text>]);
+	const [marketCap, setMarketCap] = React.useState(loadingText);
+	const [marketChange, setMarketChange] = React.useState();
+	const [holdingsValue, setHoldingsValue] = React.useState(loadingText);
+
+	const [marketData, setMarketData] = React.useState([<Text key="loading" style={styles.headerText}>Loading...</Text>]);
+	const [holdingsData, setHoldingsData] = React.useState([<Text key="loading" style={styles.headerText}>Loading...</Text>]);
 
 	useEffect(() => {
 		getMarket();
@@ -37,7 +39,7 @@ export default function Dashboard({ navigation }) {
 				}
 			</ScrollView>
 			<LinearGradient style={[styles.card, { marginBottom:20 }]} colors={globalColors.purpleGradient} useAngle={true} angle={45}>
-				<Text style={styles.cardText}>{marketCap} ({marketChange})</Text>
+				<Text style={styles.cardText}>{marketCap} {marketChange}</Text>
 			</LinearGradient>
 			<ScrollView style={styles.tableWrapper} contentContainerStyle={{ paddingLeft:20, paddingTop:10, paddingBottom:10 }}>
 				{ !empty(holdingsData) &&
@@ -53,6 +55,12 @@ export default function Dashboard({ navigation }) {
 	);
 
 	async function getMarket() {
+		setTimeout(() => {
+			if(marketData.length === 1) {
+				getMarket();
+			}
+		}, 5000);
+
 		let endpoint = "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=10&page=1&sparkline=false";
 
 		fetch(endpoint, {
@@ -113,6 +121,12 @@ export default function Dashboard({ navigation }) {
 	}
 
 	async function getGlobal() {
+		setTimeout(() => {
+			if(marketCap === loadingText || empty(marketChange)) {
+				getGlobal();
+			}
+		}, 5000);
+
 		let endpoint = "https://api.coingecko.com/api/v3/global";
 
 		fetch(endpoint, {
@@ -133,7 +147,7 @@ export default function Dashboard({ navigation }) {
 			}
 
 			setMarketCap("$" + separateThousands(marketCap));
-			setMarketChange(marketChange + "%");
+			setMarketChange("(" + marketChange + "%)");
 		}).catch(error => {
 			console.log(error);
 		});

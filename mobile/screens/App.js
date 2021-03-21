@@ -38,12 +38,15 @@ export default function App() {
 	const navigationRef = React.createRef();
 	const routeNameRef = React.createRef();
 
-	const [active, setActive] = React.useState("Dashboard");
+	const [loggedIn, setLoggedIn] = React.useState(false);
+	const [active, setActive] = React.useState("Login");
 
 	return (
 		<NavigationContainer ref={navigationRef} onStateChange={() => checkState()} onReady={() =>
 			(routeNameRef.current = navigationRef.current.getCurrentRoute().name)}>
-			<TopBar title="Login"></TopBar>
+			{ loggedIn && 
+				<TopBar title={active}></TopBar>
+			}
 			<Stack.Navigator initialRouteName="Login" screenOptions={{ headerShown:false }}>
 				<Stack.Screen name="Login" component={Login}></Stack.Screen>
 				<Stack.Screen name="Dashboard" component={Dashboard} options={horizontalAnimation}></Stack.Screen>	
@@ -51,7 +54,9 @@ export default function App() {
 				<Stack.Screen name="Holdings" component={Holdings} options={horizontalAnimation}></Stack.Screen>	
 				<Stack.Screen name="Settings" component={Settings} options={horizontalAnimation}></Stack.Screen>	
 			</Stack.Navigator>
-			<BottomBar navigation={navigationRef} screen={{ active:active, setActive:setActive }}></BottomBar>
+			{ loggedIn && 
+				<BottomBar navigation={navigationRef} screen={{ active:active, setActive:setActive }}></BottomBar>
+			}
 			<StatusBar style="dark"/>
 		</NavigationContainer>
 	);

@@ -13,6 +13,7 @@ const globalColorsLight = {
 	accentSecond:"rgb(80,125,182)",
 	accentThird:"rgb(69,168,199)",
 	accentFourth:"rgb(61,212,219)",
+	accentContrast:"rgb(255,255,255)"
 };
 
 const globalColorsDark = {
@@ -27,6 +28,7 @@ const globalColorsDark = {
 	accentSecond:"rgb(80,125,182)",
 	accentThird:"rgb(69,168,199)",
 	accentFourth:"rgb(61,212,219)",
+	accentContrast:"rgb(255,255,255)"
 };
 
 const globalStyles = {

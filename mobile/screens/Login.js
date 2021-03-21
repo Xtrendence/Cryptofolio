@@ -74,6 +74,7 @@ export default function Login({ navigation }) {
 				} else {
 					if(response.valid) {
 						let token = response.token;
+						await AsyncStorage.setItem("api", url);
 						await AsyncStorage.setItem("token", token);
 						navigation.navigate("Dashboard");
 					}

@@ -1,3 +1,4 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { useEffect } from "react";
 import { Text, StyleSheet, View, Image, Dimensions, ScrollView } from "react-native";
 import LinearGradient from "react-native-linear-gradient";
@@ -21,10 +22,12 @@ export default function Dashboard({ navigation }) {
 	useEffect(() => {
 		getMarket();
 		getGlobal();
+		getHoldings();
 		setInterval(() => {
 			if(navigation.isFocused()) {
 				getMarket();
 				getGlobal();
+				getHoldings();
 			}
 		}, 20000);
 	}, []);
@@ -152,6 +155,141 @@ export default function Dashboard({ navigation }) {
 			console.log(error);
 		});
 	}
+
+	async function getHoldings() {
+		setTimeout(() => {
+			if(holdingsData[0] === <Text key="loading" style={styles.headerText}>Loading...</Text>) {
+				getHoldings();
+			}
+		}, 5000);
+
+		let api = await AsyncStorage.getItem("api");
+		let token = await AsyncStorage.getItem("token");
+
+		let endpoint = api + "holdings/read.php?platform=app&token=" + token;
+
+		fetch(endpoint, {
+			method: "GET",
+			headers: {
+				Accept: "application/json", "Content-Type": "application/json"
+			}
+		})
+		.then((response) => {
+			return response.json();
+		})
+		.then(async (coins) => {
+			if(Object.keys(coins).length === 0) {
+				setHoldingsData([<Text key="empty" style={styles.headerText}>No Holdings Found.</Text>]);
+			} else {
+				parseHoldings(coins).then(holdings => {
+					let data = [];
+
+					data.push(
+						<View style={styles.row} key="market-header">
+							<Text style={[styles.headerText, styles.headerRank]}>#</Text>
+							<Text style={[styles.headerText, styles.headerCoin]}>Coin</Text>
+							<Text style={[styles.headerText, styles.headerAmount]}>Amount</Text>
+						</View>
+					);
+
+					let rank = 0;
+
+					Object.keys(holdings).map(holding => {
+						rank += 1;
+
+						let coin = holdings[holding];
+
+						let icon = coin.image;
+						let amount = coin.amount;
+						let symbol = coin.symbol;
+
+						data.push(
+							<View style={styles.row} key={holding}>
+								<Text style={[styles.cellText, styles.cellRank]}>{rank}</Text>
+								<Image style={styles.cellImage} source={{uri:icon}}/>
+								<Text style={[styles.cellText, styles.cellSymbol]}>{symbol}</Text>
+								<Text style={[styles.cellText, styles.cellAmount]}>{amount}</Text>
+							</View>
+						);
+					});
+
+					setHoldingsData(data);
+				}).catch(e => {
+					console.log(e);
+				});
+			}
+		}).catch(error => {
+			console.log(error);
+		});
+	}
+
+	function parseHoldings(coins) {
+		return new Promise((resolve, reject) => {
+			try {
+				let list = Object.keys(coins).join("%2C");
+
+				let endpoint = "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=" + list + "&order=market_cap_desc&per_page=250&page=1&sparkline=false";
+
+				fetch(endpoint, {
+					method: "GET",
+					headers: {
+						Accept: "application/json", "Content-Type": "application/json"
+					}
+				})
+				.then((json) => {
+					return json.json();
+				})
+				.then(async (response) => {
+					let holdingsValue = 0;
+
+					let holdings = {};
+
+					Object.keys(response).map(index => {
+						let coin = response[index];
+						let id = coin.id;
+						let price = coin.current_price;
+						let amount = coins[id].amount;
+						let value = price * amount;
+						let priceChangeDay = coin.price_change_percentage_24h;
+
+						if(!empty(priceChangeDay)) {
+							priceChangeDay = priceChangeDay.toFixed(2);
+						} else {
+							priceChangeDay = "-";
+						}
+
+						holdings[id] = {
+							symbol:coins[id].symbol.toUpperCase(),
+							amount:amount,
+							value:value,
+							price:price,
+							change:priceChangeDay,
+							image:coin.image
+						};
+
+						holdingsValue += value;
+					});
+
+					if(holdingsValue > 0) {
+						if(screenWidth > 380) {
+							setHoldingsValue("$" + separateThousands(holdingsValue.toFixed(2)));
+						} else {
+							setHoldingsValue("$" + abbreviateNumber(holdingsValue, 2));
+						}
+					}
+
+					resolve(Object.fromEntries(
+						Object.entries(holdings).sort(([,a],[,b]) => b.value - a.value)
+					));
+				}).catch(error => {
+					console.log(error);
+					reject(error);
+				});
+			} catch(error) {
+				reject(error);
+			}
+		});
+	}
 }
 
 function separateThousands(number) {
@@ -212,7 +350,8 @@ const styles = StyleSheet.create({
 		fontSize:18,
 		fontFamily:globalStyles.fontFamily,
 		fontWeight:"bold",
-		color:globalColors.mainContrastLight
+		color:globalColors.mainContrastLight,
+		marginBottom:4,
 	},
 	headerRank: {
 		width:30
@@ -222,6 +361,9 @@ const styles = StyleSheet.create({
 		marginLeft:15,
 	},
 	headerPrice: {
+
+	},
+	headerAmount: {
 
 	},
 	cellText: {
@@ -234,6 +376,9 @@ const styles = StyleSheet.create({
 		width:74
 	},
 	cellPrice: {
+
+	},
+	cellAmount: {
 
 	},
 	cellImage: {

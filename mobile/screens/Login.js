@@ -1,14 +1,19 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Text, View, StyleSheet, TextInput, TouchableOpacity } from "react-native";
 import LinearGradient from "react-native-linear-gradient";
 import { globalColorsLight, globalColorsDark, globalStyles } from "../styles/global";
 
 let globalColors = globalColorsLight;
 
-export default function Login() {
+export default function Login({ navigation }) {
 	const [url, setUrl] = React.useState();
 	const [password, setPassword] = React.useState();
 	const [secure, setSecure] = React.useState(false);
+
+	// TODO: Remove after development.
+	useEffect(() => {
+		login();
+	});
 
 	return (
 		<View style={styles.container}>
@@ -33,7 +38,7 @@ export default function Login() {
 	}
 
 	function login() {
-		
+		navigation.navigate("Dashboard");
 	}
 }
 

@@ -2,6 +2,7 @@ import "react-native-gesture-handler";
 import { StatusBar } from "expo-status-bar";
 import React, { useEffect } from "react";
 import { StyleSheet } from "react-native";
+import changeNavigationBarColor from "react-native-navigation-bar-color";
 import BottomBar from "../components/BottomBar";
 import TopBar from "../components/TopBar";
 import { NavigationContainer } from "@react-navigation/native";
@@ -11,6 +12,11 @@ import Dashboard from "../screens/Dashboard";
 import Market from "../screens/Market";
 import Holdings from "../screens/Holdings";
 import Settings from "../screens/Settings";
+import { globalColorsLight, globalColorsDark, globalStyles } from "../styles/global";
+
+let globalColors = globalColorsLight;
+
+changeNavigationBarColor(rgbToHex(globalColors.mainThird), true);
 
 const Stack = createStackNavigator();
 
@@ -44,7 +50,7 @@ export default function App() {
 	return (
 		<NavigationContainer ref={navigationRef} onStateChange={() => checkState()} onReady={() =>
 			(routeNameRef.current = navigationRef.current.getCurrentRoute().name)}>
-			{ loggedIn && 
+			{ active !== "Login" && 
 				<TopBar title={active}></TopBar>
 			}
 			<Stack.Navigator initialRouteName="Login" screenOptions={{ headerShown:false }}>
@@ -54,7 +60,7 @@ export default function App() {
 				<Stack.Screen name="Holdings" component={Holdings} options={horizontalAnimation}></Stack.Screen>	
 				<Stack.Screen name="Settings" component={Settings} options={horizontalAnimation}></Stack.Screen>	
 			</Stack.Navigator>
-			{ loggedIn && 
+			{ active !== "Login" && 
 				<BottomBar navigation={navigationRef} screen={{ active:active, setActive:setActive }}></BottomBar>
 			}
 			<StatusBar style="dark"/>
@@ -66,6 +72,15 @@ export default function App() {
 
 		setActive(currentRouteName);
 	}
+}
+
+function rgbToHex(rgb) {
+	let numbers = rgb.split("(")[1].split(")")[0].split(",");
+	let hexArray = numbers.map((number) => {
+		number = parseInt(number).toString(16);
+		return (number.length === 1) ? "0" + number : number;
+	});
+	return "#" + hexArray.join("");
 }
 
 const styles = StyleSheet.create({

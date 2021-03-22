@@ -2,7 +2,6 @@ import "react-native-gesture-handler";
 import FlashMessage from "react-native-flash-message";
 import { StatusBar } from "expo-status-bar";
 import React, { useEffect } from "react";
-import { StyleSheet } from "react-native";
 import changeNavigationBarColor from "react-native-navigation-bar-color";
 import BottomBar from "../components/BottomBar";
 import TopBar from "../components/TopBar";
@@ -13,11 +12,10 @@ import Dashboard from "../screens/Dashboard";
 import Market from "../screens/Market";
 import Holdings from "../screens/Holdings";
 import Settings from "../screens/Settings";
-import { globalColorsLight, globalColorsDark, globalStyles } from "../styles/global";
+import { globalColorsLight } from "../styles/global";
+import { rgbToHex } from "../utils/utils";
 
-let globalColors = globalColorsLight;
-
-changeNavigationBarColor(rgbToHex(globalColors.mainThird), true);
+changeNavigationBarColor(rgbToHex(globalColorsLight.mainThird), true);
 
 const Stack = createStackNavigator();
 
@@ -45,7 +43,6 @@ export default function App() {
 	const navigationRef = React.createRef();
 	const routeNameRef = React.createRef();
 
-	const [loggedIn, setLoggedIn] = React.useState(false);
 	const [active, setActive] = React.useState("Login");
 
 	return (
@@ -75,21 +72,3 @@ export default function App() {
 		setActive(currentRouteName);
 	}
 }
-
-function rgbToHex(rgb) {
-	let numbers = rgb.split("(")[1].split(")")[0].split(",");
-	let hexArray = numbers.map((number) => {
-		number = parseInt(number).toString(16);
-		return (number.length === 1) ? "0" + number : number;
-	});
-	return "#" + hexArray.join("");
-}
-
-const styles = StyleSheet.create({
-	container: {
-		flex:1,
-		backgroundColor:"rgb(240,240,240)",
-		alignItems:"center",
-		justifyContent:"center",
-	},
-});

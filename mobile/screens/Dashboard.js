@@ -3,6 +3,7 @@ import React, { useEffect } from "react";
 import { Text, StyleSheet, View, Image, Dimensions, ScrollView } from "react-native";
 import LinearGradient from "react-native-linear-gradient";
 import { globalColorsLight, globalColorsDark, globalStyles } from "../styles/global";
+import { empty, separateThousands, abbreviateNumber } from "../utils/utils";
 
 let globalColors = globalColorsLight;
 
@@ -33,8 +34,8 @@ export default function Dashboard({ navigation }) {
 	}, []);
 
 	return (
-		<ScrollView style={styles.page} contentContainerStyle={{ padding:20 }}>
-			<ScrollView style={styles.tableWrapper} contentContainerStyle={{ paddingLeft:20, paddingTop:10, paddingBottom:10 }}>
+		<ScrollView style={styles.page} contentContainerStyle={{ padding:20 }} nestedScrollEnabled={true}>
+			<ScrollView style={styles.tableWrapper} contentContainerStyle={{ paddingLeft:20, paddingTop:10, paddingBottom:10 }} nestedScrollEnabled={true}>
 				{ !empty(marketData) &&
 					marketData.map(row => {
 						return row;
@@ -44,7 +45,7 @@ export default function Dashboard({ navigation }) {
 			<LinearGradient style={[styles.card, { marginBottom:20 }]} colors={globalColors.purpleGradient} useAngle={true} angle={45}>
 				<Text style={styles.cardText}>{marketCap} {marketChange}</Text>
 			</LinearGradient>
-			<ScrollView style={styles.tableWrapper} contentContainerStyle={{ paddingLeft:20, paddingTop:10, paddingBottom:10 }}>
+			<ScrollView style={styles.tableWrapper} contentContainerStyle={{ paddingLeft:20, paddingTop:10, paddingBottom:10 }} nestedScrollEnabled={true}>
 				{ !empty(holdingsData) &&
 					holdingsData.map(row => {
 						return row;
@@ -59,7 +60,7 @@ export default function Dashboard({ navigation }) {
 
 	async function getMarket() {
 		setTimeout(() => {
-			if(marketData.length === 1) {
+			if(marketData.length === 1 && navigation.isFocused()) {
 				getMarket();
 			}
 		}, 5000);
@@ -117,7 +118,9 @@ export default function Dashboard({ navigation }) {
 				);
 			});
 
-			setMarketData(data);
+			if(navigation.isFocused()) {
+				setMarketData(data);
+			}
 		}).catch(error => {
 			console.log(error);
 		});
@@ -125,7 +128,7 @@ export default function Dashboard({ navigation }) {
 
 	async function getGlobal() {
 		setTimeout(() => {
-			if(marketCap === loadingText || empty(marketChange)) {
+			if((marketCap === loadingText || empty(marketChange)) && navigation.isFocused()) {
 				getGlobal();
 			}
 		}, 5000);
@@ -148,9 +151,11 @@ export default function Dashboard({ navigation }) {
 			if(screenWidth < 380) {
 				marketCap = abbreviateNumber(marketCap, 3);
 			}
-
-			setMarketCap("$" + separateThousands(marketCap));
-			setMarketChange("(" + marketChange + "%)");
+			
+			if(navigation.isFocused()) {
+				setMarketCap("$" + separateThousands(marketCap));
+				setMarketChange("(" + marketChange + "%)");
+			}
 		}).catch(error => {
 			console.log(error);
 		});
@@ -158,7 +163,7 @@ export default function Dashboard({ navigation }) {
 
 	async function getHoldings() {
 		setTimeout(() => {
-			if(holdingsData[0] === <Text key="loading" style={styles.headerText}>Loading...</Text>) {
+			if(holdingsData[0] === <Text key="loading" style={styles.headerText}>Loading...</Text> && navigation.isFocused()) {
 				getHoldings();
 			}
 		}, 5000);
@@ -179,7 +184,9 @@ export default function Dashboard({ navigation }) {
 		})
 		.then(async (coins) => {
 			if(Object.keys(coins).length === 0) {
-				setHoldingsData([<Text key="empty" style={styles.headerText}>No Holdings Found.</Text>]);
+				if(navigation.isFocused()) {
+					setHoldingsData([<Text key="empty" style={styles.headerText}>No Holdings Found.</Text>]);
+				}
 			} else {
 				parseHoldings(coins).then(holdings => {
 					let data = [];
@@ -213,7 +220,9 @@ export default function Dashboard({ navigation }) {
 						);
 					});
 
-					setHoldingsData(data);
+					if(navigation.isFocused()) {
+						setHoldingsData(data);
+					}
 				}).catch(e => {
 					console.log(e);
 				});
@@ -270,7 +279,7 @@ export default function Dashboard({ navigation }) {
 						holdingsValue += value;
 					});
 
-					if(holdingsValue > 0) {
+					if(holdingsValue > 0 && navigation.isFocused()) {
 						if(screenWidth > 380) {
 							setHoldingsValue("$" + separateThousands(holdingsValue.toFixed(2)));
 						} else {
@@ -290,40 +299,6 @@ export default function Dashboard({ navigation }) {
 			}
 		});
 	}
-}
-
-function separateThousands(number) {
-	return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-}
-
-function abbreviateNumber(num, digits) {
-	let si = [
-		{ value: 1, symbol: "" },
-		{ value: 1E3, symbol: "k" },
-		{ value: 1E6, symbol: "M" },
-		{ value: 1E9, symbol: "B" },
-		{ value: 1E12, symbol: "T" },
-		{ value: 1E15, symbol: "P" },
-		{ value: 1E18, symbol: "E" }
-	];
-	let rx = /\.0+$|(\.[0-9]*[1-9])0+$/;
-	let i;
-	for(i = si.length - 1; i > 0; i--) {
-		if(num >= si[i].value) {
-			break;
-		}
-	}
-	return (num / si[i].value).toFixed(digits).replace(rx, "$1") + si[i].symbol;
-}
-
-function empty(value) {
-	if (typeof value === "object" && value !== null && Object.keys(value).length === 0) {
-		return true;
-	}
-	if (value === null || typeof value === "undefined" || value.toString().trim() === "") {
-		return true;
-	}
-	return false;
 }
 
 const styles = StyleSheet.create({

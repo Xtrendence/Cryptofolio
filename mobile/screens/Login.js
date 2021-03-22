@@ -4,6 +4,7 @@ import LinearGradient from "react-native-linear-gradient";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { showMessage, hideMessage } from "react-native-flash-message";
 import { globalColorsLight, globalColorsDark, globalStyles } from "../styles/global";
+import { empty } from "../utils/utils";
 
 let globalColors = globalColorsLight;
 
@@ -96,7 +97,8 @@ const styles = StyleSheet.create({
 	container: {
 		flex:1,
 		alignItems:"center",
-		justifyContent:"center"
+		justifyContent:"center",
+		backgroundColor:globalColors.mainSecond
 	},
 	input: {
 		backgroundColor:globalColors.mainFirst,
@@ -128,13 +130,3 @@ const styles = StyleSheet.create({
 		color:globalColors.accentContrast
 	}
 });
-
-function empty(value) {
-	if (typeof value === "object" && value !== null && Object.keys(value).length === 0) {
-		return true;
-	}
-	if (value === null || typeof value === "undefined" || value.toString().trim() === "") {
-		return true;
-	}
-	return false;
-}

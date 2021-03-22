@@ -5,31 +5,49 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { showMessage, hideMessage } from "react-native-flash-message";
 import { globalColorsLight, globalColorsDark, globalStyles } from "../styles/global";
 import { empty } from "../utils/utils";
+import { login } from "../utils/requests";
 
 let globalColors = globalColorsLight;
 
 export default function Login({ navigation }) {
 	// TODO: Change after development.
-	const [url, setUrl] = React.useState("http://192.168.1.67/api/");
+	// const [url, setUrl] = React.useState("http://192.168.1.67/api/");
+	const [url, setUrl] = React.useState("http://192.168.1.58:8080/");
 	const [password, setPassword] = React.useState("admin");
 	const [secure, setSecure] = React.useState(false);
 
 	// TODO: Remove after development.
 	useEffect(() => {
-		login();
+		attemptLogin();
 	}, []);
 
 	return (
 		<View style={styles.container}>
 			<TextInput placeholder="API URL..." onChangeText={(value) => setUrl(value)} value={url} style={styles.input}></TextInput>
 			<TextInput placeholder="Password..." secureTextEntry={secure} value={password} onChangeText={(value) => textChanged(value)} style={styles.input}></TextInput>
-			<TouchableOpacity onPress={() => login()}>
+			<TouchableOpacity onPress={() => attemptLogin()}>
 				<LinearGradient colors={[globalColors.accentFirst, globalColors.accentSecond]} style={styles.button} useAngle={true} angle={45}>
 					<Text style={styles.text}>Login</Text>
 				</LinearGradient>
 			</TouchableOpacity>
 		</View>
 	);
+
+	async function attemptLogin() {
+		login(url, password).then(async response => {
+			let token = response.token;
+			await AsyncStorage.setItem("api", response.api);
+			await AsyncStorage.setItem("token", token);
+			navigation.navigate("Dashboard");
+		}).catch(error => {
+			showMessage({
+				backgroundColor: globalColors.accentFirst,
+				message: "Error",
+				description: error,
+				duration: 4000
+			});
+		});
+	}
 
 	function textChanged(password) {
 		setPassword(password);
@@ -38,57 +56,6 @@ export default function Login({ navigation }) {
 			setSecure(true);
 		} else {
 			setSecure(false);
-		}
-	}
-
-	function login() {
-		if(empty(url) || empty(password)) {
-			showMessage({
-				backgroundColor: globalColors.accentFirst,
-				message: "Error",
-				description: "Both fields must be filled out.",
-				duration: 4000
-			});
-		} else {
-			let endpoint = url + "account/login.php?platform=app";
-
-			let body = { password:password };
-
-			fetch(endpoint, {
-				body: JSON.stringify(body),
-				method: "POST",
-				headers: {
-					Accept: "application/json", "Content-Type": "application/json"
-				}
-			})
-			.then((json) => {
-				return json.json();
-			})
-			.then(async (response) => {
-				if("error" in response) {
-					showMessage({
-						backgroundColor: globalColors.accentFirst,
-						message: "Error",
-						description: response.error,
-						duration: 4000
-					});
-				} else {
-					if(response.valid) {
-						let token = response.token;
-						await AsyncStorage.setItem("api", url);
-						await AsyncStorage.setItem("token", token);
-						navigation.navigate("Dashboard");
-					}
-				}
-			}).catch(error => {
-				showMessage({
-					backgroundColor: globalColors.accentFirst,
-					message: "Error",
-					description: "Login failed. Make sure the API URL is valid.",
-					duration: 4000
-				});
-				console.log(error);
-			});
 		}
 	}
 }

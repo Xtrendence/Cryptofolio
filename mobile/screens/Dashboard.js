@@ -35,6 +35,9 @@ export default function Dashboard({ navigation }) {
 
 	return (
 		<ScrollView style={styles.page} contentContainerStyle={{ padding:20 }} nestedScrollEnabled={true}>
+			<LinearGradient style={[styles.card, { marginBottom:20, marginTop:0 }]} colors={globalColors.purpleGradient} useAngle={true} angle={45}>
+				<Text style={styles.cardText}>{marketCap} {marketChange}</Text>
+			</LinearGradient>
 			<ScrollView style={styles.tableWrapper} contentContainerStyle={{ paddingLeft:20, paddingTop:10, paddingBottom:10 }} nestedScrollEnabled={true}>
 				{ !empty(marketData) &&
 					marketData.map(row => {
@@ -42,8 +45,8 @@ export default function Dashboard({ navigation }) {
 					})
 				}
 			</ScrollView>
-			<LinearGradient style={[styles.card, { marginBottom:20 }]} colors={globalColors.purpleGradient} useAngle={true} angle={45}>
-				<Text style={styles.cardText}>{marketCap} {marketChange}</Text>
+			<LinearGradient style={[styles.card, { marginBottom:20 }]} colors={globalColors.blueGradient} useAngle={true} angle={45}>
+				<Text style={styles.cardText}>{holdingsValue}</Text>
 			</LinearGradient>
 			<ScrollView style={styles.tableWrapper} contentContainerStyle={{ paddingLeft:20, paddingTop:10, paddingBottom:10 }} nestedScrollEnabled={true}>
 				{ !empty(holdingsData) &&
@@ -52,9 +55,6 @@ export default function Dashboard({ navigation }) {
 					})
 				}
 			</ScrollView>
-			<LinearGradient style={styles.card} colors={globalColors.blueGradient} useAngle={true} angle={45}>
-				<Text style={styles.cardText}>{holdingsValue}</Text>
-			</LinearGradient>
 		</ScrollView>
 	);
 

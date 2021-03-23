@@ -9,7 +9,7 @@ import { login } from "../utils/requests";
 
 let globalColors = globalColorsLight;
 
-export default function Login({ navigation }) {
+export default function Login({ navigation, route }) {
 	// TODO: Change after development.
 	// const [url, setUrl] = React.useState("http://192.168.1.67/api/");
 	const [url, setUrl] = React.useState("http://192.168.1.58:8080/");
@@ -18,7 +18,7 @@ export default function Login({ navigation }) {
 
 	// TODO: Remove after development.
 	useEffect(() => {
-		attemptLogin();
+		// attemptLogin();
 	}, []);
 
 	return (

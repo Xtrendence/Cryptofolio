@@ -14,6 +14,7 @@ import Holdings from "../screens/Holdings";
 import Settings from "../screens/Settings";
 import { globalColorsLight } from "../styles/global";
 import { rgbToHex } from "../utils/utils";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 changeNavigationBarColor(rgbToHex(globalColorsLight.mainThird), true);
 
@@ -53,10 +54,10 @@ export default function App() {
 			}
 			<Stack.Navigator initialRouteName="Login" screenOptions={{ headerShown:false }}>
 				<Stack.Screen name="Login" component={Login}></Stack.Screen>
-				<Stack.Screen name="Dashboard" component={Dashboard} options={horizontalAnimation}></Stack.Screen>	
+				<Stack.Screen name="Dashboard" component={Dashboard} options={horizontalAnimation}></Stack.Screen>
 				<Stack.Screen name="Market" component={Market} options={horizontalAnimation}></Stack.Screen>	
-				<Stack.Screen name="Holdings" component={Holdings} options={horizontalAnimation}></Stack.Screen>	
-				<Stack.Screen name="Settings" component={Settings} options={horizontalAnimation}></Stack.Screen>	
+				<Stack.Screen name="Holdings" component={Holdings} options={horizontalAnimation}></Stack.Screen>
+				<Stack.Screen name="Settings" component={Settings} options={horizontalAnimation}></Stack.Screen>
 			</Stack.Navigator>
 			{ active !== "Login" && 
 				<BottomBar navigation={navigationRef} screen={{ active:active, setActive:setActive }}></BottomBar>

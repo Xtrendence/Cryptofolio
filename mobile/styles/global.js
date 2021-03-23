@@ -58,4 +58,11 @@ const globalStyles = {
 	fontFamily:"Roboto",
 };
 
-export { globalColorsLight, globalColorsDark, globalStyles };
+function getColors(theme) {
+	if(theme === "dark") {
+		return globalColorsDark;
+	}
+	return globalColorsLight;
+}
+
+export { globalColorsLight, globalColorsDark, globalStyles, getColors };

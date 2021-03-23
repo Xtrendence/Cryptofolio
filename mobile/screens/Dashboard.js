@@ -2,16 +2,15 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { useEffect } from "react";
 import { Text, StyleSheet, View, Image, Dimensions, ScrollView } from "react-native";
 import LinearGradient from "react-native-linear-gradient";
+import { globalColorsLight, globalColorsDark, globalStyles } from "../styles/global";
 import { empty, separateThousands, abbreviateNumber } from "../utils/utils";
-import getStyle from "../styles/dashboard";
+
+let globalColors = globalColorsLight;
 
 const screenWidth = Dimensions.get("screen").width;
 const screenHeight = Dimensions.get("screen").height;
 
-export default function Dashboard({ navigation, route }) {
-	const [colors, setColors] = React.useState(route.params.colors);
-	const [styles, setStyles] = React.useState(getStyle(colors, screenWidth, screenHeight));
-
+export default function Dashboard({ navigation }) {
 	const loadingText = "Loading...";
 
 	const [marketCap, setMarketCap] = React.useState(loadingText);
@@ -34,13 +33,9 @@ export default function Dashboard({ navigation, route }) {
 		}, 20000);
 	}, []);
 
-	useEffect(() => {
-		setStyles(getStyle(colors, screenWidth, screenHeight));
-	}, [colors]);
-
 	return (
 		<ScrollView style={styles.page} contentContainerStyle={{ padding:20 }} nestedScrollEnabled={true}>
-			<LinearGradient style={[styles.card, { marginBottom:20, marginTop:0 }]} colors={colors.purpleGradient} useAngle={true} angle={45}>
+			<LinearGradient style={[styles.card, { marginBottom:20, marginTop:0 }]} colors={globalColors.purpleGradient} useAngle={true} angle={45}>
 				<Text style={styles.cardText}>{marketCap} {marketChange}</Text>
 			</LinearGradient>
 			<ScrollView style={styles.tableWrapper} contentContainerStyle={{ paddingLeft:20, paddingTop:10, paddingBottom:10 }} nestedScrollEnabled={true}>
@@ -50,7 +45,7 @@ export default function Dashboard({ navigation, route }) {
 					})
 				}
 			</ScrollView>
-			<LinearGradient style={[styles.card, { marginBottom:20 }]} colors={colors.blueGradient} useAngle={true} angle={45}>
+			<LinearGradient style={[styles.card, { marginBottom:20 }]} colors={globalColors.blueGradient} useAngle={true} angle={45}>
 				<Text style={styles.cardText}>{holdingsValue}</Text>
 			</LinearGradient>
 			<ScrollView style={styles.tableWrapper} contentContainerStyle={{ paddingLeft:20, paddingTop:10, paddingBottom:10 }} nestedScrollEnabled={true}>
@@ -305,3 +300,86 @@ export default function Dashboard({ navigation, route }) {
 		});
 	}
 }
+
+const styles = StyleSheet.create({
+	page: {
+		maxHeight:screenHeight - 180,
+		backgroundColor:globalColors.mainSecond
+	},
+	tableWrapper: {
+		backgroundColor:globalColors.mainFirst,
+		shadowColor:globalStyles.shadowColor,
+		shadowOffset:globalStyles.shadowOffset,
+		shadowOpacity:globalStyles.shadowOpacity,
+		shadowRadius:globalStyles.shadowRadius,
+		elevation:globalStyles.shadowElevation,
+		borderRadius:globalStyles.borderRadius,
+		maxHeight:240
+	},
+	row: {
+		flexDirection:"row",
+		alignItems:"center",
+		padding:4
+	},
+	headerText: {
+		fontSize:18,
+		fontFamily:globalStyles.fontFamily,
+		fontWeight:"bold",
+		color:globalColors.mainContrastLight,
+		marginBottom:4,
+	},
+	headerRank: {
+		width:30
+	},
+	headerCoin: {
+		width:100,
+		marginLeft:15,
+	},
+	headerPrice: {
+
+	},
+	headerAmount: {
+
+	},
+	cellText: {
+		color:globalColors.mainContrastLight
+	},
+	cellRank: {
+		width:30
+	},
+	cellSymbol: {
+		width:74
+	},
+	cellPrice: {
+
+	},
+	cellAmount: {
+
+	},
+	cellImage: {
+		width:30,
+		height:30,
+		marginRight:10,
+	},
+	card: {
+		shadowColor:globalStyles.shadowColor,
+		shadowOffset:globalStyles.shadowOffset,
+		shadowOpacity:globalStyles.shadowOpacity,
+		shadowRadius:globalStyles.shadowRadius,
+		elevation:globalStyles.shadowElevation,
+		borderRadius:globalStyles.borderRadius,
+		justifyContent:"center",
+		alignItems:"center",
+		height:60,
+		marginTop:20,
+	},
+	cardText: {
+		lineHeight:56,
+		paddingBottom:4,
+		fontSize:20,
+		fontFamily:globalStyles.fontFamily,
+		color:globalColors.accentContrast,
+		fontWeight:"bold",
+		textAlign:"center"
+	}
+});

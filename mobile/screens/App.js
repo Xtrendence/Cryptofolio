@@ -12,9 +12,11 @@ import Dashboard from "../screens/Dashboard";
 import Market from "../screens/Market";
 import Holdings from "../screens/Holdings";
 import Settings from "../screens/Settings";
-import { globalColorsLight, getColors } from "../styles/global";
+import { globalColorsLight } from "../styles/global";
 import { rgbToHex } from "../utils/utils";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+
+changeNavigationBarColor(rgbToHex(globalColorsLight.mainThird), true);
 
 const Stack = createStackNavigator();
 
@@ -43,47 +45,25 @@ export default function App() {
 	const routeNameRef = React.createRef();
 
 	const [active, setActive] = React.useState("Login");
-	const [theme, setTheme] = React.useState("light");
-	const [colors, setColors] = React.useState(getColors(theme));
-
-	useEffect(() => {
-		AsyncStorage.getItem("theme").then(result => {
-			if(result === "dark") {
-				setTheme("dark");
-				setColors(getColors("dark"));
-				changeNavigationBarColor(rgbToHex(getColors("dark").mainThird), false);
-			} else {
-				setTheme("light");
-				setColors(getColors("light"));
-				changeNavigationBarColor(rgbToHex(getColors("light").mainThird), true);
-			}
-		}).catch(error => {
-			setTheme("light");
-			setColors(getColors("light"));
-			console.log(error);
-		});
-	}, []);
 
 	return (
 		<NavigationContainer ref={navigationRef} onStateChange={() => checkState()} onReady={() =>
 			(routeNameRef.current = navigationRef.current.getCurrentRoute().name)}>
 			{ active !== "Login" && 
-				<TopBar title={active} colors={colors}></TopBar>
+				<TopBar title={active}></TopBar>
 			}
 			<Stack.Navigator initialRouteName="Login" screenOptions={{ headerShown:false }}>
-				<Stack.Screen name="Login">
-					{ () => <Login colors={colors} setActive={setActive}></Login> }
-				</Stack.Screen>
+				<Stack.Screen name="Login" component={Login}></Stack.Screen>
 				<Stack.Screen name="Dashboard" component={Dashboard} options={horizontalAnimation}></Stack.Screen>
 				<Stack.Screen name="Market" component={Market} options={horizontalAnimation}></Stack.Screen>	
 				<Stack.Screen name="Holdings" component={Holdings} options={horizontalAnimation}></Stack.Screen>
 				<Stack.Screen name="Settings" component={Settings} options={horizontalAnimation}></Stack.Screen>
 			</Stack.Navigator>
 			{ active !== "Login" && 
-				<BottomBar navigation={navigationRef} screen={{ active:active, setActive:setActive }} colors={colors} setColors={setColors} theme={theme} setTheme={setTheme}></BottomBar>
+				<BottomBar navigation={navigationRef} screen={{ active:active, setActive:setActive }}></BottomBar>
 			}
 			<FlashMessage position="top" hideStatusBar={true}/>
-			<StatusBar style={theme === "dark" ? "light" : "dark"}/>
+			<StatusBar style="dark"/>
 		</NavigationContainer>
 	);
 

@@ -278,10 +278,11 @@
 		bottom:auto;
 		left:auto;
 		right:auto;
+		width:calc(100% - 40px - 40px);
 		margin:20px auto 0 auto;
 	}
-	.dashboard-holdings-card-wrapper {
-		margin-bottom:20px;
+	.dashboard-market-cap-card, .dashboard-holdings-card {
+		width:100%;
 	}
 
 	.dashboard-market-list-wrapper {
@@ -295,7 +296,7 @@
 	}
 	.dashboard-holdings-list-wrapper {
 		position:relative;
-		margin:20px auto 0 auto;
+		margin:20px auto 20px auto;
 		display:block;
 		top:auto;
 		bottom:auto;

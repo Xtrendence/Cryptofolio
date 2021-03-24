@@ -1,6 +1,3 @@
-import React from "react";
-import { StyleSheet } from "react-native";
-
 const globalColorsLight = {
 	mainFirst:"rgb(255,255,255)",
 	mainSecond:"rgb(245,245,245)",
@@ -45,7 +42,9 @@ const globalColorsDark = {
 	greenerGradient:["#11998e", "#38ef7d"],
 };
 
-const globalStyles = {
+export const globalColors = { Light:globalColorsLight, Dark:globalColorsDark };
+
+export const globalStyles = {
 	shadowColor:"rgb(0,0,0)",
 	shadowOffset: {
 		width:0,
@@ -57,5 +56,3 @@ const globalStyles = {
 	borderRadius:10,
 	fontFamily:"Roboto",
 };
-
-export { globalColorsLight, globalColorsDark, globalStyles };

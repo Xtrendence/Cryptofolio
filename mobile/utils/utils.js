@@ -40,3 +40,9 @@ export function abbreviateNumber(num, digits) {
 	}
 	return (num / si[i].value).toFixed(digits).replace(rx, "$1") + si[i].symbol;
 }
+
+export function epoch() {
+	var date = new Date();
+	var time = Math.round(date.getTime() / 1000);
+	return time;
+}

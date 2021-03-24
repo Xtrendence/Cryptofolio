@@ -1,60 +1,80 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { useEffect } from "react";
 import { Text, StyleSheet, View, Image, Dimensions, ScrollView } from "react-native";
+import { StatusBar } from "expo-status-bar";
 import LinearGradient from "react-native-linear-gradient";
-import { globalColorsLight, globalColorsDark, globalStyles } from "../styles/global";
-import { empty, separateThousands, abbreviateNumber } from "../utils/utils";
-
-let globalColors = globalColorsLight;
+import { globalColors, globalStyles } from "../styles/global";
+import { ThemeContext } from "../utils/theme";
+import { empty, separateThousands, abbreviateNumber, epoch } from "../utils/utils";
 
 const screenWidth = Dimensions.get("screen").width;
 const screenHeight = Dimensions.get("screen").height;
 
 export default function Dashboard({ navigation }) {
+	const { theme } = React.useContext(ThemeContext);
+
+	const marketRef = React.createRef();
+	const holdingsRef = React.createRef();
+
 	const loadingText = "Loading...";
+
+	const [pageKey, setPageKey] = React.useState(epoch());
+	const [refresh, setRefresh] = React.useState();
 
 	const [marketCap, setMarketCap] = React.useState(loadingText);
 	const [marketChange, setMarketChange] = React.useState();
 	const [holdingsValue, setHoldingsValue] = React.useState(loadingText);
 
-	const [marketData, setMarketData] = React.useState([<Text key="loading" style={styles.headerText}>Loading...</Text>]);
-	const [holdingsData, setHoldingsData] = React.useState([<Text key="loading" style={styles.headerText}>Loading...</Text>]);
+	const [marketData, setMarketData] = React.useState([<Text key="loading" style={[styles.headerText, styles[`headerText${theme}`]]}>Loading...</Text>]);
+	const [holdingsData, setHoldingsData] = React.useState([<Text key="loading" style={[styles.headerText, styles[`headerText${theme}`]]}>Loading...</Text>]);
 
 	useEffect(() => {
-		getMarket();
-		getGlobal();
-		getHoldings();
-		setInterval(() => {
-			if(navigation.isFocused()) {
-				getMarket();
-				getGlobal();
-				getHoldings();
+		setRefresh();
+
+		setMarketData([<Text key="loading" style={[styles.headerText, styles[`headerText${theme}`]]}>Loading...</Text>]);
+		setHoldingsData([<Text key="loading" style={[styles.headerText, styles[`headerText${theme}`]]}>Loading...</Text>]);
+
+		setPageKey(epoch());
+
+		clearInterval(refresh);
+		setRefresh();
+
+		getMarket(theme);
+		getGlobal(theme);
+		getHoldings(theme);
+
+		setRefresh(setInterval(() => {
+			if(navigation.isFocused() && !empty(refresh)) {
+				getMarket(theme);
+				getGlobal(theme);
+				getHoldings(theme);
 			}
-		}, 20000);
-	}, []);
+		}, 20000));
+	}, [theme]);
 
 	return (
-		<ScrollView style={styles.page} contentContainerStyle={{ padding:20 }} nestedScrollEnabled={true}>
-			<LinearGradient style={[styles.card, { marginBottom:20, marginTop:0 }]} colors={globalColors.purpleGradient} useAngle={true} angle={45}>
-				<Text style={styles.cardText}>{marketCap} {marketChange}</Text>
+		<ScrollView style={[styles.page, styles[`page${theme}`]]} contentContainerStyle={{ padding:20 }} nestedScrollEnabled={true} key={pageKey}>
+			<LinearGradient style={[styles.card, { marginBottom:20, marginTop:0 }]} colors={globalColors[theme].purpleGradient} useAngle={true} angle={45}>
+				<Text style={[styles.cardText, styles[`cardText${theme}`]]}>{marketCap} {marketChange}</Text>
 			</LinearGradient>
-			<ScrollView style={styles.tableWrapper} contentContainerStyle={{ paddingLeft:20, paddingTop:10, paddingBottom:10 }} nestedScrollEnabled={true}>
+			<ScrollView ref={marketRef} style={[styles.tableWrapper, styles[`tableWrapper${theme}`]]} contentContainerStyle={{ paddingLeft:20, paddingTop:10, paddingBottom:10 }} nestedScrollEnabled={true}>
 				{ !empty(marketData) &&
 					marketData.map(row => {
 						return row;
 					})
 				}
 			</ScrollView>
-			<LinearGradient style={[styles.card, { marginBottom:20 }]} colors={globalColors.blueGradient} useAngle={true} angle={45}>
-				<Text style={styles.cardText}>{holdingsValue}</Text>
+			<LinearGradient style={[styles.card, { marginBottom:20 }]} colors={globalColors[theme].blueGradient} useAngle={true} angle={45}>
+				<Text style={[styles.cardText, styles[`cardText${theme}`]]}>{holdingsValue}</Text>
 			</LinearGradient>
-			<ScrollView style={styles.tableWrapper} contentContainerStyle={{ paddingLeft:20, paddingTop:10, paddingBottom:10 }} nestedScrollEnabled={true}>
+			<ScrollView ref={holdingsRef} style={[styles.tableWrapper, styles[`tableWrapper${theme}`]]} contentContainerStyle={{ paddingLeft:20, paddingTop:10, paddingBottom:10 }} nestedScrollEnabled={true}>
 				{ !empty(holdingsData) &&
 					holdingsData.map(row => {
 						return row;
 					})
 				}
 			</ScrollView>
+			<StatusBar style={theme === "Dark" ? "light" : "dark"}/>
 		</ScrollView>
 	);
 
@@ -80,10 +100,10 @@ export default function Dashboard({ navigation }) {
 			let data = [];
 
 			data.push(
-				<View style={styles.row} key="market-header">
-					<Text style={[styles.headerText, styles.headerRank]}>#</Text>
-					<Text style={[styles.headerText, styles.headerCoin]}>Coin</Text>
-					<Text style={[styles.headerText, styles.headerPrice]}>Price</Text>
+				<View style={styles.row} key={epoch() + "market-header"}>
+					<Text style={[styles.headerText, styles[`headerText${theme}`], styles.headerRank]}>#</Text>
+					<Text style={[styles.headerText, styles[`headerText${theme}`], styles.headerCoin]}>Coin</Text>
+					<Text style={[styles.headerText, styles[`headerText${theme}`], styles.headerPrice]}>Price</Text>
 				</View>
 			);
 
@@ -109,11 +129,11 @@ export default function Dashboard({ navigation }) {
 				let symbol = coin.symbol.toUpperCase();
 
 				data.push(
-					<View style={styles.row} key={key}>
-						<Text style={[styles.cellText, styles.cellRank]}>{rank}</Text>
+					<View style={styles.row} key={epoch() + key}>
+						<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellRank]}>{rank}</Text>
 						<Image style={styles.cellImage} source={{uri:icon}}/>
-						<Text style={[styles.cellText, styles.cellSymbol]}>{symbol}</Text>
-						<Text style={[styles.cellText, styles.cellPrice]}>{price}</Text>
+						<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellSymbol]}>{symbol}</Text>
+						<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellPrice]}>{price}</Text>
 					</View>
 				);
 			});
@@ -163,7 +183,7 @@ export default function Dashboard({ navigation }) {
 
 	async function getHoldings() {
 		setTimeout(() => {
-			if(holdingsData[0] === <Text key="loading" style={styles.headerText}>Loading...</Text> && navigation.isFocused()) {
+			if(holdingsData[0] === <Text key="loading" style={[styles.headerText, styles[`headerText${theme}`]]}>Loading...</Text> && navigation.isFocused()) {
 				getHoldings();
 			}
 		}, 5000);
@@ -185,17 +205,17 @@ export default function Dashboard({ navigation }) {
 		.then(async (coins) => {
 			if(Object.keys(coins).length === 0) {
 				if(navigation.isFocused()) {
-					setHoldingsData([<Text key="empty" style={styles.headerText}>No Holdings Found.</Text>]);
+					setHoldingsData([<Text key="empty" style={[styles.headerText, styles[`headerText${theme}`]]}>No Holdings Found.</Text>]);
 				}
 			} else {
 				parseHoldings(coins).then(holdings => {
 					let data = [];
 
 					data.push(
-						<View style={styles.row} key="market-header">
-							<Text style={[styles.headerText, styles.headerRank]}>#</Text>
-							<Text style={[styles.headerText, styles.headerCoin]}>Coin</Text>
-							<Text style={[styles.headerText, styles.headerAmount]}>Amount</Text>
+						<View style={styles.row} key={epoch() + "holdings-header"}>
+							<Text style={[styles.headerText, styles[`headerText${theme}`], styles.headerRank]}>#</Text>
+							<Text style={[styles.headerText, styles[`headerText${theme}`], styles.headerCoin]}>Coin</Text>
+							<Text style={[styles.headerText, styles[`headerText${theme}`], styles.headerAmount]}>Amount</Text>
 						</View>
 					);
 
@@ -211,11 +231,11 @@ export default function Dashboard({ navigation }) {
 						let symbol = coin.symbol;
 
 						data.push(
-							<View style={styles.row} key={holding}>
-								<Text style={[styles.cellText, styles.cellRank]}>{rank}</Text>
+							<View style={styles.row} key={epoch() + holding}>
+								<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellRank]}>{rank}</Text>
 								<Image style={styles.cellImage} source={{uri:icon}}/>
-								<Text style={[styles.cellText, styles.cellSymbol]}>{symbol}</Text>
-								<Text style={[styles.cellText, styles.cellAmount]}>{amount}</Text>
+								<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellSymbol]}>{symbol}</Text>
+								<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellAmount]}>{amount}</Text>
 							</View>
 						);
 					});
@@ -304,10 +324,13 @@ export default function Dashboard({ navigation }) {
 const styles = StyleSheet.create({
 	page: {
 		maxHeight:screenHeight - 180,
-		backgroundColor:globalColors.mainSecond
+		backgroundColor:globalColors["Light"].mainSecond
+	},
+	pageDark: {
+		backgroundColor:globalColors["Dark"].mainSecond
 	},
 	tableWrapper: {
-		backgroundColor:globalColors.mainFirst,
+		backgroundColor:globalColors["Light"].mainFirst,
 		shadowColor:globalStyles.shadowColor,
 		shadowOffset:globalStyles.shadowOffset,
 		shadowOpacity:globalStyles.shadowOpacity,
@@ -315,6 +338,9 @@ const styles = StyleSheet.create({
 		elevation:globalStyles.shadowElevation,
 		borderRadius:globalStyles.borderRadius,
 		maxHeight:240
+	},
+	tableWrapperDark: {
+		backgroundColor:globalColors["Dark"].mainFirst
 	},
 	row: {
 		flexDirection:"row",
@@ -325,8 +351,11 @@ const styles = StyleSheet.create({
 		fontSize:18,
 		fontFamily:globalStyles.fontFamily,
 		fontWeight:"bold",
-		color:globalColors.mainContrastLight,
+		color:globalColors["Light"].mainContrastLight,
 		marginBottom:4,
+	},
+	headerTextDark: {
+		color:globalColors["Dark"].mainContrastLight
 	},
 	headerRank: {
 		width:30
@@ -342,7 +371,10 @@ const styles = StyleSheet.create({
 
 	},
 	cellText: {
-		color:globalColors.mainContrastLight
+		color:globalColors["Light"].mainContrastLight
+	},
+	cellTextDark: {
+		color:globalColors["Dark"].mainContrastLight
 	},
 	cellRank: {
 		width:30
@@ -378,8 +410,11 @@ const styles = StyleSheet.create({
 		paddingBottom:4,
 		fontSize:20,
 		fontFamily:globalStyles.fontFamily,
-		color:globalColors.accentContrast,
+		color:globalColors["Light"].accentContrast,
 		fontWeight:"bold",
 		textAlign:"center"
+	},
+	cardTextDark: {
+		color:globalColors["Dark"].accentContrast
 	}
 });

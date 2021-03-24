@@ -1,11 +1,12 @@
 import React, { useEffect } from "react";
 import { StyleSheet, Text, TouchableOpacity, View, Animated } from "react-native";
 import Icon from "react-native-vector-icons/FontAwesome5";
-import { globalColorsLight, globalColorsDark, globalStyles } from "../styles/global";
-
-let globalColors = globalColorsLight;
+import { globalColors, globalStyles } from "../styles/global";
+import { ThemeContext } from "../utils/theme";
 
 export default function BottomBar({ screen, navigation }) {
+	const { theme } = React.useContext(ThemeContext);
+
 	const [left, setLeft] = React.useState("0%");
 
 	useEffect(() => {
@@ -13,36 +14,36 @@ export default function BottomBar({ screen, navigation }) {
 	}, [screen.active]);
 
 	return (
-		<View style={styles.bar}>
+		<View style={[styles.bar, styles[`bar${theme}`]]}>
 			<View style={styles.background}>
-				<View style={[styles.backdrop, { left:left }]}></View>
+				<View style={[styles.backdrop, styles[`backdrop${theme}`], { left:left }]}></View>
 			</View>
 			<View style={styles.foreground}>
 				<TouchableOpacity style={styles.tab} onPress={() => { screen.setActive("Dashboard") }}>
 					<View style={styles.itemWrapper}>
 						<View style={styles.iconWrapper}>
-							<Icon name="th-large" size={iconSize} color={globalColors.mainContrastLight}></Icon>
+							<Icon name="th-large" size={iconSize} color={globalColors[theme].mainContrastLight}></Icon>
 						</View>
 					</View>
 				</TouchableOpacity>
 				<TouchableOpacity style={styles.tab} onPress={() => { screen.setActive("Market") }}>
 					<View style={styles.itemWrapper}>
 						<View style={styles.iconWrapper}>
-							<Icon name="university" size={iconSize} color={globalColors.mainContrastLight}></Icon>
+							<Icon name="university" size={iconSize} color={globalColors[theme].mainContrastLight}></Icon>
 						</View>
 					</View>
 				</TouchableOpacity>
 				<TouchableOpacity style={styles.tab} onPress={() => { screen.setActive("Holdings") }}>
 					<View style={styles.itemWrapper}>
 						<View style={styles.iconWrapper}>
-							<Icon name="wallet" size={iconSize} color={globalColors.mainContrastLight}></Icon>
+							<Icon name="wallet" size={iconSize} color={globalColors[theme].mainContrastLight}></Icon>
 						</View>
 					</View>
 				</TouchableOpacity>
 				<TouchableOpacity style={styles.tab} onPress={() => { screen.setActive("Settings") }}>
 					<View style={styles.itemWrapper}>
 						<View style={styles.iconWrapper}>
-							<Icon name="cog" size={iconSize} color={globalColors.mainContrastLight}></Icon>
+							<Icon name="cog" size={iconSize} color={globalColors[theme].mainContrastLight}></Icon>
 						</View>
 					</View>
 				</TouchableOpacity>
@@ -93,15 +94,19 @@ const styles = StyleSheet.create({
 		left:0,
 		width:"100%",
 		height:62,
-		borderTopColor:globalColors.mainThird,
+		borderTopColor:globalColors["Light"].mainThird,
 		borderTopWidth:2,
 		borderStyle:"solid",
-		backgroundColor:globalColors.mainFirst,
+		backgroundColor:globalColors["Light"].mainFirst,
 		shadowColor:globalStyles.shadowColor,
 		shadowOffset:globalStyles.shadowOffset,
 		shadowOpacity:globalStyles.shadowOpacity,
 		shadowRadius:globalStyles.shadowRadius,
 		elevation:globalStyles.shadowElevation,
+	},
+	barDark: {
+		backgroundColor:globalColors["Dark"].mainFirst,
+		borderTopColor:globalColors["Dark"].mainThird
 	},
 	foreground: {
 		width:"100%",
@@ -124,7 +129,10 @@ const styles = StyleSheet.create({
 		borderRadius:40,
 		marginLeft:"2.5%",
 		height:"70%",
-		backgroundColor:globalColors.mainThird
+		backgroundColor:globalColors["Light"].mainThird
+	},
+	backdropDark: {
+		backgroundColor:globalColors["Dark"].mainThird
 	},
 	tab: {
 		width:"25%"

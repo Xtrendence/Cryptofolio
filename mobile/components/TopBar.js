@@ -2,14 +2,15 @@ import Constants from "expo-constants";
 import React, { useEffect } from "react";
 import { StyleSheet, Text, TouchableOpacity, View, Animated } from "react-native";
 import Icon from "react-native-vector-icons/FontAwesome5";
-import { globalColorsLight, globalColorsDark, globalStyles } from "../styles/global";
-
-let globalColors = globalColorsLight;
+import { globalColors, globalStyles } from "../styles/global";
+import { ThemeContext } from "../utils/theme";
 
 export default function TopBar(props) {
+	const { theme } = React.useContext(ThemeContext);
+
 	return (
-		<View style={styles.bar}>
-			<Text style={styles.header}>{props.title}</Text>
+		<View style={[styles.bar, styles[`bar${theme}`]]}>
+			<Text style={[styles.header, styles[`header${theme}`]]}>{props.title}</Text>
 		</View>
 	);
 }
@@ -21,19 +22,25 @@ const styles = StyleSheet.create({
 		paddingBottom:10,
 		paddingTop:Constants.statusBarHeight,
 		width:"100%",
-		backgroundColor:globalColors.mainFirst,
-		backgroundColor:globalColors.mainFirst,
+		backgroundColor:globalColors["Light"].mainFirst,
 		shadowColor:globalStyles.shadowColor,
 		shadowOffset:globalStyles.shadowOffset,
 		shadowOpacity:globalStyles.shadowOpacity,
 		shadowRadius:globalStyles.shadowRadius,
 		elevation:globalStyles.shadowElevation,
 	},
+	barDark: {
+		backgroundColor:globalColors["Dark"].mainFirst
+	},
 	header: {
 		fontFamily:globalStyles.fontFamily,
 		fontSize:20,
 		fontWeight:"bold",
 		width:"100%",
-		textAlign:"center"
+		textAlign:"center",
+		color:globalColors["Light"].mainContrast
+	},
+	headerDark: {
+		color:globalColors["Dark"].mainContrast
 	}
 });

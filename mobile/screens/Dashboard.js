@@ -39,15 +39,15 @@ export default function Dashboard({ navigation }) {
 		clearInterval(refresh);
 		setRefresh();
 
-		getMarket(theme);
-		getGlobal(theme);
-		getHoldings(theme);
+		getMarket();
+		getGlobal();
+		getHoldings();
 
 		setRefresh(setInterval(() => {
 			if(navigation.isFocused() && !empty(refresh)) {
-				getMarket(theme);
-				getGlobal(theme);
-				getHoldings(theme);
+				getMarket();
+				getGlobal();
+				getHoldings();
 			}
 		}, 20000));
 	}, [theme]);
@@ -323,7 +323,7 @@ export default function Dashboard({ navigation }) {
 
 const styles = StyleSheet.create({
 	page: {
-		maxHeight:screenHeight - 180,
+		height:screenHeight - 180,
 		backgroundColor:globalColors["Light"].mainSecond
 	},
 	pageDark: {
@@ -392,6 +392,7 @@ const styles = StyleSheet.create({
 		width:30,
 		height:30,
 		marginRight:10,
+		borderRadius:15,
 	},
 	card: {
 		shadowColor:globalStyles.shadowColor,

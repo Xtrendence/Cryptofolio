@@ -67,7 +67,7 @@ export default function Dashboard({ navigation }) {
 			<LinearGradient style={[styles.card, { marginBottom:20 }]} colors={globalColors[theme].blueGradient} useAngle={true} angle={45}>
 				<Text style={[styles.cardText, styles[`cardText${theme}`]]}>{holdingsValue}</Text>
 			</LinearGradient>
-			<ScrollView ref={holdingsRef} style={[styles.tableWrapper, styles[`tableWrapper${theme}`]]} contentContainerStyle={{ paddingLeft:20, paddingTop:10, paddingBottom:10 }} nestedScrollEnabled={true}>
+			<ScrollView ref={holdingsRef} style={[styles.tableWrapper, styles[`tableWrapper${theme}`], { marginBottom:60 }]} contentContainerStyle={{ paddingLeft:20, paddingTop:10, paddingBottom:10 }} nestedScrollEnabled={true}>
 				{ !empty(holdingsData) &&
 					holdingsData.map(row => {
 						return row;

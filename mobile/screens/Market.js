@@ -10,7 +10,7 @@ import { empty, separateThousands, abbreviateNumber, epoch } from "../utils/util
 const screenWidth = Dimensions.get("screen").width;
 const screenHeight = Dimensions.get("screen").height;
 
-export default function Dashboard({ navigation }) {
+export default function Market({ navigation }) {
 	const { theme } = React.useContext(ThemeContext);
 
 	const marketRef = React.createRef();
@@ -22,6 +22,7 @@ export default function Dashboard({ navigation }) {
 
 	const [marketCap, setMarketCap] = React.useState(loadingText);
 	const [marketChange, setMarketChange] = React.useState();
+	const [volume, setVolume] = React.useState(loadingText);
 
 	const [marketData, setMarketData] = React.useState([<Text key="loading" style={[styles.headerText, styles[`headerText${theme}`]]}>Loading...</Text>]);
 
@@ -43,12 +44,12 @@ export default function Dashboard({ navigation }) {
 				getMarket();
 				getGlobal();
 			}
-		}, 20000));
+		}, 10000));
 	}, [theme]);
 
 	return (
 		<View style={[styles.page, styles[`page${theme}`]]} key={pageKey}>
-			<LinearGradient style={[styles.card, { marginBottom:20, marginTop:0 }]} colors={globalColors[theme].purpleGradient} useAngle={true} angle={45}>
+			<LinearGradient style={[styles.card, { marginBottom:20, marginTop:0 }]} colors={globalColors[theme].colorfulGradient} useAngle={true} angle={45}>
 				<Text style={[styles.cardText, styles[`cardText${theme}`]]}>{marketCap} {marketChange}</Text>
 			</LinearGradient>
 			<ScrollView ref={marketRef} style={[styles.tableWrapper, styles[`tableWrapper${theme}`]]} contentContainerStyle={{ paddingLeft:20, paddingTop:10, paddingBottom:10 }} nestedScrollEnabled={true}>
@@ -58,6 +59,9 @@ export default function Dashboard({ navigation }) {
 					})
 				}
 			</ScrollView>
+			<LinearGradient style={[styles.card, { marginTop:20 }]} colors={globalColors[theme].orangeGradient} useAngle={true} angle={45}>
+				<Text style={[styles.cardText, styles[`cardText${theme}`]]}>{volume}</Text>
+			</LinearGradient>
 			<StatusBar style={theme === "Dark" ? "light" : "dark"}/>
 		</View>
 	);
@@ -151,14 +155,17 @@ export default function Dashboard({ navigation }) {
 		.then(async (global) => {
 			let marketCap = (global.data.total_market_cap.usd).toFixed(0);
 			let marketChange = (global.data.market_cap_change_percentage_24h_usd).toFixed(1);
+			let volume = (global.data.total_volume.usd).toFixed(0);
 
 			if(screenWidth < 380) {
 				marketCap = abbreviateNumber(marketCap, 3);
+				volume = abbreviateNumber(volume, 0);
 			}
 			
 			if(navigation.isFocused()) {
 				setMarketCap("$" + separateThousands(marketCap));
 				setMarketChange("(" + marketChange + "%)");
+				setVolume("$" + separateThousands(volume) + " (24h)");
 			}
 		}).catch(error => {
 			console.log(error);

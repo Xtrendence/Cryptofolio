@@ -173,6 +173,9 @@ document.addEventListener("DOMContentLoaded", () => {
 				document.getElementById("popup-confirm").click();
 			}
 		}
+		if(divLoginWrapper.classList.contains("active")) {
+			inputLoginPassword.focus();
+		}
 	});
 
 	buttonLogin.addEventListener("click", () => {
@@ -659,6 +662,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 			if(!divLoginWrapper.classList.contains("active")) {
 				divLoginWrapper.classList.add("active");
+				inputLoginPassword.focus();
 			}
 		} else {
 			verifySession(sessionToken).then(response => {
@@ -675,6 +679,7 @@ document.addEventListener("DOMContentLoaded", () => {
 				} else {
 					if(!divLoginWrapper.classList.contains("active")) {
 						divLoginWrapper.classList.add("active");
+						inputLoginPassword.focus();
 					}
 				}
 			}).catch(e => {

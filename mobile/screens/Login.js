@@ -13,8 +13,8 @@ export default function Login({ navigation, route }) {
 	const { theme } = React.useContext(ThemeContext);
 
 	// TODO: Change after development.
-	// const [url, setUrl] = React.useState("http://192.168.1.67/api/");
-	const [url, setUrl] = React.useState("http://192.168.1.58:8080/");
+	const [url, setUrl] = React.useState("http://192.168.1.67/api/");
+	// const [url, setUrl] = React.useState("http://192.168.1.58:8080/");
 	const [password, setPassword] = React.useState("admin");
 	const [secure, setSecure] = React.useState(false);
 

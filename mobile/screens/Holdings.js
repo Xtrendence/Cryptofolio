@@ -21,12 +21,14 @@ export default function Holdings({ navigation }) {
 	const [pageKey, setPageKey] = React.useState(epoch());
 
 	const [modal, setModal] = React.useState(false);
+	const [modalMessage, setModalMessage] = React.useState();
+	const [action, setAction] = React.useState("create");
 	const [coinID, setCoinID] = React.useState();
 	const [coinAmount, setCoinAmount] = React.useState();
 
 	const [holdingsValue, setHoldingsValue] = React.useState(loadingText);
 
-	const [holdingsData, setHoldingsData] = React.useState([<Text key="loading" style={[styles.headerText, styles[`headerText${theme}`]]}>Loading...</Text>]);
+	const [holdingsData, setHoldingsData] = React.useState([<Text key="loading" style={[styles.loadingText, styles.headerText, styles[`headerText${theme}`]]}>Loading...</Text>]);
 
 	useEffect(() => {
 		setInterval(() => {
@@ -37,7 +39,7 @@ export default function Holdings({ navigation }) {
 	}, []);
 
 	useEffect(() => {
-		setHoldingsData([<Text key="loading" style={[styles.headerText, styles[`headerText${theme}`]]}>Loading...</Text>]);
+		setHoldingsData([<Text key="loading" style={[styles.loadingText, styles.headerText, styles[`headerText${theme}`]]}>Loading...</Text>]);
 
 		setPageKey(epoch());
 
@@ -46,33 +48,38 @@ export default function Holdings({ navigation }) {
 
 	return (
 		<View style={[styles.page, styles[`page${theme}`]]} key={pageKey}>
-			<Modal animationType="fade" visible={modal} onRequestClose={() => { setCoinID(); setCoinAmount(); setModal(false)}} transparent={false}>
-				<View style={styles.modalWrapper}>
+			<Modal animationType="fade" visible={modal} onRequestClose={() => { setAction("create"); setCoinID(); setCoinAmount(); setModalMessage(); setModal(false)}} transparent={false}>
+				<View style={[styles.modalWrapper, styles[`modalWrapper${theme}`]]}>
 					<View stlye={[styles.modal, styles[`modal${theme}`]]}>
-						<TextInput style={[styles.input, styles[`input${theme}`]]} placeholder={"Coin ID... (e.g. Bitcoin)"} onChangeText={(value) => { setCoinID(value)}} value={coinID} placeholderTextColor={globalColors[theme].mainContrastLight}/>
+						<TextInput style={[styles.input, styles[`input${theme}`], (action !== "create") ? { backgroundColor:globalColors[theme].mainFourth, color:globalColors[theme].mainContrastLight } : null]} placeholder={"Coin ID... (e.g. Bitcoin)"} onChangeText={(value) => { setCoinID(value)}} value={coinID} placeholderTextColor={globalColors[theme].mainContrastLight} editable={(action === "create")}/>
 						<TextInput style={[styles.input, styles[`input${theme}`]]} placeholder={"Amount... (e.g. 2.5)"} onChangeText={(value) => { setCoinAmount(value)}} value={coinAmount} placeholderTextColor={globalColors[theme].mainContrastLight}/>
 						<View style={styles.buttonWrapper}>
-							<TouchableOpacity style={styles.button} onPress={() => { setCoinID(); setCoinAmount(); setModal(false)}}>
+							<TouchableOpacity style={[styles.button, styles[`button${theme}`]]} onPress={() => { setAction("create"); setCoinID(); setCoinAmount(); setModalMessage(); setModal(false)}}>
 								<Text style={styles.text}>Cancel</Text>
 							</TouchableOpacity>
-							<TouchableOpacity style={[styles.button, styles.buttonConfirm]} onPress={() => {  }}>
+							<TouchableOpacity style={[styles.button, styles.buttonConfirm, styles[`buttonConfirm${theme}`]]} onPress={() => { createHolding(coinID, coinAmount) }}>
 								<Text style={styles.text}>Confirm</Text>
 							</TouchableOpacity>
 						</View>
+						{ !empty(modalMessage) &&
+							<View style={styles.modalMessageWrapper}>
+								<Text style={styles.modalMessage}>{modalMessage}</Text>
+							</View>
+						}
 					</View>
 				</View>
 			</Modal>
 			<LinearGradient style={[styles.card, { marginBottom:20 }]} colors={globalColors[theme].greenerGradient} useAngle={true} angle={45}>
 				<Text style={[styles.cardText, styles[`cardText${theme}`]]}>{holdingsValue}</Text>
 			</LinearGradient>
-			<ScrollView ref={holdingsRef} style={[styles.tableWrapper, styles[`tableWrapper${theme}`]]} contentContainerStyle={{ paddingLeft:20, paddingTop:10, paddingBottom:10 }} nestedScrollEnabled={true}>
+			<ScrollView ref={holdingsRef} style={[styles.tableWrapper, styles[`tableWrapper${theme}`]]} contentContainerStyle={{ paddingTop:10, paddingBottom:10 }} nestedScrollEnabled={true}>
 				{ !empty(holdingsData) &&
 					holdingsData.map(row => {
 						return row;
 					})
 				}
 			</ScrollView>
-			<TouchableOpacity onPress={() => { setModal(true)}}>
+			<TouchableOpacity onPress={() => { setAction("create"); setModal(true)}}>
 				<LinearGradient style={[styles.card, { marginTop:20 }]} colors={globalColors[theme].calmGradient} useAngle={true} angle={45}>
 					<Text style={[styles.cardText, styles[`cardText${theme}`]]}>Add Coin</Text>
 				</LinearGradient>
@@ -80,6 +87,75 @@ export default function Holdings({ navigation }) {
 			<StatusBar style={theme === "Dark" ? "light" : "dark"}/>
 		</View>
 	);
+
+	async function createHolding(id, amount) {
+		if(!empty(id) && !empty(amount) && !isNaN(amount)) {
+			setModalMessage("Checking coin...");
+
+			id = id.toLowerCase().replaceAll(" ", "-");
+
+			let api = await AsyncStorage.getItem("api");
+			let token = await AsyncStorage.getItem("token");
+
+			let endpoint = "https://api.coingecko.com/api/v3/coins/" + id;
+
+			fetch(endpoint, {
+				method: "GET",
+				headers: {
+					Accept: "application/json", "Content-Type": "application/json"
+				}
+			})
+			.then((response) => {
+				return response.json();
+			})
+			.then(async (coin) => {
+				if(!empty(coin.error)) {
+					setModalMessage("Coin not found. Make sure the ID is right.");
+				} else {
+					let symbol = coin.symbol;
+
+					let endpoint = api + "holdings/create.php";
+					let method = "POST";
+					let body = { token:token, id:id, symbol:symbol, amount:amount };
+
+					if(action === "update") {
+						endpoint = api + "holdings/update.php";
+						method = "PUT";
+						body = { token:token, id:id, amount:amount };
+					}
+
+					fetch(endpoint, {
+						method: method,
+						body: JSON.stringify(body),
+						headers: {
+							Accept: "application/json", "Content-Type": "application/json"
+						}
+					})
+					.then((json) => {
+						return json.json();
+					})
+					.then(async (response) => {
+						if("message" in response) {
+							setModal(false);
+							setModalMessage();
+							setAction("create");
+							setCoinID();
+							setCoinAmount();
+							getHoldings();
+						} else {
+							setModalMessage(response.error);
+						}
+					}).catch(error => {
+						console.log(error);
+					});
+				}
+			}).catch(error => {
+				console.log(error);
+			});
+		} else {
+			setModalMessage("Both fields must be filled out.");
+		}
+	}
 
 	async function getHoldings() {
 		setTimeout(() => {
@@ -115,9 +191,10 @@ export default function Holdings({ navigation }) {
 
 					data.push(
 						<View style={styles.row} key={epoch() + "holdings-header"}>
-							<Text style={[styles.headerText, styles[`headerText${theme}`], styles.headerRank]}>#</Text>
-							<Text style={[styles.headerText, styles[`headerText${theme}`], styles.headerCoin]}>Coin</Text>
-							<Text style={[styles.headerText, styles[`headerText${theme}`], styles.headerAmount]}>Amount</Text>
+							<Text style={[styles.headerText, styles[`headerText${theme}`], styles.headerRank]} ellipsizeMode="tail">#</Text>
+							<Text style={[styles.headerText, styles[`headerText${theme}`], styles.headerCoin]} ellipsizeMode="tail">Coin</Text>
+							<Text style={[styles.headerText, styles[`headerText${theme}`], styles.headerAmount]} ellipsizeMode="tail">Amount</Text>
+							<Text style={[styles.headerText, styles[`headerText${theme}`], styles.headerValue]} ellipsizeMode="tail">Value</Text>
 						</View>
 					);
 
@@ -131,14 +208,18 @@ export default function Holdings({ navigation }) {
 						let icon = coin.image;
 						let amount = coin.amount;
 						let symbol = coin.symbol;
+						let value = separateThousands(abbreviateNumber(coin.value.toFixed(2), 2));
 
 						data.push(
-							<View style={styles.row} key={epoch() + holding}>
-								<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellRank]}>{rank}</Text>
-								<Image style={styles.cellImage} source={{uri:icon}}/>
-								<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellSymbol]}>{symbol}</Text>
-								<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellAmount]}>{amount}</Text>
-							</View>
+							<TouchableOpacity onPress={() => { setAction("update"); setCoinID(holding); setCoinAmount(amount.toString()); setModal(true); }} key={epoch() + holding}>
+								<View style={[styles.row, rank % 2 ? {...styles.rowOdd, ...styles[`rowOdd${theme}`]} : null]}>
+									<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellRank]} ellipsizeMode="tail">{rank}</Text>
+									<Image style={styles.cellImage} source={{uri:icon}}/>
+									<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellSymbol]} ellipsizeMode="tail">{symbol}</Text>
+									<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellAmount]} ellipsizeMode="tail">{amount}</Text>
+									<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellValue]} ellipsizeMode="tail">${value}</Text>
+								</View>
+							</TouchableOpacity>
 						);
 					});
 
@@ -223,6 +304,10 @@ export default function Holdings({ navigation }) {
 	}
 }
 
+String.prototype.replaceAll = function(str1, str2, ignore) {
+	return this.replace(new RegExp(str1.replace(/([\/\,\!\\\^\$\{\}\[\]\(\)\.\*\+\?\|\<\>\-\&])/g,"\\$&"),(ignore?"gi":"g")),(typeof(str2)=="string")?str2.replace(/\$/g,"$$$$"):str2);
+}
+
 const styles = StyleSheet.create({
 	page: {
 		height:screenHeight - 180,
@@ -238,7 +323,10 @@ const styles = StyleSheet.create({
 		flex:1,
 		justifyContent:"center",
 		alignItems:"center",
-		backgroundColor:globalColors["Light"].accentFirst
+		backgroundColor:globalColors["Light"].mainThird
+	},
+	modalWrapperDark: {
+		backgroundColor:globalColors["Dark"].mainThird
 	},
 	modal: {
 		width:300,
@@ -248,6 +336,19 @@ const styles = StyleSheet.create({
 	},
 	modalDark: {
 		backgroundColor:globalColors["Dark"].mainFirst
+	},
+	modalMessageWrapper: {
+		backgroundColor:globalColors["Light"].accentFirst,
+		borderRadius:globalStyles.borderRadius,
+		width:screenWidth - 200,
+		padding:10,
+		marginTop:20,
+	},
+	modalMessage: {
+		color:globalColors["Light"].accentContrast,
+		fontSize:16,
+		fontFamily:globalStyles.fontFamily,
+		lineHeight:25,
 	},
 	input: {
 		backgroundColor:globalColors["Light"].mainFirst,
@@ -283,11 +384,17 @@ const styles = StyleSheet.create({
 		alignItems:"center",
 		justifyContent:"center",
 		borderRadius:globalStyles.borderRadius,
+		backgroundColor:globalColors["Light"].mainContrast
+	},
+	buttonDark: {
 		backgroundColor:globalColors["Dark"].mainFirst
 	},
 	buttonConfirm: {
 		marginLeft:20,
-		backgroundColor:globalColors["Light"].accentSecond
+		backgroundColor:globalColors["Light"].accentFirst
+	},
+	buttonConfirmDark: {
+		backgroundColor:globalColors["Dark"].accentFirst
 	},
 	text: {
 		lineHeight:38,
@@ -312,7 +419,18 @@ const styles = StyleSheet.create({
 	row: {
 		flexDirection:"row",
 		alignItems:"center",
-		padding:4
+		paddingTop:8,
+		paddingBottom:8,
+		paddingLeft:20,
+	},
+	rowOdd: {
+		backgroundColor:globalColors["Light"].mainSecond,
+	},
+	rowOddDark: {
+		backgroundColor:globalColors["Dark"].mainSecond,
+	},
+	loadingText: {
+		marginLeft:20,
 	},
 	headerText: {
 		fontSize:18,
@@ -331,11 +449,8 @@ const styles = StyleSheet.create({
 		width:100,
 		marginLeft:15,
 	},
-	headerPrice: {
-
-	},
 	headerAmount: {
-
+		width:100
 	},
 	cellText: {
 		color:globalColors["Light"].mainContrastLight
@@ -349,11 +464,8 @@ const styles = StyleSheet.create({
 	cellSymbol: {
 		width:74
 	},
-	cellPrice: {
-
-	},
 	cellAmount: {
-
+		width:100,
 	},
 	cellImage: {
 		width:30,

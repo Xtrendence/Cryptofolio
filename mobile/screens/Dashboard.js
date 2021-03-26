@@ -345,7 +345,9 @@ const styles = StyleSheet.create({
 	row: {
 		flexDirection:"row",
 		alignItems:"center",
-		padding:4
+		paddingLeft:4,
+		paddingTop:8,
+		paddingBottom:8,
 	},
 	headerText: {
 		fontSize:18,

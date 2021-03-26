@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { Text, StyleSheet, View, Image, Dimensions, ScrollView, TouchableOpacity } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import Icon from "react-native-vector-icons/FontAwesome5";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import LinearGradient from "react-native-linear-gradient";
 import { globalColors, globalStyles } from "../styles/global";
 import { ThemeContext } from "../utils/theme";
@@ -87,9 +88,10 @@ export default function Market({ navigation }) {
 
 			data.push(
 				<View style={styles.row} key={epoch() + "market-header"}>
-					<Text style={[styles.headerText, styles[`headerText${theme}`], styles.headerRank]}>#</Text>
-					<Text style={[styles.headerText, styles[`headerText${theme}`], styles.headerCoin]}>Coin</Text>
-					<Text style={[styles.headerText, styles[`headerText${theme}`], styles.headerPrice]}>Price</Text>
+					<Text style={[styles.headerText, styles[`headerText${theme}`], styles.headerRank]} ellipsizeMode="tail">#</Text>
+					<Text style={[styles.headerText, styles[`headerText${theme}`], styles.headerCoin]} ellipsizeMode="tail">Coin</Text>
+					<Text style={[styles.headerText, styles[`headerText${theme}`], styles.headerPrice]} ellipsizeMode="tail">Price</Text>
+					<Text style={[styles.headerText, styles[`headerText${theme}`], styles.headerCap]} ellipsizeMode="tail">Cap</Text>
 				</View>
 			);
 
@@ -105,6 +107,7 @@ export default function Market({ navigation }) {
 
 				let coin = coins[key];
 				let price = parseFloat(coin.current_price);
+				let cap = separateThousands(abbreviateNumber(parseFloat(coin.market_cap), 2));
 
 				if(price > 1) {
 					price = separateThousands(price);
@@ -116,10 +119,11 @@ export default function Market({ navigation }) {
 
 				data.push(
 					<View style={styles.row} key={epoch() + key}>
-						<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellRank]}>{rank}</Text>
+						<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellRank]} ellipsizeMode="tail">{rank}</Text>
 						<Image style={styles.cellImage} source={{uri:icon}}/>
-						<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellSymbol]}>{symbol}</Text>
-						<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellPrice]}>{price}</Text>
+						<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellSymbol]} ellipsizeMode="tail">{symbol}</Text>
+						<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellPrice]} ellipsizeMode="tail">{price}</Text>
+						<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellCap]} ellipsizeMode="tail">{cap}</Text>
 					</View>
 				);
 			});
@@ -196,7 +200,9 @@ const styles = StyleSheet.create({
 	row: {
 		flexDirection:"row",
 		alignItems:"center",
-		padding:4
+		paddingLeft:4,
+		paddingTop:8,
+		paddingBottom:8,
 	},
 	headerText: {
 		fontSize:18,
@@ -216,10 +222,7 @@ const styles = StyleSheet.create({
 		marginLeft:15,
 	},
 	headerPrice: {
-
-	},
-	headerAmount: {
-
+		width:100,
 	},
 	cellText: {
 		color:globalColors["Light"].mainContrastLight
@@ -234,10 +237,7 @@ const styles = StyleSheet.create({
 		width:74
 	},
 	cellPrice: {
-
-	},
-	cellAmount: {
-
+		width:100
 	},
 	cellImage: {
 		width:30,

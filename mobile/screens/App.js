@@ -57,8 +57,8 @@ export default function App() {
 				{ active !== "Login" && 
 					<BottomBar navigation={navigationRef} screen={{ active:active, setActive:setActive }}></BottomBar>
 				}
-				<FlashMessage position="top" hideStatusBar={true}/>
 			</NavigationContainer>
+			<FlashMessage position="top" hideStatusBar={true}/>
 		</ThemeProvider>
 	);
 

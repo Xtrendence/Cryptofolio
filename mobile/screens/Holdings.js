@@ -19,7 +19,6 @@ export default function Holdings({ navigation }) {
 	const loadingText = "Loading...";
 
 	const [pageKey, setPageKey] = React.useState(epoch());
-	const [refresh, setRefresh] = React.useState();
 
 	const [modal, setModal] = React.useState(false);
 	const [coinID, setCoinID] = React.useState();
@@ -30,22 +29,19 @@ export default function Holdings({ navigation }) {
 	const [holdingsData, setHoldingsData] = React.useState([<Text key="loading" style={[styles.headerText, styles[`headerText${theme}`]]}>Loading...</Text>]);
 
 	useEffect(() => {
-		setRefresh();
+		setInterval(() => {
+			if(navigation.isFocused()) {
+				getHoldings();
+			}
+		}, 10000)
+	}, []);
 
+	useEffect(() => {
 		setHoldingsData([<Text key="loading" style={[styles.headerText, styles[`headerText${theme}`]]}>Loading...</Text>]);
 
 		setPageKey(epoch());
 
-		clearInterval(refresh);
-		setRefresh();
-
 		getHoldings();
-
-		setRefresh(setInterval(() => {
-			if(navigation.isFocused() && !empty(refresh)) {
-				getHoldings();
-			}
-		}, 10000));
 	}, [theme]);
 
 	return (
@@ -91,6 +87,8 @@ export default function Holdings({ navigation }) {
 				getHoldings();
 			}
 		}, 5000);
+
+		let theme = empty(await AsyncStorage.getItem("theme")) ? "Light" : await AsyncStorage.getItem("theme");
 
 		let api = await AsyncStorage.getItem("api");
 		let token = await AsyncStorage.getItem("token");

@@ -19,7 +19,6 @@ export default function Dashboard({ navigation }) {
 	const loadingText = "Loading...";
 
 	const [pageKey, setPageKey] = React.useState(epoch());
-	const [refresh, setRefresh] = React.useState();
 
 	const [marketCap, setMarketCap] = React.useState(loadingText);
 	const [marketChange, setMarketChange] = React.useState();
@@ -29,27 +28,24 @@ export default function Dashboard({ navigation }) {
 	const [holdingsData, setHoldingsData] = React.useState([<Text key="loading" style={[styles.headerText, styles[`headerText${theme}`]]}>Loading...</Text>]);
 
 	useEffect(() => {
-		setRefresh();
+		setInterval(() => {
+			if(navigation.isFocused()) {
+				getMarket();
+				getGlobal();
+				getHoldings();
+			}
+		}, 20000)
+	}, []);
 
+	useEffect(() => {
 		setMarketData([<Text key="loading" style={[styles.headerText, styles[`headerText${theme}`]]}>Loading...</Text>]);
 		setHoldingsData([<Text key="loading" style={[styles.headerText, styles[`headerText${theme}`]]}>Loading...</Text>]);
 
 		setPageKey(epoch());
 
-		clearInterval(refresh);
-		setRefresh();
-
 		getMarket();
 		getGlobal();
 		getHoldings();
-
-		setRefresh(setInterval(() => {
-			if(navigation.isFocused() && !empty(refresh)) {
-				getMarket();
-				getGlobal();
-				getHoldings();
-			}
-		}, 20000));
 	}, [theme]);
 
 	return (
@@ -84,6 +80,8 @@ export default function Dashboard({ navigation }) {
 				getMarket();
 			}
 		}, 5000);
+
+		let theme = empty(await AsyncStorage.getItem("theme")) ? "Light" : await AsyncStorage.getItem("theme");
 
 		let endpoint = "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=10&page=1&sparkline=false";
 
@@ -187,6 +185,8 @@ export default function Dashboard({ navigation }) {
 				getHoldings();
 			}
 		}, 5000);
+
+		let theme = empty(await AsyncStorage.getItem("theme")) ? "Light" : await AsyncStorage.getItem("theme");
 
 		let api = await AsyncStorage.getItem("api");
 		let token = await AsyncStorage.getItem("token");

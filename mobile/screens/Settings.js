@@ -281,7 +281,7 @@ const styles = StyleSheet.create({
 		elevation:globalStyles.shadowElevation,
 	},
 	inputDark: {
-		backgroundColor:globalColors["Dark"].mainFirst,
+		backgroundColor:globalColors["Dark"].mainThird,
 		color:globalColors["Dark"].mainContrast
 	},
 });

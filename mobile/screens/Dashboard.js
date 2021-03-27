@@ -75,8 +75,6 @@ export default function Dashboard({ navigation }) {
 	);
 
 	async function getMarket() {
-		// console.log("Dashboard.js - Getting Market Data");
-
 		let theme = empty(await AsyncStorage.getItem("theme")) ? "Light" : await AsyncStorage.getItem("theme");
 
 		let endpoint = "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=10&page=1&sparkline=false";
@@ -141,8 +139,6 @@ export default function Dashboard({ navigation }) {
 	}
 
 	async function getGlobal() {
-		// console.log("Dashboard.js - Getting Global Data");
-
 		let endpoint = "https://api.coingecko.com/api/v3/global";
 
 		fetch(endpoint, {
@@ -172,8 +168,6 @@ export default function Dashboard({ navigation }) {
 	}
 
 	async function getHoldings() {
-		// console.log("Dashboard.js - Getting Holdings Data");
-
 		let theme = empty(await AsyncStorage.getItem("theme")) ? "Light" : await AsyncStorage.getItem("theme");
 
 		let api = await AsyncStorage.getItem("api");

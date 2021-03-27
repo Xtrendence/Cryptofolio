@@ -203,8 +203,6 @@ export default function Holdings({ navigation }) {
 	}
 
 	async function getHoldings() {
-		// console.log("Holdings.js - Getting Holdings Data");
-
 		let theme = empty(await AsyncStorage.getItem("theme")) ? "Light" : await AsyncStorage.getItem("theme");
 
 		let api = await AsyncStorage.getItem("api");

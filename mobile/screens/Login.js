@@ -41,7 +41,14 @@ export default function Login({ navigation, route }) {
 			let token = response.token;
 			await AsyncStorage.setItem("api", response.api);
 			await AsyncStorage.setItem("token", token);
-			navigation.navigate("Dashboard");
+
+			let validPages = ["Dashboard", "Market", "Holdings", "Settings"];
+			let page = await AsyncStorage.getItem("defaultPage");
+			if(empty(page) || !validPages.includes(page)) {
+				navigation.navigate("Dashboard");
+			} else {
+				navigation.navigate(page);
+			}
 		}).catch(error => {
 			showMessage({
 				backgroundColor: globalColors[theme].accentFirst,

@@ -57,7 +57,7 @@ export default function Holdings({ navigation }) {
 							<TouchableOpacity style={[styles.button, styles[`button${theme}`]]} onPress={() => { setAction("create"); setCoinID(); setCoinAmount(); setModalMessage(); setModal(false)}}>
 								<Text style={styles.text}>Cancel</Text>
 							</TouchableOpacity>
-							<TouchableOpacity style={[styles.button, styles.buttonConfirm, styles[`buttonConfirm${theme}`]]} onPress={() => { createHolding(coinID, coinAmount) }}>
+							<TouchableOpacity style={[styles.button, styles.buttonConfirm, styles[`buttonConfirm${theme}`]]} onPress={() => { createHolding(coinID, coinAmount)}}>
 								<Text style={styles.text}>Confirm</Text>
 							</TouchableOpacity>
 						</View>
@@ -67,6 +67,11 @@ export default function Holdings({ navigation }) {
 							</View>
 						}
 					</View>
+					{ action !== "create" &&
+						<TouchableOpacity style={[styles.button, styles.buttonDelete]} onPress={() => { deleteHolding(coinID)}}>
+							<Text style={styles.text}>Remove Asset</Text>
+						</TouchableOpacity>
+					}
 				</View>
 			</Modal>
 			<LinearGradient style={[styles.card, { marginBottom:20 }]} colors={globalColors[theme].greenerGradient} useAngle={true} angle={45}>
@@ -154,6 +159,46 @@ export default function Holdings({ navigation }) {
 			});
 		} else {
 			setModalMessage("Both fields must be filled out.");
+		}
+	}
+
+	async function deleteHolding(id) {
+		if(!empty(id)) {
+			id = id.toLowerCase().replaceAll(" ", "-");
+
+			let api = await AsyncStorage.getItem("api");
+			let token = await AsyncStorage.getItem("token");
+
+			let endpoint = api + "holdings/delete.php";
+
+			let body = { token:token, id:id };
+
+			fetch(endpoint, {
+				method: "DELETE",
+				body: JSON.stringify(body),
+				headers: {
+					Accept: "application/json", "Content-Type": "application/json"
+				}
+			})
+			.then((json) => {
+				return json.json();
+			})
+			.then(async (response) => {
+				if("message" in response) {
+					setModal(false);
+					setModalMessage();
+					setAction("create");
+					setCoinID();
+					setCoinAmount();
+					getHoldings();
+				} else {
+					setModalMessage(response.error);
+				}
+			}).catch(error => {
+				console.log(error);
+			});
+		} else {
+			setModalMessage("Coin ID field must be filled out.");
 		}
 	}
 
@@ -391,6 +436,11 @@ const styles = StyleSheet.create({
 	},
 	buttonConfirmDark: {
 		backgroundColor:globalColors["Dark"].accentFirst
+	},
+	buttonDelete: {
+		position:"absolute",
+		bottom:100,
+		backgroundColor:"rgb(230,50,50)"
 	},
 	text: {
 		lineHeight:38,

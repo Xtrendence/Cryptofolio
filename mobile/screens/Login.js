@@ -6,21 +6,22 @@ import { showMessage, hideMessage } from "react-native-flash-message";
 import { StatusBar } from "expo-status-bar";
 import { globalColors, globalStyles } from "../styles/global";
 import { empty } from "../utils/utils";
-import { login } from "../utils/requests";
+import { login, verifySession } from "../utils/requests";
 import { ThemeContext } from "../utils/theme";
 
 export default function Login({ navigation, route }) {
 	const { theme } = React.useContext(ThemeContext);
 
-	// TODO: Change after development.
-	// const [url, setUrl] = React.useState("http://192.168.1.67/api/");
-	const [url, setUrl] = React.useState("http://192.168.1.58:8080/");
-	const [password, setPassword] = React.useState("admin");
+	const [url, setUrl] = React.useState();
+	const [password, setPassword] = React.useState();
 	const [secure, setSecure] = React.useState(false);
 
-	// TODO: Remove after development.
 	useEffect(() => {
-		// attemptLogin();
+		checkSession();
+
+		navigation.addListener("focus", () => {
+			checkSession();
+		});
 	}, []);
 
 	return (
@@ -36,26 +37,63 @@ export default function Login({ navigation, route }) {
 		</View>
 	);
 
-	async function attemptLogin() {
-		login(url, password).then(async response => {
-			let token = response.token;
-			await AsyncStorage.setItem("api", response.api);
-			await AsyncStorage.setItem("token", token);
+	async function attemptLogin(token) {
+		if(empty(token)) {
+			login(url, password).then(async response => {
+				let token = response.token;
+				await AsyncStorage.setItem("api", response.api);
+				await AsyncStorage.setItem("token", token);
 
-			let validPages = ["Dashboard", "Market", "Holdings", "Settings"];
-			let page = await AsyncStorage.getItem("defaultPage");
-			if(empty(page) || !validPages.includes(page)) {
-				navigation.navigate("Dashboard");
-			} else {
-				navigation.navigate(page);
-			}
-		}).catch(error => {
-			showMessage({
-				backgroundColor: globalColors[theme].accentFirst,
-				message: "Error",
-				description: error,
-				duration: 4000
+				let validPages = ["Dashboard", "Market", "Holdings", "Settings"];
+				let page = await AsyncStorage.getItem("defaultPage");
+				if(empty(page) || !validPages.includes(page)) {
+					navigation.navigate("Dashboard");
+				} else {
+					navigation.navigate(page);
+				}
+			}).catch(error => {
+				showMessage({
+					backgroundColor: globalColors[theme].accentFirst,
+					message: "Error",
+					description: error,
+					duration: 4000
+				});
 			});
+		} else {
+			verifySession(token).then(async response => {
+				if(response.valid) {
+					let validPages = ["Dashboard", "Market", "Holdings", "Settings"];
+					let page = await AsyncStorage.getItem("defaultPage");
+					if(empty(page) || !validPages.includes(page)) {
+						navigation.navigate("Dashboard");
+					} else {
+						navigation.navigate(page);
+					}
+				}
+			}).catch(error => {
+				showMessage({
+					backgroundColor: globalColors[theme].accentFirst,
+					message: "Error",
+					description: error,
+					duration: 4000
+				});
+			});
+		}
+	}
+
+	function checkSession() {
+		AsyncStorage.getItem("api").then(result => {
+			setUrl(result);
+
+			AsyncStorage.getItem("token").then(result => {
+				if(!empty(result)) {
+					attemptLogin(result);
+				}
+			}).catch(error => {
+				console.log(error)
+			});
+		}).catch(error => {
+			console.log(error);
 		});
 	}
 

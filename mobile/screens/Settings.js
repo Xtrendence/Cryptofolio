@@ -15,6 +15,7 @@ export default function Settings({ navigation, route }) {
 
 	const [defaultPage, setDefaultPage] = React.useState();
 
+	const [accountMessage, setAccountMessage] = React.useState();
 	const [currentPassword, setCurrentPassword] = React.useState();
 	const [newPassword, setNewPassword] = React.useState();
 	const [repeatPassword, setRepeatPassword] = React.useState();
@@ -24,7 +25,7 @@ export default function Settings({ navigation, route }) {
 	}, []);
 
 	return (
-		<ScrollView style={[styles.page, styles[`page${theme}`]]} contentContainerStyle={{ padding:20 }} nestedScrollEnabled={true}>
+		<ScrollView style={[styles.page, styles[`page${theme}`]]} contentContainerStyle={{ paddingLeft:20, paddingTop:20, paddingRight:20 }} nestedScrollEnabled={true}>
 			<View style={[styles.section, styles[`section${theme}`]]}>
 				<Text style={[styles.header, styles[`header${theme}`]]}>Appearance</Text>
 				<View style={styles.container}>
@@ -51,10 +52,15 @@ export default function Settings({ navigation, route }) {
 			</View>
 			<View style={[styles.section, styles[`section${theme}`]]}>
 				<Text style={[styles.header, styles[`header${theme}`]]}>Account</Text>
+				{ !empty(accountMessage) &&
+					<View style={styles.messageWrapper}>
+						<Text style={styles.message}>{accountMessage}</Text>
+					</View>
+				}
 				<TextInput style={[styles.input, styles[`input${theme}`]]} placeholder="Current Password..." placeholderTextColor={globalColors[theme].mainContrastLight} onChangeText={(value) => { setCurrentPassword(value)}}/>
 				<TextInput style={[styles.input, styles[`input${theme}`]]} placeholder="New Password..." placeholderTextColor={globalColors[theme].mainContrastLight} onChangeText={(value) => { setNewPassword(value)}}/>
 				<TextInput style={[styles.input, styles[`input${theme}`]]} placeholder="Repeat Password..." placeholderTextColor={globalColors[theme].mainContrastLight} onChangeText={(value) => { setRepeatPassword(value)}}/>
-				<TouchableOpacity style={styles.button}>
+				<TouchableOpacity style={styles.button} onPress={() => { changePassword() }}>
 					<Text style={styles.text}>Change Password</Text>
 				</TouchableOpacity>
 				<TouchableOpacity style={styles.button} onPress={() => { logout() }}>
@@ -64,6 +70,42 @@ export default function Settings({ navigation, route }) {
 			<StatusBar style={theme === "Dark" ? "light" : "dark"}/>
 		</ScrollView>
 	);
+
+	async function changePassword() {
+		if(!empty(currentPassword) && !empty(newPassword) && !empty(repeatPassword)) {
+			if(newPassword === repeatPassword) {
+				let api = await AsyncStorage.getItem("api");
+
+				let endpoint = api + "account/update.php";
+
+				let body = { currentPassword:currentPassword, newPassword:newPassword };
+
+				fetch(endpoint, {
+					body: JSON.stringify(body),
+					method: "PUT",
+					headers: {
+						Accept: "application/json", "Content-Type": "application/json"
+					}
+				})
+				.then((json) => {
+					return json.json();
+				})
+				.then(async (response) => {
+					if("error" in response) {
+						setAccountMessage(response.error);
+					} else {
+						logout();
+					}
+				}).catch(error => {
+					console.log(error);
+				});
+			} else {
+				setAccountMessage("Passwords don't match.");
+			}
+		} else {
+			setAccountMessage("All three fields must be filled out.");
+		}
+	}
 
 	async function logout() {
 		let api = await AsyncStorage.getItem("api");
@@ -166,6 +208,19 @@ const styles = StyleSheet.create({
 	},
 	headerDark: {
 		color:globalColors["Dark"].mainContrast
+	},
+	messageWrapper: {
+		backgroundColor:"rgb(230,50,50)",
+		borderRadius:globalStyles.borderRadius,
+		width:200,
+		padding:10,
+		marginBottom:20,
+	},
+	message: {
+		color:globalColors["Light"].accentContrast,
+		fontSize:16,
+		fontFamily:globalStyles.fontFamily,
+		lineHeight:25,
 	},
 	button: {
 		marginBottom:20,

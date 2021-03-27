@@ -75,11 +75,7 @@ export default function Dashboard({ navigation }) {
 	);
 
 	async function getMarket() {
-		setTimeout(() => {
-			if(marketData.length === 1 && navigation.isFocused()) {
-				getMarket();
-			}
-		}, 5000);
+		// console.log("Dashboard.js - Getting Market Data");
 
 		let theme = empty(await AsyncStorage.getItem("theme")) ? "Light" : await AsyncStorage.getItem("theme");
 
@@ -145,11 +141,7 @@ export default function Dashboard({ navigation }) {
 	}
 
 	async function getGlobal() {
-		setTimeout(() => {
-			if((marketCap === loadingText || empty(marketChange)) && navigation.isFocused()) {
-				getGlobal();
-			}
-		}, 5000);
+		// console.log("Dashboard.js - Getting Global Data");
 
 		let endpoint = "https://api.coingecko.com/api/v3/global";
 
@@ -180,11 +172,7 @@ export default function Dashboard({ navigation }) {
 	}
 
 	async function getHoldings() {
-		setTimeout(() => {
-			if(holdingsData[0] === <Text key="loading" style={[styles.headerText, styles[`headerText${theme}`]]}>Loading...</Text> && navigation.isFocused()) {
-				getHoldings();
-			}
-		}, 5000);
+		// console.log("Dashboard.js - Getting Holdings Data");
 
 		let theme = empty(await AsyncStorage.getItem("theme")) ? "Light" : await AsyncStorage.getItem("theme");
 
@@ -235,7 +223,7 @@ export default function Dashboard({ navigation }) {
 								<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellRank]}>{rank}</Text>
 								<Image style={styles.cellImage} source={{uri:icon}}/>
 								<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellSymbol]}>{symbol}</Text>
-								<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellAmount]}>{amount}</Text>
+								<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellAmount]}>{separateThousands(amount)}</Text>
 							</View>
 						);
 					});

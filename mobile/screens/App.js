@@ -3,7 +3,7 @@ import FlashMessage from "react-native-flash-message";
 import React, { useEffect } from "react";
 import BottomBar from "../components/BottomBar";
 import TopBar from "../components/TopBar";
-import { DarkTheme, NavigationContainer } from "@react-navigation/native";
+import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import Login from "../screens/Login";
 import Dashboard from "../screens/Dashboard";

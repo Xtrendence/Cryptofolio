@@ -32,7 +32,7 @@ export default function Market({ navigation }) {
 				getMarket();
 				getGlobal();
 			}
-		}, 10000)
+		}, 15000)
 	}, []);
 
 	useEffect(() => {
@@ -64,11 +64,7 @@ export default function Market({ navigation }) {
 	);
 
 	async function getMarket() {
-		setTimeout(() => {
-			if(marketData.length === 1 && navigation.isFocused()) {
-				getMarket();
-			}
-		}, 5000);
+		// console.log("Market.js - Getting Market Data");
 
 		let theme = empty(await AsyncStorage.getItem("theme")) ? "Light" : await AsyncStorage.getItem("theme");
 
@@ -137,11 +133,7 @@ export default function Market({ navigation }) {
 	}
 
 	async function getGlobal() {
-		setTimeout(() => {
-			if((marketCap === loadingText || empty(marketChange)) && navigation.isFocused()) {
-				getGlobal();
-			}
-		}, 5000);
+		// console.log("Market.js - Getting Global Data");
 
 		let endpoint = "https://api.coingecko.com/api/v3/global";
 

@@ -158,11 +158,7 @@ export default function Holdings({ navigation }) {
 	}
 
 	async function getHoldings() {
-		setTimeout(() => {
-			if(holdingsData[0] === <Text key="loading" style={[styles.headerText, styles[`headerText${theme}`]]}>Loading...</Text> && navigation.isFocused()) {
-				getHoldings();
-			}
-		}, 5000);
+		// console.log("Holdings.js - Getting Holdings Data");
 
 		let theme = empty(await AsyncStorage.getItem("theme")) ? "Light" : await AsyncStorage.getItem("theme");
 
@@ -216,7 +212,7 @@ export default function Holdings({ navigation }) {
 									<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellRank]} ellipsizeMode="tail">{rank}</Text>
 									<Image style={styles.cellImage} source={{uri:icon}}/>
 									<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellSymbol]} ellipsizeMode="tail">{symbol}</Text>
-									<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellAmount]} ellipsizeMode="tail">{amount}</Text>
+									<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellAmount]} ellipsizeMode="tail">{separateThousands(amount)}</Text>
 									<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellValue]} ellipsizeMode="tail">${value}</Text>
 								</View>
 							</TouchableOpacity>

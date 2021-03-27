@@ -141,8 +141,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		clearTimeout(window.resizedFinished);
 		window.resizedFinished = setTimeout(() => {
 			if(divNavbarMarket.classList.contains("active")) {
-				let page = parseInt(divMarketList.getAttribute("data-page"));
-				listMarket(page);
+				listMarket();
 			}
 			if(divNavbarHoldings.classList.contains("active")) {
 				listHoldings();
@@ -778,7 +777,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			divMarketList.setAttribute("data-page", page);
 			clearMarketList();
 			spanPageNumber.textContent = "Page " + page;
-			listMarket(page);
+			listMarket();
 		}
 	}
 
@@ -790,7 +789,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			divMarketList.setAttribute("data-page", page);
 			clearMarketList();
 			spanPageNumber.textContent = "Page " + page;
-			listMarket(page);
+			listMarket();
 		}
 	}
 
@@ -929,13 +928,13 @@ document.addEventListener("DOMContentLoaded", () => {
 								try {
 									if(document.getElementById(id)) {
 										div = document.getElementById(id);
-										div.getElementsByClassName("amount")[0].textContent = amount;
+										div.getElementsByClassName("amount")[0].textContent = separateThousands(amount);
 									} else {
 										div = document.createElement("div");
 										div.id = id;
 										div.classList.add("coin-wrapper");
 
-										div.innerHTML = '<img draggable="false" src="' + icon + '"><span class="coin">' + symbol.toUpperCase() + '</span><span class="amount">' + amount + '</span>';
+										div.innerHTML = '<img draggable="false" src="' + icon + '"><span class="coin">' + symbol.toUpperCase() + '</span><span class="amount">' + separateThousands(amount) + '</span>';
 
 										divDashboardHoldingsList.appendChild(div);
 									}
@@ -956,7 +955,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		}
 	}
 
-	function listMarket(page) {
+	function listMarket() {
 		if(!divLoginWrapper.classList.contains("active") && divNavbarMarket.classList.contains("active")) {
 			clearInterval(updateMarketListInterval);
 
@@ -964,9 +963,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
 			setTimeout(() => {
 				if(divMarketList.classList.contains("loading")) {
-					listMarket(page);
+					listMarket();
 				}
 			}, 5000);
+
+			let page = parseInt(divMarketList.getAttribute("data-page"));
+			if(empty(page)) {
+				page = 1;
+			}
 
 			getMarket(page, 100).then(coins => {
 				if(divMarketList.getElementsByClassName("coin-wrapper loading").length > 0) {
@@ -999,11 +1003,7 @@ document.addEventListener("DOMContentLoaded", () => {
 						marketCap = abbreviateNumber(marketCap, 0);
 					}
 
-					if(empty(page)) {
-						page = 1;
-					}
-					
-					let rank = (page * 100) + index;
+					let rank = ((page - 1) * 100) + index;
 
 					if(page === 1) {
 						rank = index;
@@ -1065,7 +1065,9 @@ document.addEventListener("DOMContentLoaded", () => {
 					console.log(e);
 				});
 
-				updateMarketListInterval = setInterval(listMarket, updateInterval);
+				updateMarketListInterval = setInterval(() => {
+					listMarket();
+				}, updateInterval);
 			}).catch(e => {
 				console.log(e);
 			});
@@ -1127,7 +1129,7 @@ document.addEventListener("DOMContentLoaded", () => {
 								try {
 									if(document.getElementById(id)) {
 										div = document.getElementById(id);
-										div.getElementsByClassName("amount")[0].textContent = amount;
+										div.getElementsByClassName("amount")[0].textContent = separateThousands(amount);
 										div.getElementsByClassName("value")[0].textContent = "$ " + separateThousands(value);
 										div.getElementsByClassName("day")[0].textContent = day;
 									} else {
@@ -1159,7 +1161,7 @@ document.addEventListener("DOMContentLoaded", () => {
 											}
 										});
 
-										div.innerHTML = '<img draggable="false" src="' + icon + '"><span class="coin">' + symbol.toUpperCase() + '</span><span class="amount">' + amount + '</span><span class="value">$ ' + separateThousands(value) + '</span><span class="day">' + day + '</span>';
+										div.innerHTML = '<img draggable="false" src="' + icon + '"><span class="coin">' + symbol.toUpperCase() + '</span><span class="amount">' + separateThousands(amount) + '</span><span class="value">$ ' + separateThousands(value) + '</span><span class="day">' + day + '</span>';
 
 										div.appendChild(more);
 

@@ -46,3 +46,7 @@ export function epoch() {
 	var time = Math.round(date.getTime() / 1000);
 	return time;
 }
+
+export function capitalizeFirstLetter(string) {
+	return string.charAt(0).toUpperCase() + string.slice(1);
+}

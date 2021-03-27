@@ -6,7 +6,7 @@ import changeNavigationBarColor from "react-native-navigation-bar-color";
 import LinearGradient from "react-native-linear-gradient";
 import { globalColors, globalStyles } from "../styles/global";
 import { ThemeContext } from "../utils/theme";
-import { empty, separateThousands, abbreviateNumber, epoch, rgbToHex } from "../utils/utils";
+import { empty, separateThousands, abbreviateNumber, epoch, capitalizeFirstLetter } from "../utils/utils";
 
 const screenWidth = Dimensions.get("screen").width;
 const screenHeight = Dimensions.get("screen").height;
@@ -211,7 +211,7 @@ export default function Holdings({ navigation }) {
 						let value = separateThousands(abbreviateNumber(coin.value.toFixed(2), 2));
 
 						data.push(
-							<TouchableOpacity onPress={() => { setAction("update"); setCoinID(holding); setCoinAmount(amount.toString()); setModal(true); }} key={epoch() + holding}>
+							<TouchableOpacity onPress={() => { setAction("update"); setCoinID(capitalizeFirstLetter(holding)); setCoinAmount(amount.toString()); setModal(true); }} key={epoch() + holding}>
 								<View style={[styles.row, rank % 2 ? {...styles.rowOdd, ...styles[`rowOdd${theme}`]} : null]}>
 									<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellRank]} ellipsizeMode="tail">{rank}</Text>
 									<Image style={styles.cellImage} source={{uri:icon}}/>

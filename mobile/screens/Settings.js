@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { NavigationActions } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
-import { Text, TouchableOpacity, View, StyleSheet, ScrollView, Dimensions, Switch } from "react-native";
+import { Text, TouchableOpacity, View, StyleSheet, ScrollView, Dimensions, Switch, TextInput } from "react-native";
 import { ThemeContext } from "../utils/theme";
 import { globalColors, globalStyles } from "../styles/global";
 import { empty } from "../utils/utils";
@@ -14,6 +14,10 @@ export default function Settings({ navigation, route }) {
 	const { theme, toggleTheme } = React.useContext(ThemeContext);
 
 	const [defaultPage, setDefaultPage] = React.useState();
+
+	const [currentPassword, setCurrentPassword] = React.useState();
+	const [newPassword, setNewPassword] = React.useState();
+	const [repeatPassword, setRepeatPassword] = React.useState();
 
 	useEffect(() => {
 		getSettings();
@@ -45,9 +49,47 @@ export default function Settings({ navigation, route }) {
 					</TouchableOpacity>
 				</View>
 			</View>
+			<View style={[styles.section, styles[`section${theme}`]]}>
+				<Text style={[styles.header, styles[`header${theme}`]]}>Account</Text>
+				<TextInput style={[styles.input, styles[`input${theme}`]]} placeholder="Current Password..." placeholderTextColor={globalColors[theme].mainContrastLight} onChangeText={(value) => { setCurrentPassword(value)}}/>
+				<TextInput style={[styles.input, styles[`input${theme}`]]} placeholder="New Password..." placeholderTextColor={globalColors[theme].mainContrastLight} onChangeText={(value) => { setNewPassword(value)}}/>
+				<TextInput style={[styles.input, styles[`input${theme}`]]} placeholder="Repeat Password..." placeholderTextColor={globalColors[theme].mainContrastLight} onChangeText={(value) => { setRepeatPassword(value)}}/>
+				<TouchableOpacity style={styles.button}>
+					<Text style={styles.text}>Change Password</Text>
+				</TouchableOpacity>
+				<TouchableOpacity style={styles.button} onPress={() => { logout() }}>
+					<Text style={styles.text}>Logout</Text>
+				</TouchableOpacity>
+			</View>
 			<StatusBar style={theme === "Dark" ? "light" : "dark"}/>
 		</ScrollView>
 	);
+
+	async function logout() {
+		let api = await AsyncStorage.getItem("api");
+		let token = await AsyncStorage.getItem("token");
+
+		let endpoint = api + "account/logout.php?platform=app&token=" + token;
+
+		fetch(endpoint, {
+			method: "GET",
+			headers: {
+				Accept: "application/json", "Content-Type": "application/json"
+			}
+		})
+		.then((json) => {
+			return json.json();
+		})
+		.then(async (response) => {
+			navigation.navigate("Login");
+
+			if("error" in response) {
+				console.log(response);
+			}
+		}).catch(error => {
+			console.log(error);
+		});
+	}
 
 	async function changeDefaultPage(page) {
 		let validPages = ["Dashboard", "Market", "Holdings", "Settings"];
@@ -126,6 +168,7 @@ const styles = StyleSheet.create({
 		color:globalColors["Dark"].mainContrast
 	},
 	button: {
+		marginBottom:20,
 		height:40,
 		width:200,
 		alignItems:"center",
@@ -166,5 +209,24 @@ const styles = StyleSheet.create({
 	},
 	buttonTextActive: {
 		color:globalColors["Light"].accentContrast
+	},
+	input: {
+		backgroundColor:globalColors["Light"].mainFirst,
+		color:globalColors["Light"].mainContrast,
+		paddingLeft:10,
+		paddingRight:10,
+		width:200,
+		height:40,
+		marginBottom:20,
+		borderRadius:globalStyles.borderRadius,
+		shadowColor:globalStyles.shadowColor,
+		shadowOffset:globalStyles.shadowOffset,
+		shadowOpacity:globalStyles.shadowOpacity,
+		shadowRadius:globalStyles.shadowRadius,
+		elevation:globalStyles.shadowElevation,
+	},
+	inputDark: {
+		backgroundColor:globalColors["Dark"].mainFirst,
+		color:globalColors["Dark"].mainContrast
 	},
 });

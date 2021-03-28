@@ -438,7 +438,10 @@ const styles = StyleSheet.create({
 	buttonDelete: {
 		position:"absolute",
 		bottom:100,
-		backgroundColor:"rgb(230,50,50)"
+		backgroundColor:"rgb(230,50,50)",
+		width:"auto",
+		paddingLeft:10,
+		paddingRight:10,
 	},
 	text: {
 		lineHeight:38,

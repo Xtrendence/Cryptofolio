@@ -1,12 +1,12 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { useEffect } from "react";
-import { Text, StyleSheet, View, Image, Dimensions, ScrollView, Modal, TouchableOpacity, TextInput } from "react-native";
+import { Text, StyleSheet, View, Image, Dimensions, ScrollView, Modal, TouchableOpacity, TextInput, RefreshControl, SafeAreaView } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import changeNavigationBarColor from "react-native-navigation-bar-color";
 import LinearGradient from "react-native-linear-gradient";
 import { globalColors, globalStyles } from "../styles/global";
 import { ThemeContext } from "../utils/theme";
-import { empty, separateThousands, abbreviateNumber, epoch, capitalizeFirstLetter } from "../utils/utils";
+import { empty, separateThousands, abbreviateNumber, epoch, capitalizeFirstLetter, wait } from "../utils/utils";
 
 const screenWidth = Dimensions.get("screen").width;
 const screenHeight = Dimensions.get("screen").height;
@@ -19,6 +19,8 @@ export default function Holdings({ navigation }) {
 	const loadingText = "Loading...";
 
 	const [pageKey, setPageKey] = React.useState(epoch());
+
+	const [refreshing, setRefreshing] = React.useState(false);
 
 	const [modal, setModal] = React.useState(false);
 	const [modalMessage, setModalMessage] = React.useState();
@@ -46,8 +48,14 @@ export default function Holdings({ navigation }) {
 		getHoldings();
 	}, [theme]);
 
+	const onRefresh = React.useCallback(() => {
+		setRefreshing(true);
+		getHoldings();
+		wait(2000).then(() => setRefreshing(false));
+	}, []);
+
 	return (
-		<View style={[styles.page, styles[`page${theme}`]]} key={pageKey}>
+		<ScrollView style={[styles.page, styles[`page${theme}`]]} key={pageKey} contentContainerStyle={{ padding:20 }} nestedScrollEnabled={true} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh}/>}>
 			<Modal animationType="fade" visible={modal} onRequestClose={() => { setAction("create"); setCoinID(); setCoinAmount(); setModalMessage(); setModal(false)}} transparent={false}>
 				<View style={[styles.modalWrapper, styles[`modalWrapper${theme}`]]}>
 					<View stlye={[styles.modal, styles[`modal${theme}`]]}>
@@ -90,7 +98,7 @@ export default function Holdings({ navigation }) {
 				</LinearGradient>
 			</TouchableOpacity>
 			<StatusBar style={theme === "Dark" ? "light" : "dark"}/>
-		</View>
+		</ScrollView>
 	);
 
 	async function createHolding(id, amount) {
@@ -351,7 +359,6 @@ const styles = StyleSheet.create({
 	page: {
 		height:screenHeight - 180,
 		backgroundColor:globalColors["Light"].mainSecond,
-		padding:20
 	},
 	pageDark: {
 		backgroundColor:globalColors["Dark"].mainSecond
@@ -458,6 +465,7 @@ const styles = StyleSheet.create({
 		shadowRadius:globalStyles.shadowRadius,
 		elevation:globalStyles.shadowElevation,
 		borderRadius:globalStyles.borderRadius,
+		height:screenHeight - 380,
 		maxHeight:screenHeight - 380
 	},
 	tableWrapperDark: {

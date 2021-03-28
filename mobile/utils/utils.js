@@ -50,3 +50,7 @@ export function epoch() {
 export function capitalizeFirstLetter(string) {
 	return string.charAt(0).toUpperCase() + string.slice(1);
 }
+
+export function wait(timeout) {
+	return new Promise(resolve => setTimeout(resolve, timeout));
+}

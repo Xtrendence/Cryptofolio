@@ -1,12 +1,12 @@
 import React, { useEffect } from "react";
-import { Text, StyleSheet, View, Image, Dimensions, ScrollView, TouchableOpacity } from "react-native";
+import { Text, StyleSheet, View, Image, Dimensions, ScrollView, RefreshControl } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import Icon from "react-native-vector-icons/FontAwesome5";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import LinearGradient from "react-native-linear-gradient";
 import { globalColors, globalStyles } from "../styles/global";
 import { ThemeContext } from "../utils/theme";
-import { empty, separateThousands, abbreviateNumber, epoch } from "../utils/utils";
+import { empty, separateThousands, abbreviateNumber, epoch, wait } from "../utils/utils";
 
 const screenWidth = Dimensions.get("screen").width;
 const screenHeight = Dimensions.get("screen").height;
@@ -19,6 +19,8 @@ export default function Market({ navigation }) {
 	const loadingText = "Loading...";
 
 	const [pageKey, setPageKey] = React.useState(epoch());
+
+	const [refreshing, setRefreshing] = React.useState(false);
 
 	const [marketCap, setMarketCap] = React.useState(loadingText);
 	const [marketChange, setMarketChange] = React.useState();
@@ -44,8 +46,15 @@ export default function Market({ navigation }) {
 		getGlobal();
 	}, [theme]);
 
+	const onRefresh = React.useCallback(() => {
+		setRefreshing(true);
+		getMarket();
+		getGlobal();
+		wait(2000).then(() => setRefreshing(false));
+	}, []);
+
 	return (
-		<View style={[styles.page, styles[`page${theme}`]]} key={pageKey}>
+		<ScrollView style={[styles.page, styles[`page${theme}`]]} key={pageKey} contentContainerStyle={{ padding:20 }} nestedScrollEnabled={true} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh}/>}>
 			<LinearGradient style={[styles.card, { marginBottom:20, marginTop:0 }]} colors={globalColors[theme].colorfulGradient} useAngle={true} angle={45}>
 				<Text style={[styles.cardText, styles[`cardText${theme}`]]}>{marketCap} {marketChange}</Text>
 			</LinearGradient>
@@ -60,7 +69,7 @@ export default function Market({ navigation }) {
 				<Text style={[styles.cardText, styles[`cardText${theme}`]]}>{volume}</Text>
 			</LinearGradient>
 			<StatusBar style={theme === "Dark" ? "light" : "dark"}/>
-		</View>
+		</ScrollView>
 	);
 
 	async function getMarket() {
@@ -167,7 +176,6 @@ const styles = StyleSheet.create({
 	page: {
 		height:screenHeight - 180,
 		backgroundColor:globalColors["Light"].mainSecond,
-		padding:20,
 	},
 	pageDark: {
 		backgroundColor:globalColors["Dark"].mainSecond
@@ -180,7 +188,8 @@ const styles = StyleSheet.create({
 		shadowRadius:globalStyles.shadowRadius,
 		elevation:globalStyles.shadowElevation,
 		borderRadius:globalStyles.borderRadius,
-		maxHeight:screenHeight - 300,
+		maxHeight:screenHeight - 380,
+		height:screenHeight - 380,
 	},
 	tableWrapperDark: {
 		backgroundColor:globalColors["Dark"].mainFirst

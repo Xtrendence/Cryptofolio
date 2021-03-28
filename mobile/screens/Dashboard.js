@@ -1,11 +1,11 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { useEffect } from "react";
-import { Text, StyleSheet, View, Image, Dimensions, ScrollView } from "react-native";
+import { Text, StyleSheet, View, Image, Dimensions, ScrollView, RefreshControl } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import LinearGradient from "react-native-linear-gradient";
 import { globalColors, globalStyles } from "../styles/global";
 import { ThemeContext } from "../utils/theme";
-import { empty, separateThousands, abbreviateNumber, epoch } from "../utils/utils";
+import { empty, separateThousands, abbreviateNumber, epoch, wait } from "../utils/utils";
 
 const screenWidth = Dimensions.get("screen").width;
 const screenHeight = Dimensions.get("screen").height;
@@ -19,6 +19,8 @@ export default function Dashboard({ navigation }) {
 	const loadingText = "Loading...";
 
 	const [pageKey, setPageKey] = React.useState(epoch());
+
+	const [refreshing, setRefreshing] = React.useState(false);
 
 	const [marketCap, setMarketCap] = React.useState(loadingText);
 	const [marketChange, setMarketChange] = React.useState();
@@ -48,8 +50,16 @@ export default function Dashboard({ navigation }) {
 		getHoldings();
 	}, [theme]);
 
+	const onRefresh = React.useCallback(() => {
+		setRefreshing(true);
+		getMarket();
+		getGlobal();
+		getHoldings();
+		wait(2000).then(() => setRefreshing(false));
+	}, []);
+
 	return (
-		<ScrollView style={[styles.page, styles[`page${theme}`]]} contentContainerStyle={{ padding:20 }} nestedScrollEnabled={true} key={pageKey}>
+		<ScrollView style={[styles.page, styles[`page${theme}`]]} contentContainerStyle={{ padding:20 }} nestedScrollEnabled={true} key={pageKey} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh}/>}>
 			<LinearGradient style={[styles.card, { marginBottom:20, marginTop:0 }]} colors={globalColors[theme].purpleGradient} useAngle={true} angle={45}>
 				<Text style={[styles.cardText, styles[`cardText${theme}`]]}>{marketCap} {marketChange}</Text>
 			</LinearGradient>

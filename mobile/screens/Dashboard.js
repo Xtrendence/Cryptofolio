@@ -319,7 +319,7 @@ const styles = StyleSheet.create({
 		shadowRadius:globalStyles.shadowRadius,
 		elevation:globalStyles.shadowElevation,
 		borderRadius:globalStyles.borderRadius,
-		maxHeight:240
+		maxHeight:(screenHeight / 2) - 60
 	},
 	tableWrapperDark: {
 		backgroundColor:globalColors["Dark"].mainFirst

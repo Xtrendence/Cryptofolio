@@ -11,8 +11,8 @@ A web, mobile, and desktop application to track your cryptocurrency holdings.
 |Platform   |Completion|Stage      |
 |-----------|----------|-----------|
 |API        |100%      |Finished   |
-|Website    |90%       |Testing    |
-|Mobile App |90%       |Testing    |
+|Website    |100%      |Finished   |
+|Mobile App |100%      |Finished   |
 |Desktop App|0%        |Development|
 
 ![Cryptofolio Website - Light Mode](https://i.imgur.com/0fMPa8V.png)

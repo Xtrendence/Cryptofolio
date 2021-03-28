@@ -2,6 +2,7 @@ import Constants from "expo-constants";
 import React, { useEffect } from "react";
 import { StyleSheet, Text, TouchableOpacity, View, Animated } from "react-native";
 import Icon from "react-native-vector-icons/FontAwesome5";
+import DeviceInfo from "react-native-device-info";
 import { globalColors, globalStyles } from "../styles/global";
 import { ThemeContext } from "../utils/theme";
 
@@ -10,7 +11,7 @@ export default function TopBar(props) {
 
 	return (
 		<View style={[styles.bar, styles[`bar${theme}`]]}>
-			<Text style={[styles.header, styles[`header${theme}`]]}>{props.title}</Text>
+			<Text style={[styles.header, styles[`header${theme}`], (DeviceInfo.hasNotch()) ? styles.headerNotch : null]}>{props.title}</Text>
 		</View>
 	);
 }
@@ -42,5 +43,9 @@ const styles = StyleSheet.create({
 	},
 	headerDark: {
 		color:globalColors["Dark"].mainContrast
+	},
+	headerNotch: {
+		textAlign:"left",
+		paddingLeft:20
 	}
 });

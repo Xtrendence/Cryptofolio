@@ -1,5 +1,4 @@
 import "react-native-gesture-handler";
-import FlashMessage from "react-native-flash-message";
 import React, { useEffect } from "react";
 import BottomBar from "../components/BottomBar";
 import TopBar from "../components/TopBar";
@@ -58,7 +57,6 @@ export default function App() {
 					<BottomBar navigation={navigationRef} screen={{ active:active, setActive:setActive }}></BottomBar>
 				}
 			</NavigationContainer>
-			<FlashMessage position="top" hideStatusBar={true}/>
 		</ThemeProvider>
 	);
 

@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { Text, View, StyleSheet, TextInput, TouchableOpacity } from "react-native";
 import LinearGradient from "react-native-linear-gradient";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { showMessage, hideMessage } from "react-native-flash-message";
+import FlashMessage, { showMessage, hideMessage } from "react-native-flash-message";
 import { StatusBar } from "expo-status-bar";
 import { globalColors, globalStyles } from "../styles/global";
 import { empty } from "../utils/utils";
@@ -33,6 +33,7 @@ export default function Login({ navigation, route }) {
 					<Text style={styles.text}>Login</Text>
 				</LinearGradient>
 			</TouchableOpacity>
+			<FlashMessage position="top" hideStatusBar={true} floating={true}/>
 			<StatusBar style={theme === "Dark" ? "light" : "dark"}/>
 		</View>
 	);

@@ -26,7 +26,7 @@ export default function Login({ navigation, route }) {
 
 	return (
 		<View style={[styles.container, styles[`container${theme}`]]}>
-			<TextInput placeholder="API URL..." onChangeText={(value) => setUrl(value)} value={url} style={[styles.input, styles[`input${theme}`]]} placeholderTextColor={globalColors[theme].mainContrastLight} autoCapitalize="none"></TextInput>
+			<TextInput placeholder="API URL..." onChangeText={(value) => setUrl(value)} value={url} style={[styles.input, styles[`input${theme}`]]} placeholderTextColor={globalColors[theme].mainContrastLight} autoCapitalize="none" spellCheck={false}></TextInput>
 			<TextInput placeholder="Password..." secureTextEntry={secure} value={password} onChangeText={(value) => textChanged(value)} style={[styles.input, styles[`input${theme}`]]} placeholderTextColor={globalColors[theme].mainContrastLight} autoCapitalize="none"></TextInput>
 			<TouchableOpacity onPress={() => attemptLogin()}>
 				<LinearGradient colors={[globalColors[theme].accentFirst, globalColors[theme].accentSecond]} style={styles.button} useAngle={true} angle={45}>

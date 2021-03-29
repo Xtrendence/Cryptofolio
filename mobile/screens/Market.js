@@ -99,9 +99,6 @@ export default function Market({ navigation }) {
 			);
 
 			let keys = Object.keys(coins);
-			keys.sort((a, b) => {
-				return coins[keys[b]].market_cap - coins[keys[a]].market_cap;
-			});
 
 			let rank = 0;
 

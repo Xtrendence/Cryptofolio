@@ -26,8 +26,8 @@ export default function Login({ navigation, route }) {
 
 	return (
 		<View style={[styles.container, styles[`container${theme}`]]}>
-			<TextInput placeholder="API URL..." onChangeText={(value) => setUrl(value)} value={url} style={[styles.input, styles[`input${theme}`]]} placeholderTextColor={globalColors[theme].mainContrastLight}></TextInput>
-			<TextInput placeholder="Password..." secureTextEntry={secure} value={password} onChangeText={(value) => textChanged(value)} style={[styles.input, styles[`input${theme}`]]} placeholderTextColor={globalColors[theme].mainContrastLight}></TextInput>
+			<TextInput placeholder="API URL..." onChangeText={(value) => setUrl(value)} value={url} style={[styles.input, styles[`input${theme}`]]} placeholderTextColor={globalColors[theme].mainContrastLight} autoCapitalize="none"></TextInput>
+			<TextInput placeholder="Password..." secureTextEntry={secure} value={password} onChangeText={(value) => textChanged(value)} style={[styles.input, styles[`input${theme}`]]} placeholderTextColor={globalColors[theme].mainContrastLight} autoCapitalize="none"></TextInput>
 			<TouchableOpacity onPress={() => attemptLogin()}>
 				<LinearGradient colors={[globalColors[theme].accentFirst, globalColors[theme].accentSecond]} style={styles.button} useAngle={true} angle={45}>
 					<Text style={styles.text}>Login</Text>
@@ -124,7 +124,7 @@ const styles = StyleSheet.create({
 		color:globalColors["Light"].mainContrast,
 		paddingLeft:10,
 		paddingRight:10,
-		width:160,
+		width:200,
 		height:40,
 		marginBottom:20,
 		borderRadius:globalStyles.borderRadius,

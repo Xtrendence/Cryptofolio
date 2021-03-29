@@ -357,7 +357,7 @@ String.prototype.replaceAll = function(str1, str2, ignore) {
 
 const styles = StyleSheet.create({
 	page: {
-		height:screenHeight - 180,
+		height:screenHeight - 190,
 		backgroundColor:globalColors["Light"].mainSecond,
 	},
 	pageDark: {
@@ -447,8 +447,8 @@ const styles = StyleSheet.create({
 		bottom:100,
 		backgroundColor:"rgb(230,50,50)",
 		width:"auto",
-		paddingLeft:10,
-		paddingRight:10,
+		paddingLeft:14,
+		paddingRight:14,
 	},
 	text: {
 		lineHeight:38,
@@ -465,8 +465,8 @@ const styles = StyleSheet.create({
 		shadowRadius:globalStyles.shadowRadius,
 		elevation:globalStyles.shadowElevation,
 		borderRadius:globalStyles.borderRadius,
-		height:screenHeight - 380,
-		maxHeight:screenHeight - 380
+		height:screenHeight - 390,
+		maxHeight:screenHeight - 390
 	},
 	tableWrapperDark: {
 		backgroundColor:globalColors["Dark"].mainFirst

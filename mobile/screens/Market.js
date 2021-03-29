@@ -174,7 +174,7 @@ export default function Market({ navigation }) {
 
 const styles = StyleSheet.create({
 	page: {
-		height:screenHeight - 180,
+		height:screenHeight - 190,
 		backgroundColor:globalColors["Light"].mainSecond,
 	},
 	pageDark: {
@@ -188,8 +188,8 @@ const styles = StyleSheet.create({
 		shadowRadius:globalStyles.shadowRadius,
 		elevation:globalStyles.shadowElevation,
 		borderRadius:globalStyles.borderRadius,
-		maxHeight:screenHeight - 380,
-		height:screenHeight - 380,
+		maxHeight:screenHeight - 390,
+		height:screenHeight - 390,
 	},
 	tableWrapperDark: {
 		backgroundColor:globalColors["Dark"].mainFirst

@@ -315,7 +315,7 @@ export default function Dashboard({ navigation }) {
 
 const styles = StyleSheet.create({
 	page: {
-		height:screenHeight - 180,
+		height:screenHeight - 190,
 		backgroundColor:globalColors["Light"].mainSecond
 	},
 	pageDark: {

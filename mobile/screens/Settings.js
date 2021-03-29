@@ -57,9 +57,9 @@ export default function Settings({ navigation, route }) {
 						<Text style={styles.message}>{accountMessage}</Text>
 					</View>
 				}
-				<TextInput style={[styles.input, styles[`input${theme}`]]} placeholder="Current Password..." placeholderTextColor={globalColors[theme].mainContrastLight} onChangeText={(value) => { setCurrentPassword(value)}}/>
-				<TextInput style={[styles.input, styles[`input${theme}`]]} placeholder="New Password..." placeholderTextColor={globalColors[theme].mainContrastLight} onChangeText={(value) => { setNewPassword(value)}}/>
-				<TextInput style={[styles.input, styles[`input${theme}`]]} placeholder="Repeat Password..." placeholderTextColor={globalColors[theme].mainContrastLight} onChangeText={(value) => { setRepeatPassword(value)}}/>
+				<TextInput style={[styles.input, styles[`input${theme}`]]} placeholder="Current Password..." placeholderTextColor={globalColors[theme].mainContrastLight} onChangeText={(value) => { setCurrentPassword(value)}} autoCapitalize="none"/>
+				<TextInput style={[styles.input, styles[`input${theme}`]]} placeholder="New Password..." placeholderTextColor={globalColors[theme].mainContrastLight} onChangeText={(value) => { setNewPassword(value)}} autoCapitalize="none"/>
+				<TextInput style={[styles.input, styles[`input${theme}`]]} placeholder="Repeat Password..." placeholderTextColor={globalColors[theme].mainContrastLight} onChangeText={(value) => { setRepeatPassword(value)}} autoCapitalize="none"/>
 				<TouchableOpacity style={styles.button} onPress={() => { changePassword() }}>
 					<Text style={styles.text}>Change Password</Text>
 				</TouchableOpacity>
@@ -162,7 +162,7 @@ export default function Settings({ navigation, route }) {
 
 const styles = StyleSheet.create({
 	page: {
-		maxHeight:screenHeight - 180,
+		maxHeight:screenHeight - 190,
 		backgroundColor:globalColors["Light"].mainSecond
 	},
 	pageDark: {

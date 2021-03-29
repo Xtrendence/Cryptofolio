@@ -44,6 +44,10 @@ If everything is working correctly, opening that URL with a browser should outpu
 
 You can then copy the "website" folder into the DocumentRoot directory as well. Install the APK file on your Android phone, launch the app, and enter the URL you took note of earlier, and enter "admin" as your password (you can and should change this in the "Settings" page after you first log in).
 
+### What is the Coin ID when adding an asset?
+
+In order to add an asset to your list of holdings, you will need to find out what its ID is on CoinGecko. You can find this by looking at the URL of whatever asset you're looking at. So, for example, the Moon token of r/CryptoCurrency can be found [here](https://www.coingecko.com/en/coins/moon), and as seen in the URL, its ID is simply "moon". This process might be made easier in the future if the demand is there, and I might add some form of search functionality, but this wouldn't really be possible with CoinGecko's current API.
+
 ### Please keep the following points in mind:
 
 - Since the CoinGecko API is used to fetch and utilize market data (such as the price of a cryptocurrency), your IP will most likely be logged by CoinGecko as you'd be making requests to their servers.

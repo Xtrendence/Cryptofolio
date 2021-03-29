@@ -16,6 +16,15 @@ export function login(url, password) {
 				}
 			}, 5000);
 
+			if(!url.includes("http://") && !url.includes("https://")) {
+				url = "http://" + url;
+			}
+
+			let lastCharacter = url.substr(url.length - 1);
+			if(lastCharacter !== "/") {
+				url = url + "/";
+			}
+
 			let endpoint = url + "account/login.php?platform=app";
 
 			let body = { password:password };

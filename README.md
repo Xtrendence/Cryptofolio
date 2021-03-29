@@ -28,9 +28,9 @@ Since no private keys or actual funds are held on Cryptofolio, your assets aren'
 
 First, download the latest release from the [Releases](https://github.com/Xtrendence/Cryptofolio/releases) section. You'll then have to set up a server on your network using a guide such as [this](https://www.ionos.co.uk/digitalguide/server/tools/xampp-tutorial-create-your-own-local-test-server/) one. Ideally though, you wouldn't want to host the API on the same device you use the website unless you keep the device on 24/7. A Raspberry Pi would be perfect in this situation. 
 
-*If you'd rather host it online though, you can use a service such as [this](https://www.000webhost.com/free-php-hosting) one in order to get free PHP hosting. Your holdings and such are stored in plaintext though, so keep in mind that the hosting provider would be able to see your data. This option is a lot easier though, you'd essentially just have to upload the "api" and "website" with whatever interface the hosting service provides, and you'd be done.*
+*If you'd rather host it online, you can use a service such as [this](https://www.000webhost.com/free-php-hosting) one in order to get free PHP hosting. Your holdings and such are stored in plaintext, so keep in mind that the hosting provider would be able to see your data. This option is a lot easier though, you'd essentially just have to upload the "api" and "website" folders with whatever storage interface the hosting service provides, and you'd be done.*
 
-Once you've set up a server, extract the content of the ZIP archive you downloaded from the Releases section, and copy-paste the "api" folder to wherever your server's DocumentRoot directory is (usually C:/xampp/htdocs/), and take note of the URL pointing to the "/api/" directory. For example, if you're hosting it on your own network, the URL would look something like:
+Once you've set up a server, extract the content of the ZIP archive you downloaded from the Releases section, and copy-paste the "api" folder to wherever your server's DocumentRoot directory is (usually C:/xampp/htdocs/), and take note of the URL pointing to the "/api/" directory (you'll need to know your server's local IP for this). For example, if you're hosting it on your own network, the URL would look something like:
 
 http://192.168.1.58:8080/api/
 
@@ -51,7 +51,7 @@ In order to add an asset to your list of holdings, you will need to find out wha
 ### Please keep the following points in mind:
 
 - Since the CoinGecko API is used to fetch and utilize market data (such as the price of a cryptocurrency), your IP will most likely be logged by CoinGecko as you'd be making requests to their servers.
-- Coin rankings and data might defer from other websites such as CoinMarketCap. Any inaccuracy would be due to CoinGecko's data being wrong.
+- Coin rankings and data might differ from other websites such as CoinMarketCap. Any inaccuracy would be due to CoinGecko's data being wrong.
 - Your PIN code for sharing your portfolio is stored in plaintext.
 - CoinGecko's API is limited in terms of both functionality, and how often requests can be made. As such, be careful not to refresh **too** often. Any rate limits are temporary though, you won't get banned or anything permanently.
 

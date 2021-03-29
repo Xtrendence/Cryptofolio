@@ -55,7 +55,7 @@ export default function Holdings({ navigation }) {
 	}, []);
 
 	return (
-		<ScrollView style={[styles.page, styles[`page${theme}`]]} key={pageKey} contentContainerStyle={{ padding:20 }} nestedScrollEnabled={true} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh}/>}>
+		<ScrollView style={[styles.page, styles[`page${theme}`]]} key={pageKey} contentContainerStyle={{ padding:20 }} nestedScrollEnabled={true} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[globalColors[theme].accentFirst]} progressBackgroundColor={globalColors[theme].mainFirst}/>}>
 			<Modal animationType="fade" visible={modal} onRequestClose={() => { setAction("create"); setCoinID(); setCoinAmount(); setModalMessage(); setModal(false)}} transparent={false}>
 				<View style={[styles.modalWrapper, styles[`modalWrapper${theme}`]]}>
 					<View stlye={[styles.modal, styles[`modal${theme}`]]}>

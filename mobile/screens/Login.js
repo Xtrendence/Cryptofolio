@@ -45,6 +45,8 @@ export default function Login({ navigation, route }) {
 				await AsyncStorage.setItem("api", response.api);
 				await AsyncStorage.setItem("token", token);
 
+				setPassword();
+
 				let validPages = ["Dashboard", "Market", "Holdings", "Settings"];
 				let page = await AsyncStorage.getItem("defaultPage");
 				if(empty(page) || !validPages.includes(page)) {
@@ -63,6 +65,8 @@ export default function Login({ navigation, route }) {
 		} else {
 			verifySession(token).then(async response => {
 				if(response.valid) {
+					setPassword();
+
 					let validPages = ["Dashboard", "Market", "Holdings", "Settings"];
 					let page = await AsyncStorage.getItem("defaultPage");
 					if(empty(page) || !validPages.includes(page)) {

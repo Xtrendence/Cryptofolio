@@ -92,11 +92,11 @@ export default function Holdings({ navigation }) {
 					})
 				}
 			</ScrollView>
-			<TouchableOpacity onPress={() => { setAction("create"); setModal(true)}}>
-				<LinearGradient style={[styles.card, { marginTop:20 }]} colors={globalColors[theme].calmGradient} useAngle={true} angle={45}>
+			<LinearGradient style={[styles.card, { marginTop:20 }]} colors={globalColors[theme].calmGradient} useAngle={true} angle={45}>
+				<TouchableOpacity onPress={() => { setAction("create"); setModal(true)}}>
 					<Text style={[styles.cardText, styles[`cardText${theme}`]]}>Add Coin</Text>
-				</LinearGradient>
-			</TouchableOpacity>
+				</TouchableOpacity>
+			</LinearGradient>
 			<StatusBar style={theme === "Dark" ? "light" : "dark"}/>
 		</ScrollView>
 	);
@@ -230,7 +230,8 @@ export default function Holdings({ navigation }) {
 		.then(async (coins) => {
 			if(Object.keys(coins).length === 0) {
 				if(navigation.isFocused()) {
-					setHoldingsData([<Text key="empty" style={[styles.headerText, styles[`headerText${theme}`]]}>No Holdings Found.</Text>]);
+					setHoldingsData([<Text key="empty" style={[styles.headerText, styles[`headerText${theme}`], { marginLeft:20 }]}>No Holdings Found.</Text>]);
+					setHoldingsValue("-");
 				}
 			} else {
 				parseHoldings(coins).then(holdings => {

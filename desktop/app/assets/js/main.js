@@ -577,11 +577,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 							});
 						} else {
 							if(response.valid) {
-								getLocalSettings();
-
 								sessionToken = response.token;
 
 								await Storage.setItem("token", response.token);
+								
+								getLocalSettings();
 
 								Notify.success({
 									title:"Logging In...",

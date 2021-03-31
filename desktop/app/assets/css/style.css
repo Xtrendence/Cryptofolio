@@ -260,6 +260,9 @@ input[type=number] {
 	background:rgb(150,30,30);
 }
 
+.login-wrapper {
+	opacity:0;
+}
 .login-wrapper.active {
 	position:absolute;
 	top:0;
@@ -267,6 +270,7 @@ input[type=number] {
 	width:100%;
 	height:100%;
 	z-index:98;
+	opacity:1;
 	background:var(--main-first);
 }
 .login-wrapper div {

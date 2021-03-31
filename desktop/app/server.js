@@ -1,10 +1,12 @@
+const localPort = 8815;
+
 const electron = require("electron");
 const localShortcut = require("electron-localshortcut");
 const { app, BrowserWindow, screen, ipcMain } = electron;
 
 const express = require("express");
 const localExpress = express();
-const localServer = localExpress.listen(0, "localhost");
+const localServer = localExpress.listen(localPort, "localhost");
 
 const path = require("path");
 const Store = require("electron-store");
@@ -74,7 +76,7 @@ app.on("ready", function() {
 	localExpress.set("view engine", "ejs");
 	localExpress.use("/assets", express.static(path.join(__dirname, "assets")));
 
-	localWindow.loadURL("http://127.0.0.1:" + localServer.address().port);
+	localWindow.loadURL("http://127.0.0.1:" + localPort);
 
 	if(debugMode) {
 		localWindow.webContents.openDevTools();

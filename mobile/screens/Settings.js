@@ -13,6 +13,8 @@ const screenHeight = Dimensions.get("screen").height;
 export default function Settings({ navigation, route }) {
 	const { theme, toggleTheme } = React.useContext(ThemeContext);
 
+	const [currency, setCurrency] = React.useState();
+
 	const [defaultPage, setDefaultPage] = React.useState();
 
 	const [accountMessage, setAccountMessage] = React.useState();
@@ -47,6 +49,20 @@ export default function Settings({ navigation, route }) {
 					</TouchableOpacity>
 					<TouchableOpacity style={[styles.inlineButton, styles[`inlineButton${theme}`], (defaultPage === "Settings") ? styles.inlineButtonActive : null]} onPress={() => { changeDefaultPage("Settings")}}>
 						<Text style={[styles.buttonText, styles[`buttonText${theme}`], (defaultPage === "Settings") ? styles.buttonTextActive : null]}>Settings</Text>
+					</TouchableOpacity>
+				</View>
+			</View>
+			<View style={[styles.section, styles[`section${theme}`]]}>
+				<Text style={[styles.header, styles[`header${theme}`]]}>Fiat Currency</Text>
+				<View style={styles.container}>
+					<TouchableOpacity style={[styles.inlineButton, styles[`inlineButton${theme}`], (currency === "usd") ? styles.inlineButtonActive : null]} onPress={() => { changeCurrency("usd")}}>
+						<Text style={[styles.buttonText, styles[`buttonText${theme}`], (currency === "usd") ? styles.buttonTextActive : null]}>USD</Text>
+					</TouchableOpacity>
+					<TouchableOpacity style={[styles.inlineButton, styles[`inlineButton${theme}`], (currency === "gbp") ? styles.inlineButtonActive : null]} onPress={() => { changeCurrency("gbp")}}>
+						<Text style={[styles.buttonText, styles[`buttonText${theme}`], (currency === "gbp") ? styles.buttonTextActive : null]}>GBP</Text>
+					</TouchableOpacity>
+					<TouchableOpacity style={[styles.inlineButton, styles[`inlineButton${theme}`], (currency === "eur") ? styles.inlineButtonActive : null]} onPress={() => { changeCurrency("eur")}}>
+						<Text style={[styles.buttonText, styles[`buttonText${theme}`], (currency === "eur") ? styles.buttonTextActive : null]}>EUR</Text>
 					</TouchableOpacity>
 				</View>
 			</View>
@@ -144,7 +160,24 @@ export default function Settings({ navigation, route }) {
 		}
 	}
 
+	async function changeCurrency(fiatCurrency) {
+		let validCurrencies = ["usd", "gbp", "eur"];
+		if(empty(fiatCurrency) || !validCurrencies.includes(fiatCurrency)) {
+			setCurrency("usd");
+			await AsyncStorage.setItem("currency", "usd");
+		} else {
+			setCurrency(fiatCurrency);
+			await AsyncStorage.setItem("currency", fiatCurrency);
+		}
+	}
+
 	async function getSettings() {
+		let currency = await AsyncStorage.getItem("currency");
+		if(empty(currency)) {
+			currency = "usd";
+		}
+		setCurrency(currency);
+
 		let validPages = ["Dashboard", "Market", "Holdings", "Settings"];
 		let page = await AsyncStorage.getItem("defaultPage");
 		if(empty(page) || !validPages.includes(page)) {

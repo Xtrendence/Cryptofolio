@@ -6,7 +6,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import LinearGradient from "react-native-linear-gradient";
 import { globalColors, globalStyles } from "../styles/global";
 import { ThemeContext } from "../utils/theme";
-import { empty, separateThousands, abbreviateNumber, epoch, wait } from "../utils/utils";
+import { empty, separateThousands, abbreviateNumber, epoch, wait, currencies } from "../utils/utils";
 
 const screenWidth = Dimensions.get("screen").width;
 const screenHeight = Dimensions.get("screen").height;
@@ -73,9 +73,14 @@ export default function Market({ navigation }) {
 	);
 
 	async function getMarket() {
+		let currency = await AsyncStorage.getItem("currency");
+		if(empty(currency)) {
+			currency = "usd";
+		}
+
 		let theme = empty(await AsyncStorage.getItem("theme")) ? "Light" : await AsyncStorage.getItem("theme");
 
-		let endpoint = "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=200&page=1&sparkline=false";
+		let endpoint = "https://api.coingecko.com/api/v3/coins/markets?vs_currency=" + currency + "&order=market_cap_desc&per_page=200&page=1&sparkline=false";
 
 		fetch(endpoint, {
 			method: "GET",
@@ -149,9 +154,14 @@ export default function Market({ navigation }) {
 			return response.json();
 		})
 		.then(async (global) => {
-			let marketCap = (global.data.total_market_cap.usd).toFixed(0);
+			let currency = await AsyncStorage.getItem("currency");
+			if(empty(currency)) {
+				currency = "usd";
+			}
+
+			let marketCap = (global.data.total_market_cap[currency]).toFixed(0);
 			let marketChange = (global.data.market_cap_change_percentage_24h_usd).toFixed(1);
-			let volume = (global.data.total_volume.usd).toFixed(0);
+			let volume = (global.data.total_volume[currency]).toFixed(0);
 
 			if(screenWidth < 380) {
 				marketCap = abbreviateNumber(marketCap, 3);
@@ -159,9 +169,9 @@ export default function Market({ navigation }) {
 			}
 			
 			if(navigation.isFocused()) {
-				setMarketCap("$" + separateThousands(marketCap));
+				setMarketCap(currencies[currency] + separateThousands(marketCap));
 				setMarketChange("(" + marketChange + "%)");
-				setVolume("$" + separateThousands(volume) + " (24h)");
+				setVolume(currencies[currency] + separateThousands(volume) + " (24h)");
 			}
 		}).catch(error => {
 			console.log(error);

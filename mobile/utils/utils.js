@@ -54,3 +54,9 @@ export function capitalizeFirstLetter(string) {
 export function wait(timeout) {
 	return new Promise(resolve => setTimeout(resolve, timeout));
 }
+
+export const currencies = {
+	usd: "$",
+	gbp: "£",
+	eur: "€"
+};

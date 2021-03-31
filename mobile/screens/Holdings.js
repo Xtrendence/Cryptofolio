@@ -6,7 +6,7 @@ import changeNavigationBarColor from "react-native-navigation-bar-color";
 import LinearGradient from "react-native-linear-gradient";
 import { globalColors, globalStyles } from "../styles/global";
 import { ThemeContext } from "../utils/theme";
-import { empty, separateThousands, abbreviateNumber, epoch, capitalizeFirstLetter, wait } from "../utils/utils";
+import { empty, separateThousands, abbreviateNumber, epoch, capitalizeFirstLetter, wait, currencies } from "../utils/utils";
 
 const screenWidth = Dimensions.get("screen").width;
 const screenHeight = Dimensions.get("screen").height;
@@ -284,11 +284,16 @@ export default function Holdings({ navigation }) {
 	}
 
 	function parseHoldings(coins) {
-		return new Promise((resolve, reject) => {
+		return new Promise(async (resolve, reject) => {
 			try {
+				let currency = await AsyncStorage.getItem("currency");
+				if(empty(currency)) {
+					currency = "usd";
+				}
+
 				let list = Object.keys(coins).join("%2C");
 
-				let endpoint = "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=" + list + "&order=market_cap_desc&per_page=250&page=1&sparkline=false";
+				let endpoint = "https://api.coingecko.com/api/v3/coins/markets?vs_currency=" + currency + "&ids=" + list + "&order=market_cap_desc&per_page=250&page=1&sparkline=false";
 
 				fetch(endpoint, {
 					method: "GET",
@@ -331,10 +336,15 @@ export default function Holdings({ navigation }) {
 					});
 
 					if(holdingsValue > 0 && navigation.isFocused()) {
+						let currency = await AsyncStorage.getItem("currency");
+						if(empty(currency)) {
+							currency = "usd";
+						}
+						
 						if(screenWidth > 380) {
-							setHoldingsValue("$" + separateThousands(holdingsValue.toFixed(2)));
+							setHoldingsValue(currencies[currency] + separateThousands(holdingsValue.toFixed(2)));
 						} else {
-							setHoldingsValue("$" + abbreviateNumber(holdingsValue, 2));
+							setHoldingsValue(currencies[currency] + abbreviateNumber(holdingsValue, 2));
 						}
 					}
 

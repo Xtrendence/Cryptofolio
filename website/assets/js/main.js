@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
 	// Begin Changeable Variables
 	const api = "../api/"; // Default: "../api/"
 	const updateInterval = 30000; // Default: 30000
@@ -11,7 +11,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	let sessionToken = localStorage.getItem("token");
 
-	let settings = {};
+	let currencies = {
+		usd: "$",
+		gbp: "£",
+		eur: "€"
+	};
+
+	let settings = {
+		currency: "usd"
+	};
 
 	let globalData = {};
 	
@@ -129,9 +137,11 @@ document.addEventListener("DOMContentLoaded", () => {
 	} else {
 		empty(localStorage.getItem("defaultPage")) ? switchPage("market") : switchPage(localStorage.getItem("defaultPage"));
 
-		getLocalSettings();
-
-		listMarket();
+		getLocalSettings().then(() => {
+			listMarket();
+		}).catch(e => {
+			console.log(e);
+		})
 	}
 
 	window.addEventListener("resize", () => {
@@ -388,7 +398,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	});
 
 	divThemeToggle.addEventListener("click", () => {
-		changeSetting("css", "").then((response) => {
+		changeSetting("css", "").then(async (response) => {
 			if("error" in response) {
 				Notify.error({
 					title:"Error",
@@ -403,7 +413,7 @@ document.addEventListener("DOMContentLoaded", () => {
 					switchTheme("light");
 				}
 
-				getLocalSettings();
+				await getLocalSettings();
 			}
 		}).catch(e => {
 			console.log(e);
@@ -421,14 +431,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
 		switchTheme("light");
 
-		changeSetting("css", "").then((response) => {
+		changeSetting("css", "").then(async (response) => {
 			if("error" in response) {
 				Notify.error({
 					title:"Error",
 					description:response.error
 				});
 			} else {
-				getLocalSettings();
+				await getLocalSettings();
 			}
 		}).catch(e => {
 			console.log(e);
@@ -442,14 +452,14 @@ document.addEventListener("DOMContentLoaded", () => {
 	buttonApplyCSS.addEventListener("click", () => {
 		switchTheme("light");
 
-		changeSetting("css", inputThemeCSS.value).then((response) => {
+		changeSetting("css", inputThemeCSS.value).then(async (response) => {
 			if("error" in response) {
 				Notify.error({
 					title:"Error",
 					description:response.error
 				});
 			} else {
-				getLocalSettings();
+				await getLocalSettings();
 			}
 		}).catch(e => {
 			console.log(e);
@@ -461,11 +471,11 @@ document.addEventListener("DOMContentLoaded", () => {
 	});
 
 	for(let i = 0; i < buttonSettingsChoices.length; i++) {
-		buttonSettingsChoices[i].addEventListener("click", () => {
+		buttonSettingsChoices[i].addEventListener("click", async () => {
 			let key = buttonSettingsChoices[i].parentElement.getAttribute("data-key");
 			let value = buttonSettingsChoices[i].getAttribute("data-value");
 			localStorage.setItem(key, value);
-			getLocalSettings();
+			await getLocalSettings();
 		});
 	}
 
@@ -473,14 +483,14 @@ document.addEventListener("DOMContentLoaded", () => {
 		buttonSettingsServerChoices[i].addEventListener("click", () => {
 			let key = buttonSettingsServerChoices[i].parentElement.getAttribute("data-key");
 			let value = buttonSettingsServerChoices[i].getAttribute("data-value");
-			changeSetting(key, value).then((response) => {
+			changeSetting(key, value).then(async (response) => {
 				if("error" in response) {
 					Notify.error({
 						title:"Error",
 						description:response.error
 					});
 				} else {
-					getLocalSettings();
+					await getLocalSettings();
 				}
 			}).catch(e => {
 				console.log(e);
@@ -723,7 +733,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		}
 	}
 
-	function switchPage(page) {
+	async function switchPage(page) {
 		divNavbarDashboard.classList.remove("active");
 		divNavbarMarket.classList.remove("active");
 		divNavbarHoldings.classList.remove("active");
@@ -734,32 +744,35 @@ document.addEventListener("DOMContentLoaded", () => {
 		divPageHoldings.classList.remove("active");
 		divPageSettings.classList.remove("active");
 
-		switch(page) {
-			case "dashboard":
-				divNavbarDashboard.classList.add("active");
-				divPageDashboard.classList.add("active");
-				divNavbarBackground.setAttribute("class", "background dashboard");
-				listDashboard();
-				break;
-			case "market":
-				divNavbarMarket.classList.add("active");
-				divPageMarket.classList.add("active");
-				divNavbarBackground.setAttribute("class", "background market");
-				listMarket();
-				break;
-			case "holdings":
-				divNavbarHoldings.classList.add("active");
-				divPageHoldings.classList.add("active");
-				divNavbarBackground.setAttribute("class", "background holdings");
-				listHoldings();
-				break;
-			case "settings":
-				divNavbarSettings.classList.add("active");
-				divPageSettings.classList.add("active");
-				divNavbarBackground.setAttribute("class", "background settings");
-				getLocalSettings();
-				break;
-		}
+		getLocalSettings().then(() => {
+			switch(page) {
+				case "dashboard":
+					divNavbarDashboard.classList.add("active");
+					divPageDashboard.classList.add("active");
+					divNavbarBackground.setAttribute("class", "background dashboard");
+					listDashboard();
+					break;
+				case "market":
+					divNavbarMarket.classList.add("active");
+					divPageMarket.classList.add("active");
+					divNavbarBackground.setAttribute("class", "background market");
+					listMarket();
+					break;
+				case "holdings":
+					divNavbarHoldings.classList.add("active");
+					divPageHoldings.classList.add("active");
+					divNavbarBackground.setAttribute("class", "background holdings");
+					listHoldings();
+					break;
+				case "settings":
+					divNavbarSettings.classList.add("active");
+					divPageSettings.classList.add("active");
+					divNavbarBackground.setAttribute("class", "background settings");
+					break;
+			}
+		}).catch(e => {
+			console.log(e);
+		});
 	}
 
 	function adjustToScreen() {
@@ -857,14 +870,14 @@ document.addEventListener("DOMContentLoaded", () => {
 					try {
 						if(document.getElementById(id)) {
 							div = document.getElementById(id);
-							div.getElementsByClassName("price")[0].textContent = "$ " + price;
+							div.getElementsByClassName("price")[0].textContent = currencies[settings.currency] + price;
 							div.getElementsByClassName("day")[0].textContent = priceChangeDay + "%";
 						} else {
 							div = document.createElement("div");
 							div.id = id;
 							div.classList.add("coin-wrapper");
 
-							div.innerHTML = '<img draggable="false" src="' + icon + '" title="' + name + '"><span class="coin" title="' + name + '">' + symbol.toUpperCase() + '</span><span class="price">$ ' + price + '</span><span class="day">' + priceChangeDay + '%</span>';
+							div.innerHTML = '<img draggable="false" src="' + icon + '" title="' + name + '"><span class="coin" title="' + name + '">' + symbol.toUpperCase() + '</span><span class="price">' + currencies[settings.currency] + price + '</span><span class="day">' + priceChangeDay + '%</span>';
 
 							divDashboardMarketList.appendChild(div);
 						}
@@ -876,14 +889,14 @@ document.addEventListener("DOMContentLoaded", () => {
 				getGlobal().then(global => {
 					globalData = global.data;
 
-					let marketCap = (global.data.total_market_cap.usd).toFixed(0);
+					let marketCap = (global.data.total_market_cap[settings.currency]).toFixed(0);
 					let marketChange = (global.data.market_cap_change_percentage_24h_usd).toFixed(1);
 
 					if(window.innerWidth <= 1020) {
 						marketCap = abbreviateNumber(marketCap, 3);
 					}
 
-					spanDashboardMarketCap.textContent = "$ " + separateThousands(marketCap);
+					spanDashboardMarketCap.textContent = currencies[settings.currency] + separateThousands(marketCap);
 					spanDashboardMarketChange.textContent = marketChange + "%";
 				}).catch(e => {
 					console.log(e);
@@ -909,9 +922,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
 							if(globalData.totalValue > 0) {
 								if(window.innerWidth > 480) {
-									spanDashboardHoldingsValue.textContent = "$ " + separateThousands(globalData.totalValue.toFixed(2));
+									spanDashboardHoldingsValue.textContent = currencies[settings.currency] + separateThousands(globalData.totalValue.toFixed(2));
 								} else {
-									spanDashboardHoldingsValue.textContent = "$ " + abbreviateNumber(globalData.totalValue, 2);
+									spanDashboardHoldingsValue.textContent = currencies[settings.currency] + abbreviateNumber(globalData.totalValue, 2);
 								}
 							}
 
@@ -1025,15 +1038,15 @@ document.addEventListener("DOMContentLoaded", () => {
 					try {
 						if(document.getElementById(id)) {
 							div = document.getElementById(id);
-							div.getElementsByClassName("price")[0].textContent = "$ " + price;
-							div.getElementsByClassName("market-cap")[0].textContent = "$ " + separateThousands(marketCap);
+							div.getElementsByClassName("price")[0].textContent = currencies[settings.currency] + price;
+							div.getElementsByClassName("market-cap")[0].textContent = currencies[settings.currency] + separateThousands(marketCap);
 							div.getElementsByClassName("day")[0].textContent = priceChangeDay + "%";
 						} else {
 							div = document.createElement("div");
 							div.id = id;
 							div.classList.add("coin-wrapper");
 
-							div.innerHTML = '<span class="rank">' + rank + '</span><img draggable="false" src="' + icon + '" title="' + name + '"><span class="coin" title="' + name + '">' + symbol.toUpperCase() + '</span><span class="price">$ ' + price + '</span><span class="market-cap">$ ' + separateThousands(marketCap) + '</span><span class="day">' + priceChangeDay + '%</span>';
+							div.innerHTML = '<span class="rank">' + rank + '</span><img draggable="false" src="' + icon + '" title="' + name + '"><span class="coin" title="' + name + '">' + symbol.toUpperCase() + '</span><span class="price">' + currencies[settings.currency] + price + '</span><span class="market-cap">' + currencies[settings.currency] + separateThousands(marketCap) + '</span><span class="day">' + priceChangeDay + '%</span>';
 
 							divMarketList.appendChild(div);
 						}
@@ -1049,8 +1062,8 @@ document.addEventListener("DOMContentLoaded", () => {
 				getGlobal().then(global => {
 					globalData = global.data;
 
-					let marketCap = (global.data.total_market_cap.usd).toFixed(0);
-					let volume = (global.data.total_volume.usd).toFixed(0);
+					let marketCap = (global.data.total_market_cap[settings.currency]).toFixed(0);
+					let volume = (global.data.total_volume[settings.currency]).toFixed(0);
 					let dominance = (global.data.market_cap_percentage.btc).toFixed(1);
 
 					if(window.innerWidth <= 1020) {
@@ -1058,8 +1071,8 @@ document.addEventListener("DOMContentLoaded", () => {
 						volume = abbreviateNumber(volume, 0);
 					}
 
-					spanGlobalMarketCap.textContent = "$ " + separateThousands(marketCap);
-					spanGlobalVolume.textContent = "$ " + separateThousands(volume);
+					spanGlobalMarketCap.textContent = currencies[settings.currency] + separateThousands(marketCap);
+					spanGlobalVolume.textContent = currencies[settings.currency] + separateThousands(volume);
 					spanGlobalDominance.textContent = dominance + "%";
 				}).catch(e => {
 					console.log(e);
@@ -1101,9 +1114,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
 							if(globalData.totalValue > 0) {
 								if(window.innerWidth > 480) {
-									spanHoldingsTotalValue.textContent = "$ " + separateThousands(globalData.totalValue.toFixed(2));
+									spanHoldingsTotalValue.textContent = currencies[settings.currency] + separateThousands(globalData.totalValue.toFixed(2));
 								} else {
-									spanHoldingsTotalValue.textContent = "$ " + abbreviateNumber(globalData.totalValue, 2);
+									spanHoldingsTotalValue.textContent = currencies[settings.currency] + abbreviateNumber(globalData.totalValue, 2);
 								}
 							}
 
@@ -1130,7 +1143,7 @@ document.addEventListener("DOMContentLoaded", () => {
 									if(document.getElementById(id)) {
 										div = document.getElementById(id);
 										div.getElementsByClassName("amount")[0].textContent = separateThousands(amount);
-										div.getElementsByClassName("value")[0].textContent = "$ " + separateThousands(value);
+										div.getElementsByClassName("value")[0].textContent = currencies[settings.currency] + separateThousands(value);
 										div.getElementsByClassName("day")[0].textContent = day;
 									} else {
 										div = document.createElement("div");
@@ -1161,7 +1174,7 @@ document.addEventListener("DOMContentLoaded", () => {
 											}
 										});
 
-										div.innerHTML = '<img draggable="false" src="' + icon + '"><span class="coin">' + symbol.toUpperCase() + '</span><span class="amount">' + separateThousands(amount) + '</span><span class="value">$ ' + separateThousands(value) + '</span><span class="day">' + day + '</span>';
+										div.innerHTML = '<img draggable="false" src="' + icon + '"><span class="coin">' + symbol.toUpperCase() + '</span><span class="amount">' + separateThousands(amount) + '</span><span class="value">' + currencies[settings.currency] + separateThousands(value) + '</span><span class="day">' + day + '</span>';
 
 										div.appendChild(more);
 
@@ -1187,83 +1200,90 @@ document.addEventListener("DOMContentLoaded", () => {
 	}
 
 	function getLocalSettings() {
-		checkSession();
+		return new Promise((resolve, reject) => {
+			checkSession();
 
-		getServerSettings().then((response) => {
-			settings = response;
+			getServerSettings().then((response) => {
+				settings = response;
 
-			settings.theme = empty(localStorage.getItem("theme")) ? "light" : localStorage.getItem("theme");
+				settings.currency = empty(localStorage.getItem("currency")) ? "usd" : localStorage.getItem("currency");
 
-			settings.coinBackdrop = empty(localStorage.getItem("coinBackdrop")) ? "disabled" : localStorage.getItem("coinBackdrop");
+				settings.theme = empty(localStorage.getItem("theme")) ? "light" : localStorage.getItem("theme");
 
-			settings.defaultPage = empty(localStorage.getItem("defaultPage")) ? "market" : localStorage.getItem("defaultPage");
+				settings.coinBackdrop = empty(localStorage.getItem("coinBackdrop")) ? "disabled" : localStorage.getItem("coinBackdrop");
 
-			switchTheme(settings.theme);
+				settings.defaultPage = empty(localStorage.getItem("defaultPage")) ? "market" : localStorage.getItem("defaultPage");
 
-			inputAccessPIN.value = settings.pin;
+				switchTheme(settings.theme);
 
-			if(!empty(settings.css)) {
-				inputThemeCSS.value = settings.css;
+				inputAccessPIN.value = settings.pin;
 
-				let css = "html.light, html.dark { " + inputThemeCSS.value + "}";
+				if(!empty(settings.css)) {
+					inputThemeCSS.value = settings.css;
 
-				if(document.getElementById("custom-css")) {
-					document.getElementById("custom-css").textContent = css;
-				} else {
-					let style = document.createElement("style");
-					style.id = "custom-css";
-					style.textContent = css;
-					document.head.appendChild(style);
+					let css = "html.light, html.dark { " + inputThemeCSS.value + "}";
+
+					if(document.getElementById("custom-css")) {
+						document.getElementById("custom-css").textContent = css;
+					} else {
+						let style = document.createElement("style");
+						style.id = "custom-css";
+						style.textContent = css;
+						document.head.appendChild(style);
+					}
+
+					localStorage.setItem("theme", "custom");
 				}
 
-				localStorage.setItem("theme", "custom");
-			}
+				inputThemeCSS.value = inputThemeCSS.value.replaceAll("	", "");
 
-			inputThemeCSS.value = inputThemeCSS.value.replaceAll("	", "");
-
-			for(let i = 0; i < buttonSettingsChoices.length; i++) {
-				buttonSettingsChoices[i].classList.remove("active");
-			}
-
-			for(let i = 0; i < buttonSettingsServerChoices.length; i++) {
-				buttonSettingsServerChoices[i].classList.remove("active");
-			}
-
-			let keys = [];
-
-			for(let i = 0; i < document.getElementsByClassName("settings-choices-wrapper").length; i++) {
-				keys.push(document.getElementsByClassName("settings-choices-wrapper")[i].getAttribute("data-key"));
-			}
-
-			keys.map(key => {
 				for(let i = 0; i < buttonSettingsChoices.length; i++) {
-					if(buttonSettingsChoices[i].getAttribute("data-value") === settings[key] && buttonSettingsChoices[i].parentElement.getAttribute("data-key") === key) {
-						buttonSettingsChoices[i].classList.add("active");
-					}
+					buttonSettingsChoices[i].classList.remove("active");
 				}
 
 				for(let i = 0; i < buttonSettingsServerChoices.length; i++) {
-					if(buttonSettingsServerChoices[i].getAttribute("data-value") === settings[key] && buttonSettingsServerChoices[i].parentElement.getAttribute("data-key") === key) {
-						buttonSettingsServerChoices[i].classList.add("active");
-					}
+					buttonSettingsServerChoices[i].classList.remove("active");
 				}
+
+				let keys = [];
+
+				for(let i = 0; i < document.getElementsByClassName("settings-choices-wrapper").length; i++) {
+					keys.push(document.getElementsByClassName("settings-choices-wrapper")[i].getAttribute("data-key"));
+				}
+
+				keys.map(key => {
+					for(let i = 0; i < buttonSettingsChoices.length; i++) {
+						if(buttonSettingsChoices[i].getAttribute("data-value") === settings[key] && buttonSettingsChoices[i].parentElement.getAttribute("data-key") === key) {
+							buttonSettingsChoices[i].classList.add("active");
+						}
+					}
+
+					for(let i = 0; i < buttonSettingsServerChoices.length; i++) {
+						if(buttonSettingsServerChoices[i].getAttribute("data-value") === settings[key] && buttonSettingsServerChoices[i].parentElement.getAttribute("data-key") === key) {
+							buttonSettingsServerChoices[i].classList.add("active");
+						}
+					}
+				});
+
+				if(settings.coinBackdrop === "enabled") {
+					divDashboardMarketList.classList.add("backdrop");
+					divDashboardHoldingsList.classList.add("backdrop");
+					divMarketList.classList.add("backdrop");
+					divHoldingsList.classList.add("backdrop");
+				} else {
+					divDashboardMarketList.classList.remove("backdrop");
+					divDashboardHoldingsList.classList.remove("backdrop");
+					divMarketList.classList.remove("backdrop");
+					divHoldingsList.classList.remove("backdrop");
+				}
+
+				inputSharingURL.value = window.location.href.replaceAll("index.html", "") + "index.html?access=view&pin=" + settings.pin;
+
+				resolve();
+			}).catch(e => {
+				reject(e);
+				console.log(e);
 			});
-
-			if(settings.coinBackdrop === "enabled") {
-				divDashboardMarketList.classList.add("backdrop");
-				divDashboardHoldingsList.classList.add("backdrop");
-				divMarketList.classList.add("backdrop");
-				divHoldingsList.classList.add("backdrop");
-			} else {
-				divDashboardMarketList.classList.remove("backdrop");
-				divDashboardHoldingsList.classList.remove("backdrop");
-				divMarketList.classList.remove("backdrop");
-				divHoldingsList.classList.remove("backdrop");
-			}
-
-			inputSharingURL.value = window.location.href.replaceAll("index.html", "") + "index.html?access=view&pin=" + settings.pin;
-		}).catch(e => {
-			console.log(e);
 		});
 	}
 
@@ -1466,7 +1486,7 @@ document.addEventListener("DOMContentLoaded", () => {
 					}
 				});
 
-				xhr.open("GET", "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=" + amount + "&page=" + page + "&sparkline=false", true);
+				xhr.open("GET", "https://api.coingecko.com/api/v3/coins/markets?vs_currency=" + settings.currency + "&order=market_cap_desc&per_page=" + amount + "&page=" + page + "&sparkline=false", true);
 				xhr.send();
 			} catch(e) {
 				reject(e);
@@ -1571,7 +1591,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 				let list = Object.keys(coins).join("%2C");
 
-				xhr.open("GET", "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=" + list + "&order=market_cap_desc&per_page=250&page=1&sparkline=false", true);
+				xhr.open("GET", "https://api.coingecko.com/api/v3/coins/markets?vs_currency=" + settings.currency + "&ids=" + list + "&order=market_cap_desc&per_page=250&page=1&sparkline=false", true);
 				xhr.send();
 			} catch(e) {
 				reject(e);

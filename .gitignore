@@ -3,3 +3,6 @@ node_modules
 *.hprof
 mobile/key.txt
 desktop/dist
+api/data/account.json
+api/data/holdings.json
+api/data/settings.json

@@ -55,7 +55,7 @@ export default function Dashboard({ navigation }) {
 		getMarket();
 		getGlobal();
 		getHoldings();
-		wait(2000).then(() => setRefreshing(false));
+		wait(750).then(() => setRefreshing(false));
 	}, []);
 
 	return (

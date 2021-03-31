@@ -50,7 +50,7 @@ export default function Market({ navigation }) {
 		setRefreshing(true);
 		getMarket();
 		getGlobal();
-		wait(2000).then(() => setRefreshing(false));
+		wait(750).then(() => setRefreshing(false));
 	}, []);
 
 	return (

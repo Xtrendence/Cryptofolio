@@ -51,7 +51,7 @@ export default function Holdings({ navigation }) {
 	const onRefresh = React.useCallback(() => {
 		setRefreshing(true);
 		getHoldings();
-		wait(2000).then(() => setRefreshing(false));
+		wait(750).then(() => setRefreshing(false));
 	}, []);
 
 	return (

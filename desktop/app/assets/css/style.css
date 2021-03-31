@@ -63,13 +63,26 @@ input[type=number] {
 	left:0;
 	background:var(--main-first);
 	-webkit-app-region:drag;
-	z-index:999;
+	z-index:900;
+}
+.titlebar-shadow {
+	position:absolute;
+	top:0;
+	right:0;
+	box-shadow:var(--shadow-smooth);
+	width:calc(100% - 200px);
+	height:100%;
+	z-index:901;
 }
 .window-buttons {
 	font-size:0;
 	height:100%;
-	display:inline-block;
-	vertical-align:top;
+	position:absolute;
+	top:0;
+	left:0;
+	z-index:902;
+	background:var(--main-first);
+	width:220px;
 }
 .window-buttons button {
 	display:inline-block;
@@ -103,6 +116,7 @@ input[type=number] {
 	top:2px;
 	left:15%;
 	opacity:0;
+	transition:opacity 0.25s;
 }
 .window-buttons button.maximize-button svg {
 	width:60%;

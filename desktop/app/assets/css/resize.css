@@ -77,6 +77,10 @@
 }
 
 @media screen and (max-width:1120px) {
+	.titlebar-shadow {
+		width:calc(100% - 100px);
+	}
+
 	.navbar {
 		width:100px;
 	}

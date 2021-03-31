@@ -1,25 +1,28 @@
-document.addEventListener("DOMContentLoaded", () => {
-	let api = localStorage.getItem("api");
+const electron = require("electron");
+const { ipcRenderer } = electron;
+
+const Storage = new XStorage(ipcRenderer);
+
+document.addEventListener("DOMContentLoaded", async () => {
+	let api = await Storage.getItem("api");
+	let sessionToken = await Storage.getItem("token");
 
 	// Begin Changeable Variables
 	const updateInterval = 30000; // Default: 30000
 	
 	const Notify = new XNotify("BottomRight");
 
-	const electron = require("electron");
-	const { ipcRenderer } = electron;
-
 	let updateDashboardListInterval = setInterval(listDashboard, updateInterval);
 	let updateMarketListInterval = setInterval(listMarket, updateInterval);
 	let updateHoldingsListInterval = setInterval(listHoldings, updateInterval);
-
-	let sessionToken = localStorage.getItem("token");
 
 	let settings = {};
 
 	let globalData = {};
 	
 	let body = document.body;
+
+	let divTitlebarShadow = document.getElementsByClassName("titlebar-shadow")[0];
 
 	let buttonClose = document.getElementsByClassName("close-button")[0];
 	let buttonMinimize = document.getElementsByClassName("minimize-button")[0];
@@ -113,7 +116,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		body.classList.add("view-mode");
 		document.head.innerHTML += '<link rel="stylesheet" href="./assets/css/view.css">';
 
-		setTimeout(() => {
+		setTimeout(async () => {
 			if(divLoadingOverlay.classList.contains("active")) {
 				divLoadingOverlay.classList.remove("active");
 			}
@@ -134,9 +137,13 @@ document.addEventListener("DOMContentLoaded", () => {
 			}
 		}, 500)
 	} else {
-		empty(localStorage.getItem("defaultPage")) ? switchPage("market") : switchPage(localStorage.getItem("defaultPage"));
+		empty(await Storage.getItem("defaultPage")) ? switchPage("market") : switchPage(await Storage.getItem("defaultPage"));
 
-		getLocalSettings();
+		if(!empty(api)) {
+			getLocalSettings();
+		} else {
+			checkSession();
+		}
 
 		listMarket();
 	}
@@ -193,7 +200,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		ipcRenderer.send("set-window-state", "maximized");
 	});
 
-	buttonLogin.addEventListener("click", () => {
+	buttonLogin.addEventListener("click", async () => {
 		let url = inputLoginAPI.value;
 		let password = inputLoginPassword.value;
 		if(empty(url) || empty(password)) {
@@ -212,6 +219,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			}
 
 			api = url;
+			await Storage.setItem("api", url);
 
 			login(password);
 		}
@@ -496,10 +504,10 @@ document.addEventListener("DOMContentLoaded", () => {
 	});
 
 	for(let i = 0; i < buttonSettingsChoices.length; i++) {
-		buttonSettingsChoices[i].addEventListener("click", () => {
+		buttonSettingsChoices[i].addEventListener("click", async () => {
 			let key = buttonSettingsChoices[i].parentElement.getAttribute("data-key");
 			let value = buttonSettingsChoices[i].getAttribute("data-value");
-			localStorage.setItem(key, value);
+			await Storage.setItem(key, value);
 			getLocalSettings();
 		});
 	}
@@ -590,7 +598,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		try {
 			let xhr = new XMLHttpRequest();
 
-			xhr.addEventListener("readystatechange", () => {
+			xhr.addEventListener("readystatechange", async () => {
 				if(xhr.readyState === XMLHttpRequest.DONE) {
 					if(validJSON(xhr.responseText)) {
 						let response = JSON.parse(xhr.responseText);
@@ -602,9 +610,11 @@ document.addEventListener("DOMContentLoaded", () => {
 							});
 						} else {
 							if(response.valid) {
+								getLocalSettings();
+
 								sessionToken = response.token;
 
-								localStorage.setItem("token", response.token);
+								await Storage.setItem("token", response.token);
 
 								Notify.success({
 									title:"Logging In...",
@@ -615,11 +625,10 @@ document.addEventListener("DOMContentLoaded", () => {
 								listHoldings();
 
 								divLoginWrapper.classList.remove("active");
+								divTitlebarShadow.classList.remove("hidden");
 
 								inputLoginPassword.value = "";
 								inputLoginPassword.blur();
-
-								localStorage.setItem("api", url);
 							}
 						}
 					} else {
@@ -642,7 +651,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		try {
 			let xhr = new XMLHttpRequest();
 
-			xhr.addEventListener("readystatechange", () => {
+			xhr.addEventListener("readystatechange", async () => {
 				if(xhr.readyState === XMLHttpRequest.DONE) {
 					if(validJSON(xhr.responseText)) {
 						let response = JSON.parse(xhr.responseText);
@@ -655,7 +664,7 @@ document.addEventListener("DOMContentLoaded", () => {
 						} else {
 							sessionToken = null;
 
-							localStorage.removeItem("token");
+							await Storage.removeItem("token");
 
 							Notify.success({
 								title:"Logging Out...",
@@ -673,6 +682,7 @@ document.addEventListener("DOMContentLoaded", () => {
 							inputRepeatPassword.value = "";
 
 							divLoginWrapper.classList.add("active");
+							divTitlebarShadow.classList.add("hidden");
 						}
 					} else {
 						Notify.error({
@@ -702,6 +712,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 			if(!divLoginWrapper.classList.contains("active")) {
 				divLoginWrapper.classList.add("active");
+				divTitlebarShadow.classList.add("hidden");
 				inputLoginPassword.focus();
 			}
 		} else {
@@ -715,10 +726,12 @@ document.addEventListener("DOMContentLoaded", () => {
 				if("valid" in response && response.valid) {
 					if(divLoginWrapper.classList.contains("active")) {
 						divLoginWrapper.classList.remove("active");
+						divTitlebarShadow.classList.remove("hidden");
 					}
 				} else {
 					if(!divLoginWrapper.classList.contains("active")) {
 						divLoginWrapper.classList.add("active");
+						divTitlebarShadow.classList.add("hidden");
 						inputLoginPassword.focus();
 					}
 				}
@@ -746,18 +759,18 @@ document.addEventListener("DOMContentLoaded", () => {
 		divPopupBottom.innerHTML = "";
 	}
 
-	function switchTheme(theme) {
+	async function switchTheme(theme) {
 		if(document.getElementById("custom-css")) {
 			document.getElementById("custom-css").remove();
 		}
 
 		if(theme === "dark") {
-			localStorage.setItem("theme", "dark");
+			await Storage.setItem("theme", "dark");
 			divThemeToggle.classList.remove("active");
 			document.documentElement.classList.add("dark");
 			document.documentElement.classList.remove("light");
 		} else {
-			localStorage.setItem("theme", "light");
+			await Storage.setItem("theme", "light");
 			divThemeToggle.classList.add("active");
 			document.documentElement.classList.remove("dark");
 			document.documentElement.classList.add("light");
@@ -1188,7 +1201,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 											divHoldingsMoreMenu.classList.remove("hidden");
 
-											divHoldingsMoreMenu.style.top = e.clientY - 2 + "px";
+											divHoldingsMoreMenu.style.top = e.clientY - 2 - 36 + "px";
 											divHoldingsMoreMenu.style.left = e.clientX - 2 - 200 + "px";
 
 											if(window.innerWidth <= 1230 && window.innerWidth > 700) {
@@ -1230,14 +1243,14 @@ document.addEventListener("DOMContentLoaded", () => {
 	function getLocalSettings() {
 		checkSession();
 
-		getServerSettings().then((response) => {
+		getServerSettings().then(async (response) => {
 			settings = response;
 
-			settings.theme = empty(localStorage.getItem("theme")) ? "light" : localStorage.getItem("theme");
+			settings.theme = empty(await Storage.getItem("theme")) ? "light" : await Storage.getItem("theme");
 
-			settings.coinBackdrop = empty(localStorage.getItem("coinBackdrop")) ? "disabled" : localStorage.getItem("coinBackdrop");
+			settings.coinBackdrop = empty(await Storage.getItem("coinBackdrop")) ? "disabled" : await Storage.getItem("coinBackdrop");
 
-			settings.defaultPage = empty(localStorage.getItem("defaultPage")) ? "market" : localStorage.getItem("defaultPage");
+			settings.defaultPage = empty(await Storage.getItem("defaultPage")) ? "market" : await Storage.getItem("defaultPage");
 
 			switchTheme(settings.theme);
 
@@ -1257,7 +1270,7 @@ document.addEventListener("DOMContentLoaded", () => {
 					document.head.appendChild(style);
 				}
 
-				localStorage.setItem("theme", "custom");
+				await Storage.setItem("theme", "custom");
 			}
 
 			inputThemeCSS.value = inputThemeCSS.value.replaceAll("	", "");

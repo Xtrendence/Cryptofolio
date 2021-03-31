@@ -141,7 +141,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 			listMarket();
 		}).catch(e => {
 			console.log(e);
-		})
+		});
 	}
 
 	window.addEventListener("resize", () => {

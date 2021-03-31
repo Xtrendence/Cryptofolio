@@ -1,0 +1,1070 @@
+html {
+	font-family:var(--font-family);
+}
+body {
+	background:var(--main-second);
+	color:var(--main-contrast);
+	margin:0;
+	padding:0;
+	font-size:0;
+	overflow:hidden;
+}
+input, button {
+	outline:none;
+	border:none;
+}
+div, span, input, button, textarea {
+	transition:background 0.25s, color 0.25s;
+}
+.noselect {
+	-webkit-user-select:none;
+	-khtml-user-select:none;
+	-moz-user-select:none;
+	-ms-user-select:none;
+	user-select:none;
+	outline:none;
+}
+.hidden {
+	display:none;
+	visibility:hidden;
+	position:absolute;
+	z-index:-1;
+}
+
+::-webkit-scrollbar {
+	display:block;
+	width:4px;
+	background:var(--main-second);
+}
+::-webkit-scrollbar-thumb {
+	border-radius:5px;
+	background:var(--main-fifth);
+}
+::-webkit-scrollbar-thumb:hover {
+	background:var(--main-fourth);
+}
+::-webkit-scrollbar-track { 
+	background:var(--main-second);
+}
+
+input::-webkit-outer-spin-button, input::-webkit-inner-spin-button {
+	-webkit-appearance:none;
+	margin:0;
+}
+input[type=number] {
+	-moz-appearance:textfield;
+}
+
+.titlebar {
+	position:absolute;
+	width:100%;
+	height:36px;
+	top:0;
+	left:0;
+	background:var(--main-third);
+	-webkit-app-region:drag;
+	z-index:999;
+}
+.window-buttons {
+	font-size:0;
+	height:100%;
+	display:inline-block;
+	vertical-align:top;
+}
+.window-buttons button {
+	display:inline-block;
+	width:18px;
+	height:18px;
+	margin:9px 0 0 9px;
+	padding:0;
+	border-radius:50%;
+	cursor:default;
+	vertical-align:top;
+	-webkit-app-region:no-drag;
+	position:relative;
+}
+.window-buttons button:hover svg {
+	opacity:1;
+}
+.window-buttons button.close-button {
+	background:var(--colorful-gradient);
+}
+.window-buttons button.minimize-button {
+	background:var(--orange-gradient);
+}
+.window-buttons button.maximize-button {
+	background:var(--blue-gradient);
+}
+.window-buttons button svg {
+	fill:rgb(255,255,255);
+	width:70%;
+	height:70%;
+	position:absolute;
+	top:2px;
+	left:15%;
+	opacity:0;
+}
+.window-buttons button.maximize-button svg {
+	width:60%;
+	height:60%;
+	top:3.2px;
+	left:calc((100% - 60%) / 2);
+}
+
+.loading-overlay, .popup-overlay {
+	display:none;
+	pointer-events:none;
+	top:0;
+	left:0;
+	width:100%;
+	height:100%;
+	position:absolute;
+	background:rgb(20,20,20);
+	transition:none;
+	z-index:99;
+}
+.popup-overlay {
+	z-index:97;
+	background:rgba(0,0,0,0.95);
+}
+.loading-overlay.active, .popup-overlay.active {
+	display:block;
+	pointer-events:all;
+}
+.loading-overlay span {
+	width:100%;
+	line-height:30px;
+	font-size:24px;
+	color:rgb(235,235,235);
+	position:absolute;
+	top:calc(50% - 30px / 2);
+	text-align:center;
+	display:block;
+	position:absolute;
+}
+
+.popup-wrapper {
+	position:absolute;
+	width:400px;
+	height:400px;
+	left:calc(50% - 400px / 2);
+	top:calc(50% - 400px / 2);
+	background:var(--main-first);
+	z-index:98;
+	overflow:hidden;
+	border-radius:var(--border-radius);
+	box-shadow:var(--shadow-smooth);
+	display:none;
+}
+.popup-wrapper.active {
+	display:block;
+}
+.popup-wrapper .top, .popup-wrapper .bottom {
+	position:absolute;
+	left:0;
+	width:100%;
+}
+.popup-wrapper .top {
+	top:0;
+	height:40px;
+	background:var(--main-third);
+	box-shadow:var(--shadow-smooth);
+}
+.popup-wrapper .top span {
+	font-size:18px;
+	font-weight:bold;
+	color:var(--main-contrast);
+	line-height:40px;
+	padding-left:10px;
+}
+.popup-wrapper .bottom {
+	top:40px;
+	padding-top:20px;
+	height:calc(100% - 40px);
+	overflow:hidden auto;
+	-webkit-overflow-scrolling:touch;
+	scroll-behavior:smooth;
+	text-align:center;
+}
+.popup-wrapper .bottom input {
+	display:block;
+	padding:0 10px 0 10px;
+	height:40px;
+	width:calc(100% - 60px);
+	border-radius:var(--border-radius);
+	margin:0 auto 20px auto;
+	background:var(--main-third);
+	color:var(--main-contrast);
+	font-size:16px;
+	box-shadow:var(--shadow-smooth);
+}
+.popup-wrapper .bottom input:read-only {
+	color:var(--main-fifth);
+	pointer-events:none;
+}
+.popup-wrapper .bottom button {
+	display:block;
+	padding:0 10px 0 10px;
+	height:40px;
+	font-size:16px;
+	font-weight:bold;
+	background:var(--main-third);
+	color:var(--main-contrast);
+	border-radius:var(--border-radius);
+	cursor:pointer;
+	box-shadow:var(--shadow-smooth);
+}
+#desktop .popup-wrapper .bottom button:hover {
+	background:var(--main-fourth);
+}
+.popup-wrapper button.reject {
+	display:inline-block;
+	width:calc(50% - 30px);
+}
+.popup-wrapper button.resolve {
+	display:inline-block;
+	margin-left:20px;
+	width:calc(50% - 30px);
+	background:var(--accent-first);
+	color:var(--accent-contrast);
+}
+#desktop .popup-wrapper button.resolve:hover {
+	background:var(--accent-second);
+}
+.popup-wrapper button.resolve.warning {
+	background:rgb(230,50,50);
+}
+#desktop .popup-wrapper button.resolve.warning:hover {
+	background:rgb(150,30,30);
+}
+
+.login-wrapper.active {
+	position:absolute;
+	top:0;
+	left:0;
+	width:100%;
+	height:100%;
+	z-index:98;
+	background:var(--main-first);
+}
+.login-wrapper div {
+	position:absolute;
+	width:calc(200px - 40px);
+	height:160px;
+	padding:20px;
+	top:calc(50% - 160px / 2);
+	left:calc(50% - 200px / 2);
+	background:var(--main-third);
+	box-shadow:var(--shadow-smooth);
+	border-radius:var(--border-radius);
+}
+.login-wrapper input {
+	display:block;
+	width:calc(100% - 20px);
+	padding:0 10px 0 10px;
+	height:40px;
+	margin-bottom:20px;
+	color:var(--main-contrast);
+	font-size:16px;
+	border-radius:var(--border-radius);
+	background:var(--main-first);
+}
+.login-wrapper button {
+	display:block;
+	width:100%;
+	padding:0 10px 0 10px;
+	height:40px;
+	font-weight:bold;
+	color:var(--main-contrast);
+	font-size:16px;
+	border-radius:var(--border-radius);
+	background:var(--main-first);
+	cursor:pointer;
+}
+#desktop .login-wrapper button:hover {
+	background:var(--accent-first);
+	color:var(--accent-contrast);
+}
+
+.navbar {
+	position:absolute;
+	top:0;
+	left:0;
+	width:200px;
+	height:100%;
+	z-index:2;
+	box-shadow:var(--shadow-smooth);
+	background:var(--main-first);
+}
+.navbar .background {
+	position:absolute;
+	width:calc(100% - 40px);
+	height:60px;
+	z-index:1;
+	left:20px;
+	top:-60px;
+	border-radius:var(--border-radius);
+	background:var(--main-third);
+	transition:top 0.25s;
+}
+.navbar .background.dashboard {
+	top:20px;
+}
+.navbar .background.market {
+	top:100px;
+}
+.navbar .background.holdings {
+	top:180px;
+}
+.navbar .background.settings {
+	top:260px;
+}
+.navbar .item {
+	position:relative;
+	display:block;
+	width:calc(100% - 40px);
+	margin:20px 0 0 20px;
+	height:60px;
+	border-radius:var(--border-radius);
+	cursor:pointer;
+	overflow:hidden;
+}
+#desktop .navbar .item:hover {
+	background:var(--main-third);
+}
+#desktop .navbar .item.active:hover {
+	transition:none;
+	background:none;
+}
+.navbar .item .content {
+	position:absolute;
+	top:0;
+	left:0;
+	width:100%;
+	height:100%;
+	z-index:2;
+}
+.navbar .item.active {
+	pointer-events:none;
+	cursor:default;
+}
+.navbar .item svg {
+	width:32px;
+	height:32px;
+	margin-left:10px;
+	fill:var(--main-contrast);
+	display:inline-block;
+	vertical-align:middle;
+}
+.navbar .item span {
+	margin-left:10px;
+	font-size:18px;
+	font-weight:bold;
+	color:var(--main-contrast);
+	display:inline-block;
+	vertical-align:middle;
+	line-height:60px;
+}
+
+.page {
+	display:none;
+	position:absolute;
+	top:0;
+	left:200px;
+	width:calc(100% - 200px);
+	height:100%;
+	background:var(--main-third);
+}
+.page.active {
+	display:block;
+}
+
+.dashboard-market-list-wrapper {
+	position:absolute;
+	top:20px;
+	left:20px;
+	width:calc(60% - 30px);
+	height:calc(100% - 180px);
+	border-radius:var(--border-radius);
+	box-shadow:var(--shadow-smooth);
+	background:var(--main-first);
+	overflow:hidden;
+}
+.dashboard-holdings-list-wrapper {
+	position:absolute;
+	top:20px;
+	right:20px;
+	width:calc(40% - 30px);
+	height:calc(100% - 180px);
+	border-radius:var(--border-radius);
+	box-shadow:var(--shadow-smooth);
+	background:var(--main-first);
+	overflow:hidden;
+}
+
+.dashboard-market-list-wrapper .header.coin {
+	width:110px;
+	margin-left:10px;
+}
+.dashboard-market-list-wrapper .header.price {
+	width:100px;
+}
+.dashboard-market-list-wrapper .header.day {
+	width:120px;
+	text-align:center;
+}
+
+.dashboard-market-list-wrapper .coin-wrapper img {
+	vertical-align:middle;
+	width:28px;
+	height:28px;
+	margin-left:10px;
+	border-radius:50%;
+}
+.dashboard-market-list.backdrop .coin-wrapper img {
+	padding:2px;
+	background:rgb(255,255,255);
+}
+.dashboard-market-list-wrapper .coin-wrapper .coin {
+	width:88px;
+	text-align:left;
+	padding-left:10px;
+	text-overflow:ellipsis;
+	white-space:nowrap;
+	overflow:hidden;
+}
+.dashboard-market-list-wrapper .coin-wrapper .price {
+	width:100px;
+	text-align:left;
+	text-overflow:ellipsis;
+	white-space:nowrap;
+	overflow:hidden;
+}
+.dashboard-market-list-wrapper .coin-wrapper .day {
+	width:120px;
+}
+
+.dashboard-holdings-list-wrapper .header.coin {
+	width:110px;
+}
+.dashboard-holdings-list-wrapper .header.amount {
+	width:100px;
+}
+
+.holdings-list-wrapper .header.coin {
+	width:110px;
+}
+.holdings-list-wrapper .header.amount {
+	width:120px;
+}
+.holdings-list-wrapper .header.value {
+	width:120px;
+}
+.holdings-list-wrapper .header.day {
+	width:170px;
+	text-align:center;
+}
+
+.dashboard-holdings-list-wrapper .coin-wrapper img {
+	vertical-align:middle;
+	width:28px;
+	height:28px;
+	border-radius:50%;
+	margin-left:10px;
+}
+.dashboard-holdings-list.backdrop .coin-wrapper img {
+	padding:2px;
+	background:rgb(255,255,255);
+}
+.dashboard-holdings-list-wrapper .coin-wrapper .coin {
+	width:82px;
+	text-align:left;
+	padding-left:10px;
+	text-overflow:ellipsis;
+	white-space:nowrap;
+	overflow:hidden;
+}
+.dashboard-holdings-list-wrapper .coin-wrapper .amount {
+	width:120px;
+	text-align:left;
+}
+
+.dashboard-market-card-wrapper, .dashboard-holdings-card-wrapper {
+	width:420px;
+	height:80px;
+	padding:20px;
+	background:var(--main-first);
+	box-shadow:var(--shadow-smooth);
+	position:absolute;
+	bottom:20px;
+	left:20px;
+	border-radius:var(--border-radius);
+}
+.dashboard-holdings-card-wrapper {
+	right:20px;
+	left:auto;
+	width:200px;
+}
+.dashboard-market-cap-card, .dashboard-market-change-card, .dashboard-holdings-card {
+	width:200px;
+	height:80px;
+	background:var(--green-gradient);
+	border-radius:var(--border-radius);
+	text-align:center;
+	display:inline-block;
+	position:relative;
+}
+.dashboard-market-cap-card {
+	background:var(--blue-gradient);
+}
+.dashboard-market-change-card {
+	background:var(--purple-gradient);
+}
+.dashboard-holdings-card {
+	background:var(--greener-gradient);
+}
+.dashboard-market-change-card {
+	margin-left:20px;
+}
+.dashboard-market-card-wrapper .title, .dashboard-holdings-card-wrapper .title {
+	width:100%;
+	display:block;
+	font-size:20px;
+	font-weight:bold;
+	color:var(--accent-contrast);
+	position:absolute;
+	top:15px;
+	left:0;
+}
+.dashboard-market-card-wrapper .subtitle, .dashboard-holdings-card-wrapper .subtitle {
+	width:100%;
+	display:block;
+	font-size:18px;
+	color:var(--accent-contrast);
+	position:absolute;
+	bottom:15px;
+	left:0;
+}
+
+.page-navigation-wrapper {
+	position:absolute;
+	top:80px;
+	right:20px;
+	width:240px;
+	height:60px;
+	overflow:hidden;
+	box-shadow:var(--shadow-smooth);
+	background:var(--main-first);
+	border-radius:var(--border-radius);
+	pointer-events:none;
+	opacity:0.5;
+	transition:opacity 0.25s;
+}
+.page-navigation-wrapper.active {
+	pointer-events:all;
+	opacity:1;
+}
+.page-navigation-wrapper .previous, .page-navigation-wrapper .next {
+	display:inline-block;
+	width:60px;
+	height:100%;
+	position:relative;
+	vertical-align:top;
+	transition:background 0.25s;
+	cursor:pointer;
+}
+#desktop .page-navigation-wrapper .previous:hover, #desktop .page-navigation-wrapper .next:hover {
+	background:var(--main-third);
+}
+.page-navigation-wrapper svg {
+	width:32px;
+	height:32px;
+	position:absolute;
+	top:14px;
+	fill:var(--main-contrast);
+}
+.page-navigation-wrapper .previous svg {
+	left:12px;
+}
+.page-navigation-wrapper .next svg {
+	right:12px;
+}
+.page-navigation-wrapper .number {
+	font-size:18px;
+	font-weight:bold;
+	display:inline-block;
+	line-height:60px;
+	width:120px;
+	text-align:center;
+	vertical-align:top;
+	color:var(--main-contrast);
+	background:var(--main-second);
+}
+
+.market .stats-wrapper {
+	position:absolute;
+	top:20px;
+	left:20px;
+	padding:0 20px 0 0;
+	height:120px;
+	box-shadow:var(--shadow-smooth);
+	background:var(--main-first);
+	border-radius:var(--border-radius);
+}
+.market .stats-wrapper .stats-card {
+	width:200px;
+	height:calc(100% - 40px);
+	background:var(--accent-second);
+	margin:20px 0 20px 20px;
+	border-radius:var(--border-radius);
+	text-align:center;
+	position:relative;
+	display:inline-block;
+}
+.market .stats-wrapper .stats-card.market-cap {
+	background:var(--accent-gradient);
+}
+.market .stats-wrapper .stats-card.volume {
+	background:var(--colorful-gradient);
+}
+.market .stats-wrapper .stats-card.dominance {
+	background:var(--orange-gradient);
+}
+.market .stats-wrapper .stats-title {
+	width:100%;
+	display:block;
+	font-size:20px;
+	font-weight:bold;
+	color:var(--accent-contrast);
+	position:absolute;
+	top:15px;
+	left:0;
+}
+.market .stats-wrapper .stats-subtitle {
+	width:100%;
+	display:block;
+	font-size:18px;
+	color:var(--accent-contrast);
+	position:absolute;
+	bottom:15px;
+	left:0;
+}
+
+.market-list-wrapper {
+	position:absolute;
+	top:160px;
+	right:20px;
+	width:calc(100% - 40px);
+	height:calc(100% - 180px);
+	border-radius:var(--border-radius);
+	box-shadow:var(--shadow-smooth);
+	background:var(--main-first);
+	overflow:hidden;
+}
+.market-list-wrapper .headers-wrapper, .holdings-list-wrapper .headers-wrapper, .dashboard-market-list-wrapper .headers-wrapper, .dashboard-holdings-list-wrapper .headers-wrapper {
+	position:absolute;
+	top:0;
+	left:0;
+	width:100%;
+	height:60px;
+	background:var(--main-second);
+	border-color:var(--main-third);
+	border-width:0 0 1px 0;
+	border-style:solid;
+	font-size:0;
+}
+.market-list-wrapper .header, .holdings-list-wrapper .header, .dashboard-market-list-wrapper .header, .dashboard-holdings-list-wrapper .header {
+	font-size:18px;
+	display:inline-block;
+	line-height:60px;
+	font-weight:bold;
+	padding:0 20px 0 20px;
+	color:var(--main-contrast-light);
+	text-align:left;
+}
+.market-list-wrapper .header.rank {
+	width:20px;
+	text-align:center;
+}
+.market-list-wrapper .header.coin {
+	width:110px;
+}
+.market-list-wrapper .header.price {
+	width:120px;
+}
+.market-list-wrapper .header.market-cap {
+	width:200px;
+}
+.market-list-wrapper .header.day {
+	width:120px;
+	text-align:center;
+}
+
+.market-list, .holdings-list, .dashboard-market-list, .dashboard-holdings-list {
+	position:absolute;
+	top:60px;
+	left:0;
+	width:100%;
+	height:calc(100% - 60px);
+	overflow:hidden auto;
+	scroll-behavior:smooth;
+	-webkit-overflow-scrolling:touch;
+}
+
+.market-list-wrapper .coin-wrapper, .holdings-list-wrapper .coin-wrapper, .dashboard-market-list .coin-wrapper, .dashboard-holdings-list .coin-wrapper {
+	border-color:var(--main-second);
+	border-width:0 0 1px 0;
+	border-style:solid;
+	position:relative;
+}
+.market-list-wrapper .coin-wrapper span, .holdings-list-wrapper .coin-wrapper span, .dashboard-market-list .coin-wrapper span, .dashboard-holdings-list .coin-wrapper span {
+	font-size:18px;
+	display:inline-block;
+	line-height:60px;
+	font-weight:bold;
+	padding:0 20px 0 20px;
+	color:var(--main-contrast-light);
+	text-align:center;
+	vertical-align:middle;
+}
+.market-list-wrapper .coin-wrapper .rank {
+	width:20px;
+}
+.market-list-wrapper .coin-wrapper img {
+	vertical-align:middle;
+	width:28px;
+	height:28px;
+	border-radius:50%;
+}
+.market-list.backdrop .coin-wrapper img {
+	padding:2px;
+	background:rgb(255,255,255);
+}
+.market-list-wrapper .coin-wrapper .coin {
+	width:88px;
+	text-align:left;
+	padding-left:10px;
+	text-overflow:ellipsis;
+	white-space:nowrap;
+	overflow:hidden;
+}
+.market-list-wrapper .coin-wrapper .price {
+	width:120px;
+	text-align:left;
+	text-overflow:ellipsis;
+	white-space:nowrap;
+	overflow:hidden;
+}
+.market-list-wrapper .coin-wrapper .market-cap {
+	width:200px;
+	text-align:left;
+}
+.market-list-wrapper .coin-wrapper .day {
+	width:120px;
+}
+
+.holdings .more-menu {
+	position:absolute;
+	z-index:3;
+	width:100px;
+	height:80px;
+	overflow:hidden;
+	border-radius:var(--border-radius);
+	background:var(--main-fifth);
+	box-shadow:var(--shadow-smooth);
+}
+.holdings .more-menu button {
+	display:block;
+	height:40px;
+	padding:0 10px 0 10px;
+	background:none;
+	width:100%;
+	font-weight:bold;
+	font-size:16px;
+	color:var(--main-contrast);
+	cursor:pointer;
+}
+.holdings .more-menu button:nth-of-type(even) {
+	background:var(--main-fourth);
+}
+#desktop .holdings .more-menu button:hover {
+	background:var(--main-third);
+}
+
+.holdings-list-wrapper {
+	position:absolute;
+	top:20px;
+	left:20px;
+	width:730px;
+	height:calc(100% - 40px);
+	border-radius:var(--border-radius);
+	box-shadow:var(--shadow-smooth);
+	background:var(--main-first);
+	overflow:hidden;
+}
+.holdings-list-wrapper .header.coin {
+	width:110px;
+}
+.holdings-list-wrapper .header.amount {
+	width:120px;
+}
+.holdings-list-wrapper .header.value {
+	width:120px;
+}
+.holdings-list-wrapper .header.day {
+	width:170px;
+	text-align:center;
+}
+
+.holdings-list-wrapper .coin-wrapper img {
+	vertical-align:middle;
+	width:28px;
+	height:28px;
+	border-radius:50%;
+	margin-left:10px;
+}
+.holdings-list.backdrop .coin-wrapper img {
+	padding:2px;
+	background:rgb(255,255,255);
+}
+.holdings-list-wrapper .coin-wrapper .coin {
+	width:82px;
+	text-align:left;
+	padding-left:10px;
+	text-overflow:ellipsis;
+	white-space:nowrap;
+	overflow:hidden;
+}
+.holdings-list-wrapper .coin-wrapper .amount {
+	width:120px;
+	text-align:left;
+}
+.holdings-list-wrapper .coin-wrapper .value {
+	width:120px;
+	text-align:left;
+}
+.holdings-list-wrapper .coin-wrapper .day {
+	width:170px;
+	text-align:center;
+}
+
+.holdings-list-wrapper .coin-wrapper .more {
+	position:absolute;
+	top:13px;
+	right:13px;
+	padding:4px;
+	border-radius:50%;
+	background:var(--main-third);
+	cursor:pointer;
+	transition:background 0.25s;
+}
+#desktop .holdings-list-wrapper .coin-wrapper .more:hover {
+	background:var(--main-fourth);
+}
+#desktop .holdings-list-wrapper .coin-wrapper .more:hover svg {
+	fill:var(--main-contrast);
+}
+.holdings-list-wrapper .coin-wrapper .more svg {
+	width:24px;
+	height:24px;
+	margin-top:2px;
+	vertical-align:middle;
+	fill:var(--main-contrast-light);
+	transition:fill 0.25s;
+}
+
+.holdings-card-wrapper {
+	width:200px;
+	height:180px;
+	padding:20px;
+	background:var(--main-first);
+	box-shadow:var(--shadow-smooth);
+	position:absolute;
+	top:20px;
+	right:20px;
+	border-radius:var(--border-radius);
+}
+.holdings-add-card, .holdings-value-card {
+	width:200px;
+	height:80px;
+	background:var(--green-gradient);
+	border-radius:var(--border-radius);
+	text-align:center;
+	display:block;
+	position:relative;
+}
+.holdings-add-card {
+	margin-top:20px;
+	cursor:pointer;
+	transition:transform 0.25s;
+	background:var(--calm-gradient);
+}
+#desktop .holdings-add-card:hover {
+	transform:scale(0.95);
+}
+.holdings-add-card svg {
+	width:28px;
+	height:28px;
+	position:absolute;
+	bottom:10px;
+	left:calc(50% - 28px / 2);
+	fill:var(--accent-contrast);
+}
+.holdings-card-wrapper .title {
+	width:100%;
+	display:block;
+	font-size:20px;
+	font-weight:bold;
+	color:var(--accent-contrast);
+	position:absolute;
+	top:15px;
+	left:0;
+}
+.holdings-card-wrapper .subtitle {
+	width:100%;
+	display:block;
+	font-size:18px;
+	color:var(--accent-contrast);
+	position:absolute;
+	bottom:15px;
+	left:0;
+}
+
+.holdings-chart-wrapper {
+	width:750px;
+	height:calc(100% - 304px - 100px);
+	padding:20px;
+	background:var(--main-first);
+	box-shadow:var(--shadow-smooth);
+	position:absolute;
+	overflow:hidden;
+	bottom:20px;
+	left:20px;
+	border-radius:var(--border-radius);
+}
+.holdings-chart-wrapper .chart-container {
+	width:95%;
+	margin:0 auto 0 auto;
+	display:block;
+}
+
+.settings {
+	overflow:hidden auto;
+	-webkit-overflow-scrolling:touch;
+	scroll-behavior:smooth;
+}
+
+.settings .section {
+	position:relative;
+	width:calc(50% - 40px - 30px);
+	margin:20px auto 0 20px;
+	padding:20px 20px 0 20px;
+	vertical-align:top;
+	height:auto;
+	min-height:100px;
+	border-radius:var(--border-radius);
+	display:inline-block;
+	background:var(--main-first);
+	box-shadow:var(--shadow-smooth);
+}
+.settings .section:last-of-type {
+	margin-bottom:20px;
+}
+.settings .section .title {
+	font-size:18px;
+	display:block;
+	font-weight:bold;
+	margin-bottom:20px;
+	line-height:20px;
+	color:var(--main-contrast);
+}
+.settings .section .toggle-wrapper {
+	background:var(--main-third);
+	margin-bottom:20px;
+	width:80px;
+	height:40px;
+	border-radius:20px;
+	position:relative;
+	cursor:pointer;
+	box-shadow:var(--shadow-smooth);
+}
+.settings .section .toggle {
+	width:30px;
+	height:30px;
+	position:absolute;
+	top:5px;
+	left:5px;
+	background:var(--main-contrast);
+	border-radius:50%;
+	transition:left 0.25s, transform 0.75s;
+}
+.settings .section .toggle-wrapper.active .toggle {
+	left:calc(100% - 35px);
+	transform:rotate(360deg);
+}
+.settings .section .toggle-wrapper.active .sun, .settings .section .toggle-wrapper .moon {
+	display:block;
+}
+.settings .section .toggle-wrapper .sun, .settings .section .toggle-wrapper.active .moon {
+	display:none;
+}
+.settings .section .toggle svg {
+	width:20px;
+	height:20px;
+	fill:var(--main-third);
+	position:absolute;
+	top:5px;
+	left:5px;
+}
+.settings .section textarea {
+	height:200px;
+	width:300px;
+	margin-bottom:20px;
+	padding:10px;
+	border-radius:var(--border-radius);
+	outline:none;
+	resize:none;
+	color:var(--main-contrast);
+	background:var(--main-third);
+	box-shadow:var(--shadow-smooth);
+	border:none;
+	display:block;
+	font-size:12px;
+}
+.settings .section textarea::-webkit-scrollbar {
+	display:none;
+}
+.settings .section .choice, .settings .section .server-choice, .settings .section .submit {
+	padding:10px;
+	border-radius:var(--border-radius);
+	margin:0 20px 20px 0;
+	font-size:16px;
+	font-weight:bold;
+	background:var(--main-third);
+	color:var(--main-contrast);
+	cursor:pointer;
+	box-shadow:var(--shadow-smooth);
+}
+.settings .section .submit {
+	display:block;
+}
+.settings .section .choice.active, .settings .section .server-choice.active {
+	pointer-events:none;
+	cursor:default;
+}
+#desktop .settings .section .choice:hover, .settings .section .choice.active, #desktop .settings .section .server-choice:hover, .settings .section .server-choice.active, #desktop .settings .section .submit:hover {
+	background:var(--accent-first);
+	color:var(--accent-contrast);
+}
+.settings .section input {
+	display:block;
+	padding:0 10px 0 10px;
+	height:40px;
+	width:200px;
+	border-radius:var(--border-radius);
+	margin:0 0 20px 0;
+	background:var(--main-third);
+	color:var(--main-contrast);
+	font-size:16px;
+	box-shadow:var(--shadow-smooth);
+}

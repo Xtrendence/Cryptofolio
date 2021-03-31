@@ -2,10 +2,62 @@
   "name": "cryptofolio",
   "version": "1.0.0",
   "description": "A cryptocurrency portfolio application.",
-  "main": "server.js",
+  "main": "app/server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "electron app/server.js",
+    "dev": "nodemon --exec electron app/server.js",
+    "pack": "build --dir",
+    "dist": "electron-builder -mwl"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Xtrendence/Cryptofolio.git"
   },
   "author": "Xtrendence",
-  "license": "ISC"
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Xtrendence/Cryptofolio/issues"
+  },
+  "homepage": "https://github.com/Xtrendence/Cryptofolio#readme",
+  "build": {
+    "appId": "com.xtrendence.cryptofolio",
+    "asar": true,
+    "dmg": {
+      "contents": [
+        {
+          "x": 110,
+          "y": 150
+        },
+        {
+          "x": 240,
+          "y": 150,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ]
+    },
+    "mac": {
+      "category": "public.app-category.finance"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ]
+    },
+    "win": {
+      "target": "NSIS",
+      "icon": "build/icon.ico"
+    }
+  },
+  "devDependencies": {
+    "electron-builder": "^22.8.1"
+  },
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "ejs": "^3.1.5",
+    "electron-localshortcut": "^3.2.1",
+    "express": "^4.17.1"
+  }
 }

@@ -1,0 +1,26 @@
+.login-wrapper {
+	display:none;
+}
+.navbar {
+	display:none;
+}
+.page {
+	left:0;
+	width:100%;
+	height:100%;
+}
+.holdings-card-wrapper {
+	height:80px;
+}
+.holdings-add-card {
+	display:none;
+}
+.holdings-list .more {
+	display:none;
+}
+
+@media screen and (max-width:550px) {
+	.holdings-value-card {
+		width:100%;
+	}
+}

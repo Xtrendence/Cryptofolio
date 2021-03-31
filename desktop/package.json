@@ -1,5 +1,5 @@
 {
-  "name": "cryptofolio",
+  "name": "Cryptofolio",
   "version": "1.0.0",
   "description": "A cryptocurrency portfolio application.",
   "main": "app/server.js",
@@ -23,20 +23,6 @@
   "build": {
     "appId": "com.xtrendence.cryptofolio",
     "asar": true,
-    "dmg": {
-      "contents": [
-        {
-          "x": 110,
-          "y": 150
-        },
-        {
-          "x": 240,
-          "y": 150,
-          "type": "link",
-          "path": "/Applications"
-        }
-      ]
-    },
     "mac": {
       "category": "public.app-category.finance"
     },

@@ -99,9 +99,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 	let inputNewPassword = document.getElementById("input-new-password");
 	let inputRepeatPassword = document.getElementById("input-repeat-password");
 
-	let inputAccessPIN = document.getElementById("input-access-pin");
-	let inputSharingURL = document.getElementById("sharing-url");
-
 	let buttonChangePassword = document.getElementById("change-password-button");
 
 	let buttonChangePIN = document.getElementById("change-pin-button");
@@ -227,28 +224,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 	buttonLogout.addEventListener("click", () => {
 		logout();
-	});
-
-	buttonChangePIN.addEventListener("click", () => {
-		changeSetting("pin", inputAccessPIN.value).then((response) => {
-			if("error" in response) {
-				Notify.error({
-					title:"Error",
-					description:response.error
-				});
-			} else {
-				Notify.success({
-					title:"PIN Changed",
-					description:response.message
-				});
-			}
-		}).catch(e => {
-			console.log(e);
-			Notify.error({
-				title:"Error",
-				description:"Couldn't change access PIN."
-			});
-		});
 	});
 
 	divPopupOverlay.addEventListener("click", () => {
@@ -576,24 +551,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 		}
 	});
 
-	buttonCopyURL.addEventListener("click", () => {
-		inputSharingURL.select();
-		inputSharingURL.setSelectionRange(0, 99999);
-
-		document.execCommand("copy");
-		
-		if(window.getSelection) {
-			window.getSelection().removeAllRanges();
-		} else if(document.selection) {
-			document.selection.empty();
-		}
-
-		Notify.success({
-			title:"Copied To Clipboard",
-			description:"The URL has been copied to your clipboard."
-		});
-	});
-
 	function login(password) {
 		try {
 			let xhr = new XMLHttpRequest();
@@ -676,7 +633,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 							spanHoldingsTotalValue.textContent = "...";
 
-							inputAccessPIN.value = "";
 							inputCurrentPassword.value = "";
 							inputNewPassword.value = "";
 							inputRepeatPassword.value = "";
@@ -1254,8 +1210,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 			switchTheme(settings.theme);
 
-			inputAccessPIN.value = settings.pin;
-
 			if(!empty(settings.css)) {
 				inputThemeCSS.value = settings.css;
 
@@ -1314,8 +1268,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 				divMarketList.classList.remove("backdrop");
 				divHoldingsList.classList.remove("backdrop");
 			}
-
-			inputSharingURL.value = window.location.href.replaceAll("index.html", "") + "index.html?access=view&pin=" + settings.pin;
 		}).catch(e => {
 			console.log(e);
 		});

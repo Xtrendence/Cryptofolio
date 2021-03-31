@@ -2,3 +2,4 @@ node_modules
 .idea
 *.hprof
 mobile/key.txt
+desktop/dist

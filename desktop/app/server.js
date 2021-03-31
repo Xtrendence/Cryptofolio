@@ -43,7 +43,8 @@ app.on("ready", function() {
 		x:80,
 		y:80,
 		webPreferences: {
-			nodeIntegration:true
+			nodeIntegration:true,
+			contextIsolation:false
 		}
 	});
 

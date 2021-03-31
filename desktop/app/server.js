@@ -1,6 +1,6 @@
 const electron = require("electron");
 const localShortcut = require("electron-localshortcut");
-const { app, BrowserWindow, screen, ipcMain, dialog, shell, Menu, globalShortcut } = electron;
+const { app, BrowserWindow, screen, ipcMain } = electron;
 
 const express = require("express");
 const localExpress = express();

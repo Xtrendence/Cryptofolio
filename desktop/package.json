@@ -55,7 +55,6 @@
     "electron-builder": "^22.8.1"
   },
   "dependencies": {
-    "body-parser": "^1.19.0",
     "ejs": "^3.1.5",
     "electron-localshortcut": "^3.2.1",
     "express": "^4.17.1"

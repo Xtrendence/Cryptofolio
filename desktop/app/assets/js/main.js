@@ -1,9 +1,13 @@
 document.addEventListener("DOMContentLoaded", () => {
+	let api = localStorage.getItem("api");
+
 	// Begin Changeable Variables
-	const api = "../api/"; // Default: "../api/"
 	const updateInterval = 30000; // Default: 30000
 	
 	const Notify = new XNotify("BottomRight");
+
+	const electron = require("electron");
+	const { ipcRenderer } = electron;
 
 	let updateDashboardListInterval = setInterval(listDashboard, updateInterval);
 	let updateMarketListInterval = setInterval(listMarket, updateInterval);
@@ -17,12 +21,17 @@ document.addEventListener("DOMContentLoaded", () => {
 	
 	let body = document.body;
 
+	let buttonClose = document.getElementsByClassName("close-button")[0];
+	let buttonMinimize = document.getElementsByClassName("minimize-button")[0];
+	let buttonMaximize = document.getElementsByClassName("maximize-button")[0];
+
 	let spanGlobalMarketCap = document.getElementById("global-market-cap");
 	let spanGlobalVolume = document.getElementById("global-volume");
 	let spanGlobalDominance = document.getElementById("global-dominance");
 
 	let divLoginWrapper = document.getElementById("login-wrapper");
 
+	let inputLoginAPI = document.getElementById("login-api");
 	let inputLoginPassword = document.getElementById("login-password");
 
 	let buttonLogin = document.getElementById("login-button");
@@ -172,14 +181,42 @@ document.addEventListener("DOMContentLoaded", () => {
 				document.getElementById("popup-confirm").click();
 			}
 		}
-		if(divLoginWrapper.classList.contains("active")) {
-			inputLoginPassword.focus();
-		}
+	});
+
+	buttonClose.addEventListener("click", () => {
+		ipcRenderer.send("set-window-state", "closed");
+	});
+
+	buttonMinimize.addEventListener("click", () => {
+		ipcRenderer.send("set-window-state", "minimized");
+	});
+
+	buttonMaximize.addEventListener("click", () => {
+		ipcRenderer.send("set-window-state", "maximized");
 	});
 
 	buttonLogin.addEventListener("click", () => {
+		let url = inputLoginAPI.value;
 		let password = inputLoginPassword.value;
-		login(password);
+		if(empty(url) || empty(password)) {
+			Notify.error({
+				title:"Error",
+				description:"Both fields must be filled out."
+			});
+		} else {
+			if(!url.includes("http://") && !url.includes("https://")) {
+				url = "http://" + url;
+			}
+
+			let lastCharacter = url.substr(url.length - 1);
+			if(lastCharacter !== "/") {
+				url = url + "/";
+			}
+
+			api = url;
+
+			login(password);
+		}
 	});
 
 	buttonLogout.addEventListener("click", () => {
@@ -583,6 +620,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
 								inputLoginPassword.value = "";
 								inputLoginPassword.blur();
+
+								console.log(localStorage.getItem("token"));
+
+								localStorage.setItem("api", url);
 							}
 						}
 					} else {
@@ -654,6 +695,10 @@ document.addEventListener("DOMContentLoaded", () => {
 	}
 
 	function checkSession() {
+		if(!empty(api)) {
+			inputLoginAPI.value = api;
+		}
+
 		if(empty(sessionToken)) {
 			if(divLoadingOverlay.classList.contains("active")) {
 				divLoadingOverlay.classList.remove("active");

@@ -1,25 +1,28 @@
-const localPort = 2220;
-
 const electron = require("electron");
 const localShortcut = require("electron-localshortcut");
 const { app, BrowserWindow, screen, ipcMain, dialog, shell, Menu, globalShortcut } = electron;
 
 const express = require("express");
 const localExpress = express();
-const localServer = localExpress.listen(localPort, "localhost");
+const localServer = localExpress.listen(0, "localhost");
 
 const path = require("path");
-const { ipcRenderer } = require("electron");
 
 app.requestSingleInstanceLock();
 app.disableHardwareAcceleration();
 app.name = "Cryptofolio";
 
 app.on("ready", function() {
+		const debugMode = true;
+
 		const { screenWidth, screenHeight } = screen.getPrimaryDisplay().workAreaSize;
 
 		let windowWidth = 1000;
 		let windowHeight = 620;
+
+		if(debugMode) {
+			windowWidth += 220;
+		}
 
 		const localWindow = new BrowserWindow({
 			width:windowWidth,
@@ -62,7 +65,9 @@ app.on("ready", function() {
 		localExpress.set("view engine", "ejs");
 		localExpress.use("/assets", express.static(path.join(__dirname, "assets")));
 	
-		localWindow.loadURL("http://127.0.0.1:" + localPort);
+		localWindow.loadURL("http://127.0.0.1:" + localServer.address().port);
+
+		localWindow.webContents.openDevTools();
 
 		localExpress.get("/", (req, res) => {
 			res.render("index");

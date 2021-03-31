@@ -61,7 +61,7 @@ input[type=number] {
 	height:36px;
 	top:0;
 	left:0;
-	background:var(--main-third);
+	background:var(--main-first);
 	-webkit-app-region:drag;
 	z-index:999;
 }
@@ -109,6 +109,14 @@ input[type=number] {
 	height:60%;
 	top:3.2px;
 	left:calc((100% - 60%) / 2);
+}
+
+.app-content {
+	position:absolute;
+	top:36px;
+	left:0;
+	height:calc(100% - 36px);
+	width:100%;
 }
 
 .loading-overlay, .popup-overlay {
@@ -249,11 +257,11 @@ input[type=number] {
 }
 .login-wrapper div {
 	position:absolute;
-	width:calc(200px - 40px);
+	width:calc(300px - 40px);
 	height:160px;
 	padding:20px;
 	top:calc(50% - 160px / 2);
-	left:calc(50% - 200px / 2);
+	left:calc(50% - 300px / 2);
 	background:var(--main-third);
 	box-shadow:var(--shadow-smooth);
 	border-radius:var(--border-radius);

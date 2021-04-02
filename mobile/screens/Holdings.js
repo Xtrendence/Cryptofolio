@@ -211,6 +211,11 @@ export default function Holdings({ navigation }) {
 	}
 
 	async function getHoldings() {
+		let currency = await AsyncStorage.getItem("currency");
+		if(empty(currency)) {
+			currency = "usd";
+		}
+		
 		let theme = empty(await AsyncStorage.getItem("theme")) ? "Light" : await AsyncStorage.getItem("theme");
 
 		let api = await AsyncStorage.getItem("api");
@@ -265,7 +270,7 @@ export default function Holdings({ navigation }) {
 									<Image style={styles.cellImage} source={{uri:icon}}/>
 									<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellSymbol]} ellipsizeMode="tail">{symbol}</Text>
 									<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellAmount]} ellipsizeMode="tail">{separateThousands(amount)}</Text>
-									<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellValue]} ellipsizeMode="tail">${value}</Text>
+									<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellValue]} ellipsizeMode="tail">{currencies[currency] + value}</Text>
 								</View>
 							</TouchableOpacity>
 						);

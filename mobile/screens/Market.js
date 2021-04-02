@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Text, StyleSheet, View, Image, Dimensions, ScrollView, RefreshControl } from "react-native";
+import { Text, StyleSheet, View, Image, Dimensions, ScrollView, RefreshControl, TouchableOpacity } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import Icon from "react-native-vector-icons/FontAwesome5";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -123,13 +123,15 @@ export default function Market({ navigation }) {
 				let symbol = coin.symbol.toUpperCase();
 
 				data.push(
-					<View style={styles.row} key={epoch() + key}>
-						<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellRank]} ellipsizeMode="tail">{rank}</Text>
-						<Image style={styles.cellImage} source={{uri:icon}}/>
-						<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellSymbol]} ellipsizeMode="tail">{symbol}</Text>
-						<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellPrice]} ellipsizeMode="tail">{price}</Text>
-						<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellCap]} ellipsizeMode="tail">{cap}</Text>
-					</View>
+					<TouchableOpacity key={epoch() + key} onPress={() => {  }}>
+						<View style={[styles.row, rank % 2 ? {...styles.rowOdd, ...styles[`rowOdd${theme}`]} : null]}>
+							<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellRank]} ellipsizeMode="tail">{rank}</Text>
+							<Image style={styles.cellImage} source={{uri:icon}}/>
+							<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellSymbol]} ellipsizeMode="tail">{symbol}</Text>
+							<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellPrice]} ellipsizeMode="tail">{currencies[currency] + price}</Text>
+							<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellCap]} ellipsizeMode="tail">{currencies[currency] + cap}</Text>
+						</View>
+					</TouchableOpacity>
 				);
 			});
 
@@ -207,6 +209,12 @@ const styles = StyleSheet.create({
 		paddingLeft:4,
 		paddingTop:8,
 		paddingBottom:8,
+	},
+	rowOdd: {
+		backgroundColor:globalColors["Light"].mainSecond,
+	},
+	rowOddDark: {
+		backgroundColor:globalColors["Dark"].mainSecond,
 	},
 	headerText: {
 		fontSize:18,

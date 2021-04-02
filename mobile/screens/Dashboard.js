@@ -137,7 +137,7 @@ export default function Dashboard({ navigation }) {
 						<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellRank]}>{rank}</Text>
 						<Image style={styles.cellImage} source={{uri:icon}}/>
 						<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellSymbol]}>{symbol}</Text>
-						<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellPrice]}>{price}</Text>
+						<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellPrice]}>{currencies[currency] + price}</Text>
 					</View>
 				);
 			});

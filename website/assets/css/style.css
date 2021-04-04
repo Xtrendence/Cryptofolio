@@ -264,8 +264,11 @@ input[type=number] {
 .navbar .background.holdings {
 	top:180px;
 }
-.navbar .background.settings {
+.navbar .background.activity {
 	top:260px;
+}
+.navbar .background.settings {
+	top:340px;
 }
 .navbar .item {
 	position:relative;

@@ -8,6 +8,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 	let updateDashboardListInterval = setInterval(listDashboard, updateInterval);
 	let updateMarketListInterval = setInterval(listMarket, updateInterval);
 	let updateHoldingsListInterval = setInterval(listHoldings, updateInterval);
+	let updateActivityListInterval = setInterval(listActivity, updateInterval);
 
 	let sessionToken = localStorage.getItem("token");
 
@@ -47,6 +48,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 	let divPageDashboard = document.getElementById("page-dashboard");
 	let divPageMarket = document.getElementById("page-market");
 	let divPageHoldings = document.getElementById("page-holdings");
+	let divPageActivity = document.getElementById("page-activity");
 	let divPageSettings = document.getElementById("page-settings");
 
 	let divDashboardMarketList = document.getElementById("dashboard-market-list");
@@ -70,11 +72,13 @@ document.addEventListener("DOMContentLoaded", async () => {
 	let divNavbarDashboard = document.getElementById("navbar-dashboard");
 	let divNavbarMarket = document.getElementById("navbar-market");
 	let divNavbarHoldings = document.getElementById("navbar-holdings");
+	let divNavbarActivity = document.getElementById("navbar-activity");
 	let divNavbarSettings = document.getElementById("navbar-settings");
 
 	let divPageNavigation = document.getElementById("page-navigation");
 	let divMarketList = document.getElementById("market-list");
 	let divHoldingsList = document.getElementById("holdings-list");
+	let divActivityList = document.getElementById("activity-list");
 
 	let divHoldingsAddCard = document.getElementById("holdings-add-card");
 	let divHoldingsMoreMenu = document.getElementById("holdings-more-menu");
@@ -317,6 +321,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 	divNavbarHoldings.addEventListener("click", () => {
 		switchPage("holdings");
+	});
+
+	divNavbarActivity.addEventListener("click", () => {
+		switchPage("activity");
 	});
 
 	divNavbarSettings.addEventListener("click", () => {
@@ -737,11 +745,13 @@ document.addEventListener("DOMContentLoaded", async () => {
 		divNavbarDashboard.classList.remove("active");
 		divNavbarMarket.classList.remove("active");
 		divNavbarHoldings.classList.remove("active");
+		divNavbarActivity.classList.remove("active");
 		divNavbarSettings.classList.remove("active");
 
 		divPageDashboard.classList.remove("active");
 		divPageMarket.classList.remove("active");
 		divPageHoldings.classList.remove("active");
+		divPageActivity.classList.remove("active");
 		divPageSettings.classList.remove("active");
 
 		getLocalSettings().then(() => {
@@ -763,6 +773,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 					divPageHoldings.classList.add("active");
 					divNavbarBackground.setAttribute("class", "background holdings");
 					listHoldings();
+					break;
+				case "activity":
+					divNavbarActivity.classList.add("active");
+					divPageActivity.classList.add("active");
+					divNavbarBackground.setAttribute("class", "background activity");
+					listActivity();
 					break;
 				case "settings":
 					divNavbarSettings.classList.add("active");
@@ -1196,6 +1212,20 @@ document.addEventListener("DOMContentLoaded", async () => {
 			});
 
 			updateHoldingsListInterval = setInterval(listHoldings, updateInterval);
+		}
+	}
+	
+	function listActivity() {
+		if(!divLoginWrapper.classList.contains("active") && divNavbarActivity.classList.contains("active")) {
+			clearInterval(updateActivityListInterval);
+	
+			divPageNavigation.classList.remove("active");
+	
+			setTimeout(() => {
+				if(divActivityList.classList.contains("loading")) {
+					listActivity();
+				}
+			}, 5000);
 		}
 	}
 

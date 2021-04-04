@@ -213,19 +213,23 @@
 	}
 	.navbar .background.dashboard {
 		top:10px;
-		left:calc(50% - 150px);
+		left:calc(50% - 190px);
 	}
 	.navbar .background.market {
 		top:10px;
-		left:calc(50% - 70px);
+		left:calc(50% - 110px);
 	}
 	.navbar .background.holdings {
 		top:10px;
-		left:calc(50% + 10px);
+		left:calc(50% - 30px);
+	}
+	.navbar .background.activity {
+		top:10px;
+		left:calc(50% + 50px);
 	}
 	.navbar .background.settings {
 		top:10px;
-		left:calc(50% + 90px);
+		left:calc(50% + 130px);
 	}
 
 	.page {
@@ -395,6 +399,43 @@
 }
 
 @media screen and (max-width:410px) {
+	.navbar {
+		height:64px;
+	}
+	.navbar .item {
+		margin:10px 5px 0 5px;
+		width:44px;
+		height:44px;
+	}
+	.navbar .item svg {
+		width:28px;
+		height:28px;
+		padding-top:8px;
+	}
+	.navbar .background {
+		width:44px;
+		height:44px;
+	}
+	.navbar .background.dashboard {
+		left:calc(50% - 130px);
+	}
+	.navbar .background.market {
+		left:calc(50% - 76px);
+	}
+	.navbar .background.holdings {
+		left:calc(50% - 22px);
+	}
+	.navbar .background.activity {
+		left:calc(50% + 32px);
+	}
+	.navbar .background.settings {
+		left:calc(50% + 86px);
+	}
+
+	.page {
+		height:calc(100% - 64px);
+	}
+
 	.market-list-wrapper .header.rank {
 		display:none;
 	}

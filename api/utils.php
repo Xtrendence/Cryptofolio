@@ -2,6 +2,7 @@
 	class Utils {
 		public $accountFile = "../data/account.json";
 		public $holdingsFile = "../data/holdings.json";
+		public $transactionsFile = "../data/transactions.json";
 		public $settingsFile = "../data/settings.json";
 
 		function verifyPassword($password) {
@@ -45,6 +46,10 @@
 
 			if(!file_exists($this->holdingsFile)) {
 				file_put_contents($this->holdingsFile, "{}");
+			}
+
+			if(!file_exists($this->transactionsFile)) {
+				file_put_contents($this->transactionsFile, "{}");
 			}
 		}
 

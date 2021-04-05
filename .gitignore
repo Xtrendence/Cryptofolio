@@ -6,4 +6,4 @@ desktop/dist
 api/data/account.json
 api/data/holdings.json
 api/data/settings.json
-api/data/transactions.json
+api/data/activity.json

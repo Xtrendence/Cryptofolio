@@ -440,6 +440,20 @@ input[type=number] {
 	text-align:center;
 }
 
+html.light .highlight .coin-wrapper.positive {
+	background:rgba(0,255,150,0.1);
+}
+html.light .highlight .coin-wrapper.negative {
+	background:rgba(255,0,0,0.1);
+}
+
+html.dark .highlight .coin-wrapper.positive {
+	background:rgba(0,255,150,0.05);
+}
+html.dark .highlight .coin-wrapper.negative {
+	background:rgba(255,0,0,0.1);
+}
+
 .dashboard-market-list-wrapper .coin-wrapper img {
 	vertical-align:middle;
 	width:28px;

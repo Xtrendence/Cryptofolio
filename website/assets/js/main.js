@@ -137,7 +137,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 				sessionToken = pin;
 				listHoldings();
 			}
-		}, 500)
+		}, 500);
 	} else {
 		empty(localStorage.getItem("defaultPage")) ? switchPage("market") : switchPage(localStorage.getItem("defaultPage"));
 

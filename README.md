@@ -44,12 +44,18 @@ You can then copy the "website" folder into the DocumentRoot directory as well. 
 
 ### What is the Coin ID when adding an asset?
 
+#### V.1.3+
+
+You no longer need to use the CoinGecko ID of a cryptoasset to add it to your holdings. They can be added using the appropriate symbol/ticker (such as BTC for Bitcoin, ADA for Cardano, ETH for Ethereum, DOT for Polkadot and so on).
+
+#### Older Versions
+
 In order to add an asset to your list of holdings, you will need to find out what its ID is on CoinGecko. You can find this by looking at the URL of whatever asset you're looking at. So, for example, the Moon token of r/CryptoCurrency can be found [here](https://www.coingecko.com/en/coins/moon), and as seen in the URL, its ID is simply "moon". This process might be made easier in the future if the demand is there, and I might add some form of search functionality, but this wouldn't really be possible with CoinGecko's current API.
 
 ### Please keep the following points in mind:
 
 - Since the CoinGecko API is used to fetch and utilize market data (such as the price of a cryptocurrency), your IP will most likely be logged by CoinGecko as you'd be making requests to their servers.
-- Coin rankings and data might differ from other websites such as CoinMarketCap. Any inaccuracy would be due to CoinGecko's data being wrong.
+- Coin rankings and data might differ from other websites such as CoinMarketCap. Any inaccuracy would be due to CoinGecko's data being wrong or otherwise different.
 - Your PIN code for sharing your portfolio is stored in plaintext.
 - CoinGecko's API is limited in terms of both functionality, and how often requests can be made. As such, be careful not to refresh **too** often. Any rate limits are temporary though, you won't get banned or anything permanently.
 

@@ -228,9 +228,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 	buttonMoreEdit.addEventListener("click", () => {
 		let id = divHoldingsMoreMenu.getAttribute("data-coin");
+		let symbol = divHoldingsMoreMenu.getAttribute("data-symbol");
 		let currentAmount = divHoldingsMoreMenu.getAttribute("data-amount");
 
-		let html = '<input id="popup-coin" placeholder="Coin ID... (e.g. Bitcoin)" value="' + capitalizeFirstLetter(id) + '" readonly><input id="popup-amount" placeholder="Amount... (e.g. 2.5)" value="' + currentAmount + '" type="number"><button class="reject" id="popup-cancel">Cancel</button><button class="resolve" id="popup-confirm">Confirm</button>';
+		let html = '<input id="popup-coin" placeholder="Coin Symbol... (e.g. BTC)" value="' + symbol + '" readonly><input id="popup-amount" placeholder="Amount... (e.g. 2.5)" value="' + currentAmount + '" type="number"><button class="reject" id="popup-cancel">Cancel</button><button class="resolve" id="popup-confirm">Confirm</button>';
 
 		popup("Editing Asset", html, 300, 240);
 
@@ -340,7 +341,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 	});
 
 	divHoldingsAddCard.addEventListener("click", () => {
-		let html = '<input id="popup-coin" placeholder="Coin ID... (e.g. Bitcoin)"><input id="popup-amount" placeholder="Amount... (e.g. 2.5)" type="number"><button class="reject" id="popup-cancel">Cancel</button><button class="resolve" id="popup-confirm">Confirm</button>';
+		let html = '<input id="popup-coin" placeholder="Coin Symbol... (e.g. BTC)"><input id="popup-amount" placeholder="Amount... (e.g. 2.5)" type="number"><button class="reject" id="popup-cancel">Cancel</button><button class="resolve" id="popup-confirm">Confirm</button>';
 
 		popup("Adding Asset", html, 300, 240);
 
@@ -364,39 +365,43 @@ document.addEventListener("DOMContentLoaded", async () => {
 						description:"The amount field must be a number."
 					});
 				} else {
-					let coinID = id.toLowerCase().replaceAll(" ", "-");
-					getCoin(coinID).then(coin => {
-						if(!empty(coin.error)) {
-							Notify.error({
-								title:"Error",
-								description:"Coin not found."
-							});
-						} else {
-							createHolding(coinID, coin.symbol, amount).then(response => {
-								clearHoldingsList();
-
-								hidePopup();
-
-								if("message" in response) {
-									Notify.success({
-										title:"Asset Created",
-										description:response.message
-									});
-								} else {
-									Notify.error({
-										title:"Error",
-										description:response.error
-									});
-								}
-				
-								listHoldings();
-							}).catch(e => {
+					let symbol = id.trim().toLowerCase();
+					getCoinID(symbol).then(coinID => {
+						getCoin(coinID).then(coin => {
+							if(!empty(coin.error)) {
 								Notify.error({
 									title:"Error",
-									description:"Asset couldn't be created."
+									description:"Coin not found."
 								});
-							});
-						}
+							} else {
+								createHolding(coinID, coin.symbol, amount).then(response => {
+									clearHoldingsList();
+
+									hidePopup();
+
+									if("message" in response) {
+										Notify.success({
+											title:"Asset Created",
+											description:response.message
+										});
+									} else {
+										Notify.error({
+											title:"Error",
+											description:response.error
+										});
+									}
+				
+									listHoldings();
+								}).catch(e => {
+									Notify.error({
+										title:"Error",
+										description:"Asset couldn't be created."
+									});
+								});
+							}
+						}).catch(e => {
+							console.log(e);
+						});
 					}).catch(e => {
 						console.log(e);
 					});
@@ -1172,6 +1177,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 										more.addEventListener("click", (e) => {
 											divHoldingsMoreMenu.setAttribute("data-coin", holding);
+											divHoldingsMoreMenu.setAttribute("data-symbol", coin.symbol.toUpperCase());
 											divHoldingsMoreMenu.setAttribute("data-amount", amount);
 
 											divHoldingsMoreMenu.classList.remove("hidden");
@@ -1494,6 +1500,29 @@ document.addEventListener("DOMContentLoaded", async () => {
 				});
 
 				xhr.open("GET", "https://api.coingecko.com/api/v3/coins/" + id, true);
+				xhr.send();
+			} catch(e) {
+				reject(e);
+			}
+		});
+	}
+
+	function getCoinID(symbol) {
+		return new Promise((resolve, reject) => {
+			try {
+				let xhr = new XMLHttpRequest();
+
+				xhr.addEventListener("readystatechange", () => {
+					if(xhr.readyState === XMLHttpRequest.DONE) {
+						if(validJSON(xhr.responseText)) {
+							resolve(JSON.parse(xhr.responseText).id);
+						} else {
+							reject("Invalid JSON.");
+						}
+					}
+				});
+
+				xhr.open("GET", api + "coins/read.php?token=" + sessionToken + "&symbol=" + symbol, true);
 				xhr.send();
 			} catch(e) {
 				reject(e);

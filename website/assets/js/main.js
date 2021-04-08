@@ -367,6 +367,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 				} else {
 					let symbol = id.trim().toLowerCase();
 					getCoinID(symbol).then(coinID => {
+						Notify.alert({
+							title:"Checking...",
+							description:"Checking whether or not that coin exists."
+						});
+
 						getCoin(coinID).then(coin => {
 							if(!empty(coin.error)) {
 								Notify.error({

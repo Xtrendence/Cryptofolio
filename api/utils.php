@@ -4,6 +4,7 @@
 		public $holdingsFile = "../data/holdings.json";
 		public $activityFile = "../data/activity.json";
 		public $settingsFile = "../data/settings.json";
+		public $coinsFile = "../data/coins.json";
 
 		function verifyPassword($password) {
 			$account = json_decode(file_get_contents($this->accountFile), true);
@@ -66,6 +67,18 @@
 
 		function getRandomHex($bytes) {
 			return bin2hex(openssl_random_pseudo_bytes($bytes));
+		}
+
+		function fetchCoins() {
+			if(!file_exists($this->coinsFile) || empty(file_get_contents($this->coinsFile)) || time() - 3600 > filemtime($this->coinsFile)) {
+				$pairs = array();
+				$coins = json_decode(file_get_contents("https://api.coingecko.com/api/v3/coins/list"), true);
+				foreach($coins as $coin) {
+					$symbol = strtolower($coin["symbol"]);
+					$pairs[$symbol] = $coin["id"];
+				}
+				file_put_contents($this->coinsFile, json_encode($pairs));
+			}
 		}
 	}
 ?>

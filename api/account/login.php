@@ -14,6 +14,8 @@
 
 		$helper->generateAccount();
 
+		$helper->fetchCoins();
+
 		if(!empty($_POST["token"])) {
 			if($helper->verifySession($_POST["token"])) {
 				echo json_encode(array("message" => "You are now being logged in...", "valid" => true));

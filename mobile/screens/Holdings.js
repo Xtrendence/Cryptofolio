@@ -26,6 +26,7 @@ export default function Holdings({ navigation }) {
 	const [modalMessage, setModalMessage] = React.useState();
 	const [action, setAction] = React.useState("create");
 	const [coinID, setCoinID] = React.useState();
+	const [coinSymbol, setCoinSymbol] = React.useState();
 	const [coinAmount, setCoinAmount] = React.useState();
 
 	const [holdingsValue, setHoldingsValue] = React.useState(loadingText);
@@ -56,16 +57,16 @@ export default function Holdings({ navigation }) {
 
 	return (
 		<ScrollView style={[styles.page, styles[`page${theme}`]]} key={pageKey} contentContainerStyle={{ padding:20 }} nestedScrollEnabled={true} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[globalColors[theme].accentFirst]} progressBackgroundColor={globalColors[theme].mainFirst}/>}>
-			<Modal animationType="fade" visible={modal} onRequestClose={() => { setAction("create"); setCoinID(); setCoinAmount(); setModalMessage(); setModal(false)}} transparent={false}>
+			<Modal animationType="fade" visible={modal} onRequestClose={() => { setAction("create"); setCoinID(); setCoinSymbol(); setCoinAmount(); setModalMessage(); setModal(false)}} transparent={false}>
 				<View style={[styles.modalWrapper, styles[`modalWrapper${theme}`]]}>
 					<View stlye={[styles.modal, styles[`modal${theme}`]]}>
-						<TextInput style={[styles.input, styles[`input${theme}`], (action !== "create") ? { backgroundColor:globalColors[theme].mainFourth, color:globalColors[theme].mainContrastLight } : null]} placeholder={"Coin ID... (e.g. Bitcoin)"} onChangeText={(value) => { setCoinID(value)}} value={coinID} placeholderTextColor={globalColors[theme].mainContrastLight} editable={(action === "create")} spellCheck={false}/>
+						<TextInput style={[styles.input, styles[`input${theme}`], (action !== "create") ? { backgroundColor:globalColors[theme].mainFourth, color:globalColors[theme].mainContrastLight } : null]} placeholder={"Coin Symbol... (e.g. BTC)"} onChangeText={(value) => { setCoinSymbol(value)}} value={coinSymbol} placeholderTextColor={globalColors[theme].mainContrastLight} editable={(action === "create")} spellCheck={false}/>
 						<TextInput style={[styles.input, styles[`input${theme}`]]} placeholder={"Amount... (e.g. 2.5)"} onChangeText={(value) => { setCoinAmount(value)}} value={coinAmount} placeholderTextColor={globalColors[theme].mainContrastLight}/>
 						<View style={styles.buttonWrapper}>
-							<TouchableOpacity style={[styles.button, styles[`button${theme}`]]} onPress={() => { setAction("create"); setCoinID(); setCoinAmount(); setModalMessage(); setModal(false)}}>
+							<TouchableOpacity style={[styles.button, styles[`button${theme}`]]} onPress={() => { setAction("create"); setCoinID(); setCoinSymbol(); setCoinAmount(); setModalMessage(); setModal(false)}}>
 								<Text style={styles.text}>Cancel</Text>
 							</TouchableOpacity>
-							<TouchableOpacity style={[styles.button, styles.buttonConfirm, styles[`buttonConfirm${theme}`]]} onPress={() => { createHolding(coinID, coinAmount)}}>
+							<TouchableOpacity style={[styles.button, styles.buttonConfirm, styles[`buttonConfirm${theme}`]]} onPress={() => { createHolding(coinSymbol, coinAmount)}}>
 								<Text style={styles.text}>Confirm</Text>
 							</TouchableOpacity>
 						</View>
@@ -101,16 +102,12 @@ export default function Holdings({ navigation }) {
 		</ScrollView>
 	);
 
-	async function createHolding(id, amount) {
-		if(!empty(id) && !empty(amount) && !isNaN(amount)) {
-			setModalMessage("Checking coin...");
-
-			id = id.toLowerCase().replaceAll(" ", "-");
-
+	async function getCoinID(symbol) {
+		return new Promise(async (resolve, reject) => {
 			let api = await AsyncStorage.getItem("api");
 			let token = await AsyncStorage.getItem("token");
 
-			let endpoint = "https://api.coingecko.com/api/v3/coins/" + id;
+			let endpoint = api + "coins/read.php?symbol=" + symbol + "&token=" + token;
 
 			fetch(endpoint, {
 				method: "GET",
@@ -118,50 +115,84 @@ export default function Holdings({ navigation }) {
 					Accept: "application/json", "Content-Type": "application/json"
 				}
 			})
-			.then((response) => {
-				return response.json();
+			.then((json) => {
+				return json.json();
 			})
-			.then(async (coin) => {
-				if(!empty(coin.error)) {
-					setModalMessage("Coin not found. Make sure the ID is right.");
-				} else {
-					let symbol = coin.symbol;
+			.then(async (response) => {
+				resolve(response.id);
+			}).catch(error => {
+				console.log(error);
+				reject(error);
+			});
+		});
+	}
 
-					let endpoint = api + "holdings/create.php";
-					let method = "POST";
-					let body = { token:token, id:id, symbol:symbol, amount:amount };
+	async function createHolding(id, amount) {
+		if(!empty(id) && !empty(amount) && !isNaN(amount)) {
+			setModalMessage("Checking coin...");
 
-					if(action === "update") {
-						endpoint = api + "holdings/update.php";
-						method = "PUT";
-						body = { token:token, id:id, amount:amount };
+			let symbol = id.trim().toLowerCase();
+
+			getCoinID(symbol).then(async id => {
+				let api = await AsyncStorage.getItem("api");
+				let token = await AsyncStorage.getItem("token");
+
+				let endpoint = "https://api.coingecko.com/api/v3/coins/" + id;
+
+				fetch(endpoint, {
+					method: "GET",
+					headers: {
+						Accept: "application/json", "Content-Type": "application/json"
 					}
+				})
+				.then((response) => {
+					return response.json();
+				})
+				.then(async (coin) => {
+					if(!empty(coin.error)) {
+						setModalMessage("Coin not found. Make sure the ID is right.");
+					} else {
+						let symbol = coin.symbol;
 
-					fetch(endpoint, {
-						method: method,
-						body: JSON.stringify(body),
-						headers: {
-							Accept: "application/json", "Content-Type": "application/json"
+						let endpoint = api + "holdings/create.php";
+						let method = "POST";
+						let body = { token:token, id:id, symbol:symbol, amount:amount };
+
+						if(action === "update") {
+							endpoint = api + "holdings/update.php";
+							method = "PUT";
+							body = { token:token, id:id, amount:amount };
 						}
-					})
-					.then((json) => {
-						return json.json();
-					})
-					.then(async (response) => {
-						if("message" in response) {
-							setModal(false);
-							setModalMessage();
-							setAction("create");
-							setCoinID();
-							setCoinAmount();
-							getHoldings();
-						} else {
-							setModalMessage(response.error);
-						}
-					}).catch(error => {
-						console.log(error);
-					});
-				}
+
+						fetch(endpoint, {
+							method: method,
+							body: JSON.stringify(body),
+							headers: {
+								Accept: "application/json", "Content-Type": "application/json"
+							}
+						})
+						.then((json) => {
+							return json.json();
+						})
+						.then(async (response) => {
+							if("message" in response) {
+								setModal(false);
+								setModalMessage();
+								setAction("create");
+								setCoinID();
+								setCoinSymbol();
+								setCoinAmount();
+								getHoldings();
+							} else {
+								setModalMessage(response.error);
+							}
+						}).catch(error => {
+							console.log(error);
+						});
+					}
+				}).catch(error => {
+					console.log(error);
+				});
 			}).catch(error => {
 				console.log(error);
 			});
@@ -197,6 +228,7 @@ export default function Holdings({ navigation }) {
 					setModalMessage();
 					setAction("create");
 					setCoinID();
+					setCoinSymbol();
 					setCoinAmount();
 					getHoldings();
 				} else {
@@ -264,7 +296,7 @@ export default function Holdings({ navigation }) {
 						let value = separateThousands(abbreviateNumber(coin.value.toFixed(2), 2));
 
 						data.push(
-							<TouchableOpacity onPress={() => { setAction("update"); setCoinID(capitalizeFirstLetter(holding)); setCoinAmount(amount.toString()); setModal(true); }} key={epoch() + holding}>
+							<TouchableOpacity onPress={() => { setAction("update"); setCoinID(capitalizeFirstLetter(holding)); setCoinSymbol(symbol.toUpperCase()); setCoinAmount(amount.toString()); setModal(true); }} key={epoch() + holding}>
 								<View style={[styles.row, rank % 2 ? {...styles.rowOdd, ...styles[`rowOdd${theme}`]} : null]}>
 									<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellRank]} ellipsizeMode="tail">{rank}</Text>
 									<Image style={styles.cellImage} source={{uri:icon}}/>
@@ -460,9 +492,10 @@ const styles = StyleSheet.create({
 	},
 	buttonDelete: {
 		position:"absolute",
-		bottom:100,
+		bottom:70,
 		backgroundColor:"rgb(230,50,50)",
 		width:"auto",
+		marginTop:20,
 		paddingLeft:14,
 		paddingRight:14,
 	},

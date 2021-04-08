@@ -898,10 +898,27 @@ document.addEventListener("DOMContentLoaded", async () => {
 							div = document.getElementById(id);
 							div.getElementsByClassName("price")[0].textContent = currencies[settings.currency] + price;
 							div.getElementsByClassName("day")[0].textContent = priceChangeDay + "%";
+
+							if(priceChangeDay.includes("+")) {
+								div.classList.add("positive");
+								div.classList.remove("negative");
+							} else if(priceChangeDay.includes("-")) {
+								div.classList.remove("positive");
+								div.classList.add("negative");
+							} else {
+								div.classList.remove("positive");
+								div.classList.remove("negative");
+							}
 						} else {
 							div = document.createElement("div");
 							div.id = id;
 							div.classList.add("coin-wrapper");
+
+							if(priceChangeDay.includes("+")) {
+								div.classList.add("positive");
+							} else if(priceChangeDay.includes("-")) {
+								div.classList.add("negative");
+							}
 
 							div.innerHTML = '<img draggable="false" src="' + icon + '" title="' + name + '"><span class="coin" title="' + name + '">' + symbol.toUpperCase() + '</span><span class="price">' + currencies[settings.currency] + price + '</span><span class="day">' + priceChangeDay + '%</span>';
 
@@ -1067,10 +1084,27 @@ document.addEventListener("DOMContentLoaded", async () => {
 							div.getElementsByClassName("price")[0].textContent = currencies[settings.currency] + price;
 							div.getElementsByClassName("market-cap")[0].textContent = currencies[settings.currency] + separateThousands(marketCap);
 							div.getElementsByClassName("day")[0].textContent = priceChangeDay + "%";
+
+							if(priceChangeDay.includes("+")) {
+								div.classList.add("positive");
+								div.classList.remove("negative");
+							} else if(priceChangeDay.includes("-")) {
+								div.classList.remove("positive");
+								div.classList.add("negative");
+							} else {
+								div.classList.remove("positive");
+								div.classList.remove("negative");
+							}
 						} else {
 							div = document.createElement("div");
 							div.id = id;
 							div.classList.add("coin-wrapper");
+
+							if(priceChangeDay.includes("+")) {
+								div.classList.add("positive");
+							} else if(priceChangeDay.includes("-")) {
+								div.classList.add("negative");
+							}
 
 							div.innerHTML = '<span class="rank">' + rank + '</span><img draggable="false" src="' + icon + '" title="' + name + '"><span class="coin" title="' + name + '">' + symbol.toUpperCase() + '</span><span class="price">' + currencies[settings.currency] + price + '</span><span class="market-cap">' + currencies[settings.currency] + separateThousands(marketCap) + '</span><span class="day">' + priceChangeDay + '%</span>';
 
@@ -1171,10 +1205,27 @@ document.addEventListener("DOMContentLoaded", async () => {
 										div.getElementsByClassName("amount")[0].textContent = separateThousands(amount);
 										div.getElementsByClassName("value")[0].textContent = currencies[settings.currency] + separateThousands(value);
 										div.getElementsByClassName("day")[0].textContent = day;
+
+										if(day.includes("+")) {
+											div.classList.add("positive");
+											div.classList.remove("negative");
+										} else if(day.includes("-")) {
+											div.classList.remove("positive");
+											div.classList.add("negative");
+										} else {
+											div.classList.remove("positive");
+											div.classList.remove("negative");
+										}
 									} else {
 										div = document.createElement("div");
 										div.id = id;
 										div.classList.add("coin-wrapper");
+
+										if(day.includes("+")) {
+											div.classList.add("positive");
+										} else if(day.includes("-")) {
+											div.classList.add("negative");
+										}
 
 										let more = document.createElement("div");
 										more.classList.add("more");
@@ -1253,6 +1304,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 				settings.coinBackdrop = empty(localStorage.getItem("coinBackdrop")) ? "disabled" : localStorage.getItem("coinBackdrop");
 
+				settings.highlightPriceChange = empty(localStorage.getItem("highlightPriceChange")) ? "disabled" : localStorage.getItem("highlightPriceChange");
+
 				settings.defaultPage = empty(localStorage.getItem("defaultPage")) ? "market" : localStorage.getItem("defaultPage");
 
 				switchTheme(settings.theme);
@@ -1316,6 +1369,18 @@ document.addEventListener("DOMContentLoaded", async () => {
 					divDashboardHoldingsList.classList.remove("backdrop");
 					divMarketList.classList.remove("backdrop");
 					divHoldingsList.classList.remove("backdrop");
+				}
+
+				if(settings.highlightPriceChange === "enabled") {
+					divDashboardMarketList.classList.add("highlight");
+					divDashboardHoldingsList.classList.add("highlight");
+					divMarketList.classList.add("highlight");
+					divHoldingsList.classList.add("highlight");
+				} else {
+					divDashboardMarketList.classList.remove("highlight");
+					divDashboardHoldingsList.classList.remove("highlight");
+					divMarketList.classList.remove("highlight");
+					divHoldingsList.classList.remove("highlight");
 				}
 
 				inputSharingURL.value = window.location.href.replaceAll("index.html", "") + "index.html?access=view&pin=" + settings.pin;

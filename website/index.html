@@ -181,10 +181,29 @@
 			</div>
 		</div>
 		<div class="page activity" id="page-activity">
-			<div class="activity-list-wrapper">
-				<div class="activity-list loading" id="activity-list">
-
+			<div class="activity-list-wrapper noselect">
+				<div class="headers-wrapper">
+					<span class="header date">Date</span>
+					<span class="header coin">Coin</span>
+					<span class="header amount">Amount</span>
+					<span class="header type">Type</span>
+					<span class="header type">Notes</span>
 				</div>
+				<div class="activity-list loading" id="activity-list">
+					<div class="event-wrapper loading">
+						<span>Loading...</span>
+					</div>
+				</div>
+			</div>
+			<div class="activity-card-wrapper noselect">
+				<div class="activity-add-card" id="activity-add-card">
+					<span class="title">Record Event</span>
+					<svg width="1792" height="1792" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1600 736v192q0 40-28 68t-68 28h-416v416q0 40-28 68t-68 28h-192q-40 0-68-28t-28-68v-416h-416q-40 0-68-28t-28-68v-192q0-40 28-68t68-28h416v-416q0-40 28-68t68-28h192q40 0 68 28t28 68v416h416q40 0 68 28t28 68z"/></svg>
+				</div>
+			</div>
+			<div class="activity-search-wrapper">
+				<input type="text" id="activity-search-input" placeholder="Query...">
+				<button id="activity-search-button">Search</button>
 			</div>
 		</div>
 		<div class="page settings" id="page-settings">

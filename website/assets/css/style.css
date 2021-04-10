@@ -1025,6 +1025,7 @@ html.dark .highlight .coin-wrapper.negative {
 	width:200px;
 	border-radius:var(--border-radius);
 	background:var(--main-first);
+	box-shadow:var(--shadow-smooth);
 }
 .activity-search-wrapper input, .activity-search-wrapper button {
 	padding:4px 10px 4px 10px;
@@ -1033,16 +1034,16 @@ html.dark .highlight .coin-wrapper.negative {
 	margin:20px auto 10px auto;
 	font-weight:bold;
 	font-size:15px;
-	background:var(--main-second);
+	background:var(--main-third);
 	color:var(--main-contrast);
 	border-radius:var(--border-radius);
 	width:calc(100% - 60px);
+	box-shadow:var(--shadow-smooth);
 }
 .activity-search-wrapper button {
 	margin-top:14px;
 	width:calc(100% - 40px);
 	height:32px;
-	background:var(--main-third);
 	color:var(--main-contrast-light);
 	cursor:pointer;
 	transition:transform 0.25s;

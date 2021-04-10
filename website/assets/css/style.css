@@ -941,7 +941,7 @@ html.dark .highlight .coin-wrapper.negative {
 }
 
 .activity-list-wrapper .event-wrapper .date {
-	width:120px;
+	width:110px;
 	text-align:left;
 }
 .activity-list-wrapper .event-wrapper .coin {
@@ -957,8 +957,11 @@ html.dark .highlight .coin-wrapper.negative {
 	text-align:left;
 }
 .activity-list-wrapper .event-wrapper .notes {
-	width:170px;
+	width:calc(100% - 110px - 120px - 120px - 170px - 220px);
 	text-align:left;
+	text-overflow:ellipsis;
+	white-space:nowrap;
+	overflow:hidden;
 }
 
 .activity-card-wrapper {

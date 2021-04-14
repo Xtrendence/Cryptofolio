@@ -1148,7 +1148,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 	}
 
 	function listHoldings() {
-		if(!divLoginWrapper.classList.contains("active") && divNavbarHoldings.classList.contains("active")) {
+		if((!divLoginWrapper.classList.contains("active") && divNavbarHoldings.classList.contains("active")) || url.searchParams.get("access") === "view") {
 			clearInterval(updateHoldingsListInterval);
 
 			divPageNavigation.classList.remove("active");

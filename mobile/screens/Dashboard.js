@@ -205,6 +205,7 @@ export default function Dashboard({ navigation }) {
 			if(Object.keys(coins).length === 0) {
 				if(navigation.isFocused()) {
 					setHoldingsData([<Text key="empty" style={[styles.headerText, styles[`headerText${theme}`]]}>No Holdings Found.</Text>]);
+					setHoldingsValue("-");
 				}
 			} else {
 				parseHoldings(coins).then(holdings => {

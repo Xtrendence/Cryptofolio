@@ -26,7 +26,7 @@ export default function Market({ navigation }) {
 	const [marketChange, setMarketChange] = React.useState();
 	const [volume, setVolume] = React.useState(loadingText);
 
-	const [marketData, setMarketData] = React.useState([<Text key="loading" style={[styles.headerText, styles[`headerText${theme}`]]}>Loading...</Text>]);
+	const [marketData, setMarketData] = React.useState([<Text key="loading" style={[styles.loadingText, styles.headerText, styles[`headerText${theme}`]]}>Loading...</Text>]);
 
 	useEffect(() => {
 		setInterval(() => {
@@ -38,7 +38,7 @@ export default function Market({ navigation }) {
 	}, []);
 
 	useEffect(() => {
-		setMarketData([<Text key="loading" style={[styles.headerText, styles[`headerText${theme}`]]}>Loading...</Text>]);
+		setMarketData([<Text key="loading" style={[styles.loadingText, styles.headerText, styles[`headerText${theme}`]]}>Loading...</Text>]);
 
 		setPageKey(epoch());
 
@@ -58,7 +58,7 @@ export default function Market({ navigation }) {
 			<LinearGradient style={[styles.card, { marginBottom:20, marginTop:0 }]} colors={globalColors[theme].colorfulGradient} useAngle={true} angle={45}>
 				<Text style={[styles.cardText, styles[`cardText${theme}`]]}>{marketCap} {marketChange}</Text>
 			</LinearGradient>
-			<ScrollView ref={marketRef} style={[styles.tableWrapper, styles[`tableWrapper${theme}`]]} contentContainerStyle={{ paddingLeft:20, paddingTop:10, paddingBottom:10 }} nestedScrollEnabled={true}>
+			<ScrollView ref={marketRef} style={[styles.tableWrapper, styles[`tableWrapper${theme}`]]} contentContainerStyle={{ paddingTop:10, paddingBottom:10 }} nestedScrollEnabled={true}>
 				{ !empty(marketData) &&
 					marketData.map(row => {
 						return row;
@@ -216,6 +216,9 @@ const styles = StyleSheet.create({
 	rowOddDark: {
 		backgroundColor:globalColors["Dark"].mainSecond,
 	},
+	loadingText: {
+		marginLeft:20
+	},
 	headerText: {
 		fontSize:18,
 		fontFamily:globalStyles.fontFamily,
@@ -227,7 +230,8 @@ const styles = StyleSheet.create({
 		color:globalColors["Dark"].mainContrastLight
 	},
 	headerRank: {
-		width:30
+		width:50,
+		paddingLeft:20,
 	},
 	headerCoin: {
 		width:100,
@@ -243,7 +247,8 @@ const styles = StyleSheet.create({
 		color:globalColors["Dark"].mainContrastLight
 	},
 	cellRank: {
-		width:30
+		width:50,
+		paddingLeft:20
 	},
 	cellSymbol: {
 		width:74

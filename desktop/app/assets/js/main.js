@@ -376,47 +376,63 @@ document.addEventListener("DOMContentLoaded", async () => {
 					});
 				} else {
 					let symbol = id.trim().toLowerCase();
-					getCoinID(symbol).then(coinID => {
+					getCoinID("symbol", symbol).then(response => {
 						Notify.alert({
 							title:"Checking...",
 							description:"Checking whether or not that coin exists."
 						});
-						
-						getCoin(coinID).then(coin => {
-							if(!empty(coin.error)) {
-								Notify.error({
-									title:"Error",
-									description:"Coin not found."
-								});
-							} else {
-								createHolding(coinID, coin.symbol, amount).then(response => {
-									clearHoldingsList();
 
-									hidePopup();
+						if("id" in response) {
+							addHolding(response.id, amount);
+						} else if("matches" in response) {
+							Notify.info({
+								title:"Multiple Results",
+								description:"There are " + response.matches.length + " coins with that symbol. Please choose one from the list.",
+								duration:8000
+							});
 
-									if("message" in response) {
-										Notify.success({
-											title:"Asset Created",
-											description:response.message
-										});
-									} else {
-										Notify.error({
-											title:"Error",
-											description:response.error
-										});
-									}
-					
-									listHoldings();
-								}).catch(e => {
-									Notify.error({
-										title:"Error",
-										description:"Asset couldn't be created."
-									});
+							let inputAmount = document.getElementById("popup-amount");
+
+							let wrapper = document.createElement("div");
+							wrapper.classList.add("popup-list");
+
+							let matches = response.matches;
+							Object.keys(matches).map(key => {
+								let match = matches[key];
+								let symbol = Object.keys(match)[0];
+								let id = match[symbol];
+
+								let row = document.createElement("div");
+								row.innerHTML = '<span class="title">' + symbol.toUpperCase() + '</span><span class="subtitle">' + capitalizeFirstLetter(id) + '</span>';
+
+								row.addEventListener("click", () => {
+									addHolding(id, amount);
 								});
+
+								wrapper.appendChild(row);
+							});
+
+							let currentHeight = divPopupWrapper.scrollHeight;
+							let addedHeight = matches * 40;
+
+							if(matches.length >= 3) {
+								addedHeight = 120;
 							}
-						}).catch(e => {
-							console.log(e);
-						});
+
+							let adjustedHeight = (currentHeight + addedHeight) - 60;
+
+							divPopupWrapper.style.height = adjustedHeight + "px";
+							divPopupWrapper.style.top = "calc(50% - " + adjustedHeight + "px / 2)";
+
+							insertAfter(wrapper, inputAmount);
+							document.getElementById("popup-cancel").classList.add("hidden");
+							document.getElementById("popup-confirm").classList.add("hidden");
+						} else {
+							Notify.error({
+								title:"Error",
+								description:"Couldn't add coin. Try adding by ID."
+							});
+						}
 					}).catch(e => {
 						console.log(e);
 					});
@@ -1463,6 +1479,44 @@ document.addEventListener("DOMContentLoaded", async () => {
 		});
 	}
 
+	function addHolding(id, amount) {
+		getCoin(id).then(coin => {
+			if(!empty(coin.error)) {
+				Notify.error({
+					title:"Error",
+					description:"Coin not found."
+				});
+			} else {
+				createHolding(id, coin.symbol, amount).then(response => {
+					clearHoldingsList();
+
+					hidePopup();
+
+					if("message" in response) {
+						Notify.success({
+							title:"Asset Created",
+							description:response.message
+						});
+					} else {
+						Notify.error({
+							title:"Error",
+							description:response.error
+						});
+					}
+				
+					listHoldings();
+				}).catch(e => {
+					Notify.error({
+						title:"Error",
+						description:"Asset couldn't be created."
+					});
+				});
+			}
+		}).catch(e => {
+			console.log(e);
+		});
+	}
+
 	function createHolding(id, symbol, amount) {
 		return new Promise((resolve, reject) => {
 			try {
@@ -1555,7 +1609,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 		});
 	}
 
-	function getCoinID(symbol) {
+	function getCoinID(key, value) {
 		return new Promise((resolve, reject) => {
 			try {
 				let xhr = new XMLHttpRequest();
@@ -1563,14 +1617,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 				xhr.addEventListener("readystatechange", () => {
 					if(xhr.readyState === XMLHttpRequest.DONE) {
 						if(validJSON(xhr.responseText)) {
-							resolve(JSON.parse(xhr.responseText).id);
+							resolve(JSON.parse(xhr.responseText));
 						} else {
 							reject("Invalid JSON.");
 						}
 					}
 				});
 
-				xhr.open("GET", api + "coins/read.php?token=" + sessionToken + "&symbol=" + symbol, true);
+				xhr.open("GET", api + "coins/read.php?token=" + sessionToken + "&" + key + "=" + value, true);
 				xhr.send();
 			} catch(e) {
 				reject(e);
@@ -1772,6 +1826,10 @@ function abbreviateNumber(num, digits) {
 
 function capitalizeFirstLetter(string) {
 	return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
+function insertAfter(newNode, referenceNode) {
+	referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
 }
 
 String.prototype.replaceAll = function(str1, str2, ignore) {

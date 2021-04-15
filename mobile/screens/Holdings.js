@@ -28,6 +28,8 @@ export default function Holdings({ navigation }) {
 	const [coinID, setCoinID] = React.useState();
 	const [coinSymbol, setCoinSymbol] = React.useState();
 	const [coinAmount, setCoinAmount] = React.useState();
+	const [showCoinList, setShowCoinList] = React.useState(false);
+	const [coinList, setCoinList] = React.useState();
 
 	const [holdingsValue, setHoldingsValue] = React.useState(loadingText);
 
@@ -57,13 +59,22 @@ export default function Holdings({ navigation }) {
 
 	return (
 		<ScrollView style={[styles.page, styles[`page${theme}`]]} key={pageKey} contentContainerStyle={{ padding:20 }} nestedScrollEnabled={true} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[globalColors[theme].accentFirst]} progressBackgroundColor={globalColors[theme].mainFirst}/>}>
-			<Modal animationType="fade" visible={modal} onRequestClose={() => { setAction("create"); setCoinID(); setCoinSymbol(); setCoinAmount(); setModalMessage(); setModal(false)}} transparent={false}>
+			<Modal animationType="fade" visible={modal} onRequestClose={() => { setAction("create"); setCoinID(); setCoinSymbol(); setCoinAmount(); setShowCoinList(false); setCoinList(); setModalMessage(); setModal(false)}} transparent={false}>
 				<View style={[styles.modalWrapper, styles[`modalWrapper${theme}`]]}>
 					<View stlye={[styles.modal, styles[`modal${theme}`]]}>
 						<TextInput style={[styles.input, styles[`input${theme}`], (action !== "create") ? { backgroundColor:globalColors[theme].mainFourth, color:globalColors[theme].mainContrastLight } : null]} placeholder={"Coin Symbol... (e.g. BTC)"} onChangeText={(value) => { setCoinSymbol(value)}} value={coinSymbol} placeholderTextColor={globalColors[theme].mainContrastLight} editable={(action === "create")} spellCheck={false}/>
-						<TextInput style={[styles.input, styles[`input${theme}`]]} placeholder={"Amount... (e.g. 2.5)"} onChangeText={(value) => { setCoinAmount(value)}} value={coinAmount} placeholderTextColor={globalColors[theme].mainContrastLight}/>
+						<TextInput style={[styles.input, styles[`input${theme}`]]} placeholder={"Amount... (e.g. 2.5)"} onChangeText={(value) => { setCoinAmount(value)}} value={coinAmount} placeholderTextColor={globalColors[theme].mainContrastLight} onSubmitEditing={() => createHolding(coinSymbol, coinAmount)}/>
+						{ showCoinList && !empty(coinList) &&
+							<ScrollView style={[styles.coinList, styles[`coinList${theme}`]]} nestedScrollEnabled={true}>
+								{
+									coinList.map(row => {
+										return row;
+									})
+								}
+							</ScrollView>
+						}
 						<View style={styles.buttonWrapper}>
-							<TouchableOpacity style={[styles.button, styles[`button${theme}`]]} onPress={() => { setAction("create"); setCoinID(); setCoinSymbol(); setCoinAmount(); setModalMessage(); setModal(false)}}>
+							<TouchableOpacity style={[styles.button, styles[`button${theme}`]]} onPress={() => { setAction("create"); setCoinID(); setCoinSymbol(); setCoinAmount(); setShowCoinList(false); setCoinList(); setModalMessage(); setModal(false)}}>
 								<Text style={styles.text}>Cancel</Text>
 							</TouchableOpacity>
 							<TouchableOpacity style={[styles.button, styles.buttonConfirm, styles[`buttonConfirm${theme}`]]} onPress={() => { createHolding(coinSymbol, coinAmount)}}>
@@ -102,12 +113,12 @@ export default function Holdings({ navigation }) {
 		</ScrollView>
 	);
 
-	async function getCoinID(symbol) {
+	async function getCoinID(key, value) {
 		return new Promise(async (resolve, reject) => {
 			let api = await AsyncStorage.getItem("api");
 			let token = await AsyncStorage.getItem("token");
 
-			let endpoint = api + "coins/read.php?symbol=" + symbol + "&token=" + token;
+			let endpoint = api + "coins/read.php?" + key + "=" + value + "&token=" + token;
 
 			fetch(endpoint, {
 				method: "GET",
@@ -119,7 +130,7 @@ export default function Holdings({ navigation }) {
 				return json.json();
 			})
 			.then(async (response) => {
-				resolve(response.id);
+				resolve(response);
 			}).catch(error => {
 				console.log(error);
 				reject(error);
@@ -131,74 +142,91 @@ export default function Holdings({ navigation }) {
 		if(!empty(id) && !empty(amount) && !isNaN(amount)) {
 			setModalMessage("Checking coin...");
 
-			let symbol = id.trim().toLowerCase();
+			let key = "symbol";
+			let value = id.trim().toLowerCase();
 
-			getCoinID(symbol).then(async id => {
-				let api = await AsyncStorage.getItem("api");
-				let token = await AsyncStorage.getItem("token");
+			if(action === "update") {
+				key = "id";
+			}
 
-				let endpoint = "https://api.coingecko.com/api/v3/coins/" + id;
+			getCoinID(key, value).then(async response => {
+				if("id" in response) {
+					processHolding(response.id, amount);
+				} else if("matches" in response) {
+					let matches = response.matches;
 
-				fetch(endpoint, {
-					method: "GET",
-					headers: {
-						Accept: "application/json", "Content-Type": "application/json"
-					}
-				})
-				.then((response) => {
-					return response.json();
-				})
-				.then(async (coin) => {
-					if(!empty(coin.error)) {
-						setModalMessage("Coin not found. Make sure the ID is right.");
-					} else {
-						let symbol = coin.symbol;
-
-						let endpoint = api + "holdings/create.php";
-						let method = "POST";
-						let body = { token:token, id:id, symbol:symbol, amount:amount };
-
-						if(action === "update") {
-							endpoint = api + "holdings/update.php";
-							method = "PUT";
-							body = { token:token, id:id, amount:amount };
-						}
-
-						fetch(endpoint, {
-							method: method,
-							body: JSON.stringify(body),
-							headers: {
-								Accept: "application/json", "Content-Type": "application/json"
-							}
-						})
-						.then((json) => {
-							return json.json();
-						})
-						.then(async (response) => {
-							if("message" in response) {
-								setModal(false);
-								setModalMessage();
-								setAction("create");
-								setCoinID();
-								setCoinSymbol();
-								setCoinAmount();
-								getHoldings();
-							} else {
-								setModalMessage(response.error);
-							}
-						}).catch(error => {
-							console.log(error);
-						});
-					}
-				}).catch(error => {
-					console.log(error);
-				});
+					setModalMessage("Please select a coin from the list.");
+				}
 			}).catch(error => {
 				console.log(error);
 			});
 		} else {
 			setModalMessage("Both fields must be filled out.");
 		}
+	}
+
+	async function processHolding(id, amount) {
+		let api = await AsyncStorage.getItem("api");
+		let token = await AsyncStorage.getItem("token");
+
+		let endpoint = "https://api.coingecko.com/api/v3/coins/" + id;
+
+		fetch(endpoint, {
+			method: "GET",
+			headers: {
+				Accept: "application/json", "Content-Type": "application/json"
+			}
+		})
+		.then((response) => {
+			return response.json();
+		})
+		.then(async (coin) => {
+			if(!empty(coin.error)) {
+				setModalMessage("Coin not found. Make sure the ID is right.");
+			} else {
+				let symbol = coin.symbol;
+
+				let endpoint = api + "holdings/create.php";
+				let method = "POST";
+				let body = { token:token, id:id, symbol:symbol, amount:amount };
+
+				if(action === "update") {
+					endpoint = api + "holdings/update.php";
+					method = "PUT";
+					body = { token:token, id:id, amount:amount };
+				}
+
+				fetch(endpoint, {
+					method: method,
+					body: JSON.stringify(body),
+					headers: {
+						Accept: "application/json", "Content-Type": "application/json"
+					}
+				})
+				.then((json) => {
+					return json.json();
+				})
+				.then(async (response) => {
+					if("message" in response) {
+						setModal(false);
+						setModalMessage();
+						setAction("create");
+						setCoinID();
+						setCoinSymbol();
+						setCoinAmount();
+						setShowCoinList(false);
+						setCoinList();
+						getHoldings();
+					} else {
+						setModalMessage(response.error);
+					}
+				}).catch(error => {
+					console.log(error);
+				});
+			}
+		}).catch(error => {
+			console.log(error);
+		});
 	}
 
 	async function deleteHolding(id) {
@@ -230,6 +258,8 @@ export default function Holdings({ navigation }) {
 					setCoinID();
 					setCoinSymbol();
 					setCoinAmount();
+					setShowCoinList(false);
+					setCoinList();
 					getHoldings();
 				} else {
 					setModalMessage(response.error);

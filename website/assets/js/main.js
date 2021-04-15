@@ -343,7 +343,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 	divHoldingsAddCard.addEventListener("click", () => {
 		let html = '<input id="popup-coin" placeholder="Coin Symbol... (e.g. BTC)"><input id="popup-amount" placeholder="Amount... (e.g. 2.5)" type="number"><button class="reject" id="popup-cancel">Cancel</button><button class="resolve" id="popup-confirm">Confirm</button>';
 
-		popup("Adding Asset", html, 300, 240);
+		let popupHeight = 240;
+
+		popup("Adding Asset", html, 300, popupHeight);
 
 		document.getElementById("popup-cancel").addEventListener("click", () => {
 			hidePopup();
@@ -383,6 +385,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 							let inputAmount = document.getElementById("popup-amount");
 
+							for(let i = 0; i < document.getElementsByClassName("popup-list").length; i++) {
+								document.getElementsByClassName("popup-list")[i].remove();
+							}
+
 							let wrapper = document.createElement("div");
 							wrapper.classList.add("popup-list");
 
@@ -402,21 +408,18 @@ document.addEventListener("DOMContentLoaded", async () => {
 								wrapper.appendChild(row);
 							});
 
-							let currentHeight = divPopupWrapper.scrollHeight;
 							let addedHeight = matches * 40;
 
 							if(matches.length >= 3) {
 								addedHeight = 120;
 							}
 
-							let adjustedHeight = (currentHeight + addedHeight) - 60;
+							let adjustedHeight = (popupHeight + addedHeight) + 20;
 
 							divPopupWrapper.style.height = adjustedHeight + "px";
 							divPopupWrapper.style.top = "calc(50% - " + adjustedHeight + "px / 2)";
 
 							insertAfter(wrapper, inputAmount);
-							document.getElementById("popup-cancel").classList.add("hidden");
-							document.getElementById("popup-confirm").classList.add("hidden");
 						} else {
 							Notify.error({
 								title:"Error",

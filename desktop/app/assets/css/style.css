@@ -264,7 +264,7 @@ input[type=number] {
 	max-height:120px;
 	display:block;
 	border-radius:var(--border-radius);
-	margin:0 auto 0 auto;
+	margin:0 auto 20px auto;
 	background:var(--main-third);
 	width:calc(100% - 40px);
 	overflow:hidden auto;

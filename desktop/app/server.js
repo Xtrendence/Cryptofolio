@@ -18,7 +18,7 @@ app.disableHardwareAcceleration();
 app.name = "Cryptofolio";
 
 app.on("ready", function() {
-	const debugMode = false;
+	const debugMode = true;
 
 	const { width, height } = screen.getPrimaryDisplay().workAreaSize;
 

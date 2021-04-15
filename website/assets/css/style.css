@@ -181,6 +181,45 @@ input[type=number] {
 #desktop .popup-wrapper button.resolve.warning:hover {
 	background:rgb(150,30,30);
 }
+.popup-list {
+	height:auto;
+	max-height:120px;
+	display:block;
+	border-radius:var(--border-radius);
+	margin:0 auto 0 auto;
+	background:var(--main-third);
+	width:calc(100% - 40px);
+	overflow:hidden auto;
+	-webkit-overflow-scrolling:touch;
+	scroll-behavior:smooth;
+}
+.popup-list div {
+	height:40px;
+	text-align:left;
+	cursor:pointer;
+}
+.popup-list div:nth-of-type(even) {
+	background:var(--main-second);
+}
+#desktop .popup-list div:hover {
+	background:var(--main-fourth);
+}
+.popup-list span {
+	font-size:16px;
+	color:var(--main-contrast);
+	line-height:40px;
+	margin:0 10px 0 10px;
+	display:inline-block;
+	vertical-align:top;
+}
+.popup-list .title {
+	font-weight:bold;
+}
+.popup-list .subtitle {
+	text-overflow:ellipsis;
+	white-space:nowrap;
+	overflow:hidden;
+}
 
 .login-wrapper {
 	opacity:0;

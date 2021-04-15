@@ -75,7 +75,8 @@
 				$coins = json_decode(file_get_contents("https://api.coingecko.com/api/v3/coins/list"), true);
 				foreach($coins as $coin) {
 					$symbol = strtolower($coin["symbol"]);
-					$pairs[$symbol] = $coin["id"];
+					$pair = array($symbol => $coin["id"]);
+					array_push($pairs, $pair);
 				}
 				file_put_contents($this->coinsFile, json_encode($pairs));
 			}

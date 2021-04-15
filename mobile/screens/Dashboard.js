@@ -85,6 +85,8 @@ export default function Dashboard({ navigation }) {
 	);
 
 	async function getMarket() {
+		console.log("Dashboard - Getting Market - " + epoch());
+
 		let currency = await AsyncStorage.getItem("currency");
 		if(empty(currency)) {
 			currency = "usd";
@@ -151,6 +153,8 @@ export default function Dashboard({ navigation }) {
 	}
 
 	async function getGlobal() {
+		console.log("Dashboard - Getting Global - " + epoch());
+
 		let endpoint = "https://api.coingecko.com/api/v3/global";
 
 		fetch(endpoint, {
@@ -257,6 +261,8 @@ export default function Dashboard({ navigation }) {
 	function parseHoldings(coins) {
 		return new Promise(async (resolve, reject) => {
 			try {
+				console.log("Parsing Holdings - " + epoch());
+
 				let currency = await AsyncStorage.getItem("currency");
 				if(empty(currency)) {
 					currency = "usd";

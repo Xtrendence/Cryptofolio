@@ -155,6 +155,25 @@ export default function Holdings({ navigation }) {
 				} else if("matches" in response) {
 					let matches = response.matches;
 
+					let data = [];
+
+					Object.keys(matches).map(key => {
+						let match = matches[key];
+						let symbol = Object.keys(match)[0];
+						let id = match[symbol];
+
+						data.push(
+							<TouchableOpacity key={epoch() + id} onPress={() => { processHolding(id, amount) }}>
+								<View style={[styles.row, key % 2 ? {...styles.rowOdd, ...styles[`rowOdd${theme}`]} : null]}>
+									<Text style={[styles.cellText, styles[`cellText${theme}`]]} ellipsizeMode="tail">{symbol.toUpperCase()}</Text>
+									<Text style={[styles.cellText, styles[`cellText${theme}`], { marginLeft:20 }]} ellipsizeMode="tail">{capitalizeFirstLetter(id)}</Text>
+								</View>
+							</TouchableOpacity>
+						);
+					});
+
+					setCoinList(data);
+					setShowCoinList(true);
 					setModalMessage("Please select a coin from the list.");
 				}
 			}).catch(error => {
@@ -273,6 +292,8 @@ export default function Holdings({ navigation }) {
 	}
 
 	async function getHoldings() {
+		console.log("Holdings - Getting Holdings - " + epoch());
+
 		let currency = await AsyncStorage.getItem("currency");
 		if(empty(currency)) {
 			currency = "usd";
@@ -346,13 +367,15 @@ export default function Holdings({ navigation }) {
 				});
 			}
 		}).catch(error => {
-			console.log(error);
+			console.log(arguments.callee.name + " - " + error);
 		});
 	}
 
 	function parseHoldings(coins) {
 		return new Promise(async (resolve, reject) => {
 			try {
+				console.log("Parsing Holdings - " + epoch());
+
 				let currency = await AsyncStorage.getItem("currency");
 				if(empty(currency)) {
 					currency = "usd";
@@ -473,6 +496,20 @@ const styles = StyleSheet.create({
 		fontSize:16,
 		fontFamily:globalStyles.fontFamily,
 		lineHeight:25,
+	},
+	coinList: {
+		maxHeight:106,
+		marginBottom:20,
+		borderRadius:globalStyles.borderRadius,
+		shadowColor:globalStyles.shadowColor,
+		shadowOffset:globalStyles.shadowOffset,
+		shadowOpacity:globalStyles.shadowOpacity,
+		shadowRadius:globalStyles.shadowRadius,
+		elevation:globalStyles.shadowElevation,
+		backgroundColor:globalColors["Light"].mainFirst
+	},
+	coinListDark: {
+		backgroundColor:globalColors["Dark"].mainFirst
 	},
 	input: {
 		backgroundColor:globalColors["Light"].mainFirst,

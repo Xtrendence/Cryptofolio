@@ -73,6 +73,8 @@ export default function Market({ navigation }) {
 	);
 
 	async function getMarket() {
+		console.log("Market - Getting Market - " + epoch());
+
 		let currency = await AsyncStorage.getItem("currency");
 		if(empty(currency)) {
 			currency = "usd";
@@ -144,6 +146,8 @@ export default function Market({ navigation }) {
 	}
 
 	async function getGlobal() {
+		console.log("Market - Getting Global - " + epoch());
+
 		let endpoint = "https://api.coingecko.com/api/v3/global";
 
 		fetch(endpoint, {

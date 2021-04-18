@@ -161,6 +161,23 @@ input[type=number] {
 #desktop .popup-wrapper .bottom button:hover {
 	background:var(--main-fourth);
 }
+.popup-wrapper .bottom div {
+	display:block;
+	text-align:center;
+	margin-bottom:20px;
+}
+.popup-wrapper .bottom div .choice {
+	display:inline-block;
+	margin:0 10px 0 10px;
+	padding:0 15.333px 0 15.333px;
+}
+.popup-wrapper .bottom div .choice.active {
+	background:var(--accent-first);
+	color:var(--accent-contrast);
+}
+.popup-wrapper button.reject, .popup-wrapper button.resolve {
+	margin-bottom:40px;
+}
 .popup-wrapper button.reject {
 	display:inline-block;
 	width:calc(50% - 30px);
@@ -181,7 +198,7 @@ input[type=number] {
 #desktop .popup-wrapper button.resolve.warning:hover {
 	background:rgb(150,30,30);
 }
-.popup-list {
+.popup-wrapper .bottom .popup-list {
 	height:auto;
 	max-height:120px;
 	display:block;
@@ -189,22 +206,24 @@ input[type=number] {
 	margin:0 auto 20px auto;
 	background:var(--main-third);
 	width:calc(100% - 40px);
+	text-align:left;
 	overflow:hidden auto;
 	-webkit-overflow-scrolling:touch;
 	scroll-behavior:smooth;
 }
-.popup-list div {
+.popup-wrapper .bottom .popup-list div {
 	height:40px;
 	text-align:left;
 	cursor:pointer;
+	margin:0;
 }
-.popup-list div:nth-of-type(even) {
+.popup-wrapper .bottom .popup-list div:nth-of-type(even) {
 	background:var(--main-second);
 }
-#desktop .popup-list div:hover {
+#desktop .popup-wrapper .bottom .popup-list div:hover {
 	background:var(--main-fourth);
 }
-.popup-list span {
+.popup-wrapper .bottom .popup-list span {
 	font-size:16px;
 	color:var(--main-contrast);
 	line-height:40px;
@@ -212,10 +231,10 @@ input[type=number] {
 	display:inline-block;
 	vertical-align:top;
 }
-.popup-list .title {
+.popup-wrapper .bottom .popup-list .title {
 	font-weight:bold;
 }
-.popup-list .subtitle {
+.popup-wrapper .bottom .popup-list .subtitle {
 	text-overflow:ellipsis;
 	white-space:nowrap;
 	overflow:hidden;

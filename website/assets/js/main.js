@@ -83,6 +83,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 	let divHoldingsAddCard = document.getElementById("holdings-add-card");
 	let divHoldingsMoreMenu = document.getElementById("holdings-more-menu");
 
+	let divActivityAddCard = document.getElementById("activity-add-card");
+
 	let buttonMoreEdit = document.getElementById("more-edit");
 	let buttonMoreRemove = document.getElementById("more-remove");
 
@@ -431,6 +433,82 @@ document.addEventListener("DOMContentLoaded", async () => {
 					});
 				}
 			}
+		});
+	});
+
+	divActivityAddCard.addEventListener("click", () => {
+		let html = "";
+
+		html += '<input id="popup-symbol" placeholder="Symbol... (e.g. BTC)">';
+		html += '<input id="popup-date" placeholder="Date... (e.g. 2021/04/18 04:20)">';
+		html += '<div id="popup-choice"><button id="popup-buy" data-value="buy" class="choice active">Buy</button>';
+		html += '<button id="popup-sell" data-value="sell" class="choice">Sell</button>';
+		html += '<button id="popup-transfer" data-value="transfer" class="choice">Transfer</button></div>';
+		html += '<input id="popup-amount" placeholder="Amount... (e.g. 2.5)" type="number">';
+		html += '<input id="popup-fee" placeholder="Fee... (e.g. 0.25)" type="number">';
+		html += '<input id="popup-notes" placeholder="Notes... (e.g. Rent)">';
+		html += '<input id="popup-exchange" placeholder="Exchange... (e.g. Coinbase)">';
+		html += '<input id="popup-pair" placeholder="Pair... (e.g. BTC/USDT)">';
+		html += '<input id="popup-price" placeholder="Price... (e.g. 59000)">';
+		html += '<input id="popup-from" class="hidden" placeholder="From... (e.g. Kraken)">';
+		html += '<input id="popup-to" class="hidden" placeholder="To... (e.g. Cold Wallet)">';
+		html += '<button class="reject" id="popup-cancel">Cancel</button><button class="resolve" id="popup-confirm">Confirm</button>';
+	
+		popup("Recording Event", html, 300, 300);
+
+		let popupSymbol = document.getElementById("popup-symbol");
+		let popupDate = document.getElementById("popup-date");
+		let popupAmount = document.getElementById("popup-amount");
+		let popupFee = document.getElementById("popup-fee");
+		let popupNotes = document.getElementById("popup-notes");
+		let popupExchange = document.getElementById("popup-exchange");
+		let popupPair = document.getElementById("popup-pair");
+		let popupPrice = document.getElementById("popup-price");
+		let popupFrom = document.getElementById("popup-from");
+		let popupTo = document.getElementById("popup-to");
+
+		let choices = document.getElementById("popup-choice").getElementsByClassName("choice");
+		for(let i = 0; i < choices.length; i++) {
+			choices[i].addEventListener("click", () => {
+				for(let j = 0; j < choices.length; j++) {
+					choices[j].classList.remove("active");
+				}
+				choices[i].classList.add("active");
+
+				if(choices[i].getAttribute("data-value") === "transfer") {
+					popupExchange.classList.add("hidden");
+					popupPair.classList.add("hidden");
+					popupPrice.classList.add("hidden");
+					popupFrom.classList.remove("hidden");
+					popupTo.classList.remove("hidden");
+				} else {
+					popupExchange.classList.remove("hidden");
+					popupPair.classList.remove("hidden");
+					popupPrice.classList.remove("hidden");
+					popupFrom.classList.add("hidden");
+					popupTo.classList.add("hidden");
+				}
+			});
+		}
+	
+		document.getElementById("popup-cancel").addEventListener("click", () => {
+			hidePopup();
+		});
+	
+		document.getElementById("popup-confirm").addEventListener("click", () => {
+			let symbol = popupSymbol.value;
+			let date = popupDate.value;
+			let amount = popupAmount.value;
+			let fee = popupFee.value;
+			let notes = popupNotes.value;
+			let type = document.getElementById("popup-choice").getElementsByClassName("active").getAttribute("data-value");
+			let exchange = popupExchange.value;
+			let pair = popupPair.value;
+			let price = popupPrice.value;
+			let from = popupFrom.value;
+			let to = popupTo.value;
+			
+			
 		});
 	});
 

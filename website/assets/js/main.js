@@ -376,6 +376,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 							description:"Checking whether or not that coin exists."
 						});
 
+						for(let i = 0; i < document.getElementsByClassName("popup-list").length; i++) {
+							document.getElementsByClassName("popup-list")[i].remove();
+						}
+
 						if("id" in response) {
 							addHolding(response.id, amount);
 						} else if("matches" in response) {
@@ -386,10 +390,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 							});
 
 							let inputAmount = document.getElementById("popup-amount");
-
-							for(let i = 0; i < document.getElementsByClassName("popup-list").length; i++) {
-								document.getElementsByClassName("popup-list")[i].remove();
-							}
 
 							let wrapper = document.createElement("div");
 							wrapper.classList.add("popup-list");
@@ -453,8 +453,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 		html += '<input id="popup-from" class="hidden" placeholder="From... (e.g. Kraken)">';
 		html += '<input id="popup-to" class="hidden" placeholder="To... (e.g. Cold Wallet)">';
 		html += '<button class="reject" id="popup-cancel">Cancel</button><button class="resolve" id="popup-confirm">Confirm</button>';
+
+		let popupHeight = 300;
 	
-		popup("Recording Event", html, 300, 300);
+		popup("Recording Event", html, 300, popupHeight);
 
 		let popupSymbol = document.getElementById("popup-symbol");
 		let popupDate = document.getElementById("popup-date");
@@ -501,14 +503,82 @@ document.addEventListener("DOMContentLoaded", async () => {
 			let amount = popupAmount.value;
 			let fee = popupFee.value;
 			let notes = popupNotes.value;
-			let type = document.getElementById("popup-choice").getElementsByClassName("active").getAttribute("data-value");
+			let type = document.getElementById("popup-choice").getElementsByClassName("active")[0].getAttribute("data-value");
 			let exchange = popupExchange.value;
 			let pair = popupPair.value;
 			let price = popupPrice.value;
 			let from = popupFrom.value;
 			let to = popupTo.value;
 			
-			
+			if(isNaN(amount) || isNaN(fee) || (isNaN(price) && !empty(price))) {
+				Notify.error({
+					title:"Error",
+					description:"The amount, fee, and price fields must be numbers."
+				});
+			} else {
+				symbol = symbol.trim().toLowerCase();
+
+				getCoinID("symbol", symbol).then(response => {
+					Notify.alert({
+						title:"Checking...",
+						description:"Checking whether or not that coin exists."
+					});
+
+					for(let i = 0; i < document.getElementsByClassName("popup-list").length; i++) {
+						document.getElementsByClassName("popup-list")[i].remove();
+					}
+
+					if("id" in response) {
+						let id = response.id;
+						addActivity();
+					} else if("matches" in response) {
+						Notify.info({
+							title:"Multiple Results",
+							description:"There are " + response.matches.length + " coins with that symbol. Please choose one from the list.",
+							duration:8000
+						});
+
+						let wrapper = document.createElement("div");
+						wrapper.classList.add("popup-list");
+
+						let matches = response.matches;
+						Object.keys(matches).map(key => {
+							let match = matches[key];
+							let symbol = Object.keys(match)[0];
+							let id = match[symbol];
+
+							let row = document.createElement("div");
+							row.innerHTML = '<span class="title">' + symbol.toUpperCase() + '</span><span class="subtitle">' + capitalizeFirstLetter(id) + '</span>';
+
+							row.addEventListener("click", () => {
+								addActivity();
+							});
+
+							wrapper.appendChild(row);
+						});
+
+						let addedHeight = matches * 40;
+
+						if(matches.length >= 3) {
+							addedHeight = 120;
+						}
+
+						let adjustedHeight = (popupHeight + addedHeight) + 20;
+
+						divPopupWrapper.style.height = adjustedHeight + "px";
+						divPopupWrapper.style.top = "calc(50% - " + adjustedHeight + "px / 2)";
+
+						insertAfter(wrapper, popupTo);
+					} else {
+						Notify.error({
+							title:"Error",
+							description:"Couldn't find coin. Try searching by ID."
+						});
+					}
+				}).catch(e => {
+					console.log(e);
+				});
+			}
 		});
 	});
 
@@ -1687,6 +1757,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 				reject(e);
 			}
 		});
+	}
+
+	function addActivity() {
+
 	}
 
 	function getCoin(id) {

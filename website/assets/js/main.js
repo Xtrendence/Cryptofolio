@@ -530,7 +530,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 					if("id" in response) {
 						let id = response.id;
-						addActivity();
+						addActivity(id, symbol, date, amount, fee, notes, type, exchange, pair, price, from, to);
 					} else if("matches" in response) {
 						Notify.info({
 							title:"Multiple Results",
@@ -551,7 +551,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 							row.innerHTML = '<span class="title">' + symbol.toUpperCase() + '</span><span class="subtitle">' + capitalizeFirstLetter(id) + '</span>';
 
 							row.addEventListener("click", () => {
-								addActivity();
+								addActivity(id, symbol, date, amount, fee, notes, type, exchange, pair, price, from, to);
 							});
 
 							wrapper.appendChild(row);
@@ -1009,6 +1009,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 		divHoldingsList.innerHTML = '<div class="coin-wrapper loading"><span>Loading...</span></div>';
 	}
 
+	function clearActivityList() {
+		divActivityList.classList.add("loading");
+		divActivityList.innerHTML = '<div class="event-wrapper loading"><span>Loading...</span></div>';
+	}
+
 	function clearStats() {
 		spanGlobalMarketCap.textContent = "...";
 		spanGlobalVolume.textContent = "...";
@@ -1455,6 +1460,51 @@ document.addEventListener("DOMContentLoaded", async () => {
 					listActivity();
 				}
 			}, 5000);
+
+			getActivity().then(events => {
+				try {
+					if(Object.keys(events).length === 0) {
+						if(divActivityList.getElementsByClassName("event-wrapper loading").length > 0) {
+							divActivityList.getElementsByClassName("event-wrapper loading")[0].innerHTML = '<span>No Activity Found...</span>';
+						}
+					} else {
+						if(divActivityList.getElementsByClassName("event-wrapper loading").length > 0) {
+							divActivityList.getElementsByClassName("event-wrapper loading")[0].remove();
+							divActivityList.classList.remove("loading");
+						}
+
+						Object.keys(events).map(event => {
+							let activity = events[event];
+			
+							let id = "activity-event-" + event;
+
+							let div;
+
+							try {
+								if(document.getElementById(id)) {
+									div = document.getElementById(id);
+								} else {
+									div = document.createElement("div");
+									div.id = id;
+									div.classList.add("event-wrapper");
+
+									
+
+									divActivityList.appendChild(div);
+								}
+							} catch(e) {
+								console.log(e);
+							}
+						});
+					}
+				} catch(e) {
+					console.log(e);
+				}
+			}).catch(e => {
+				console.log(e);
+			});
+
+			updateActivityListInterval = setInterval(listActivity, updateInterval);
 		}
 	}
 
@@ -1759,8 +1809,111 @@ document.addEventListener("DOMContentLoaded", async () => {
 		});
 	}
 
-	function addActivity() {
+	function createActivity(id, symbol, date, amount, fee, notes, type, exchange, pair, price, from, to) {
+		return new Promise((resolve, reject) => {
+			try {
+				let xhr = new XMLHttpRequest();
 
+				xhr.addEventListener("readystatechange", () => {
+					if(xhr.readyState === XMLHttpRequest.DONE) {
+						if(validJSON(xhr.responseText)) {
+							resolve(JSON.parse(xhr.responseText));
+						} else {
+							reject("Invalid JSON.");
+						}
+					}
+				});
+
+				xhr.open("POST", api + "activity/create.php", true);
+				xhr.send(JSON.stringify({ token:sessionToken, id:id, symbol:symbol, date:date, amount:amount, fee:fee, notes:notes, type:type, exchange:exchange, pair:pair, price:price, from:from, to:to }));
+			} catch(e) {
+				reject(e);
+			}
+		});
+	}
+
+	function updateActivity(txID, id, symbol, date, amount, fee, notes, type, exchange, pair, price, from, to) {
+		return new Promise((resolve, reject) => {
+			try {
+				let xhr = new XMLHttpRequest();
+
+				xhr.addEventListener("readystatechange", () => {
+					if(xhr.readyState === XMLHttpRequest.DONE) {
+						if(validJSON(xhr.responseText)) {
+							resolve(JSON.parse(xhr.responseText));
+						} else {
+							reject("Invalid JSON.");
+						}
+					}
+				});
+
+				xhr.open("PUT", api + "activity/update.php", true);
+				xhr.send(JSON.stringify({ token:sessionToken, txID, id:id, symbol:symbol, date:date, amount:amount, fee:fee, notes:notes, type:type, exchange:exchange, pair:pair, price:price, from:from, to:to }));
+			} catch(e) {
+				reject(e);
+			}
+		});
+	}
+
+	function deleteActivity(txID) {
+		return new Promise((resolve, reject) => {
+			try {
+				let xhr = new XMLHttpRequest();
+
+				xhr.addEventListener("readystatechange", () => {
+					if(xhr.readyState === XMLHttpRequest.DONE) {
+						if(validJSON(xhr.responseText)) {
+							resolve(JSON.parse(xhr.responseText));
+						} else {
+							reject("Invalid JSON.");
+						}
+					}
+				});
+
+				xhr.open("DELETE", api + "holdings/delete.php", true);
+				xhr.send(JSON.stringify({ token:sessionToken, txID:txID }));
+			} catch(e) {
+				reject(e);
+			}
+		});
+	}
+
+	function addActivity(id, symbol, date, amount, fee, notes, type, exchange, pair, price, from, to) {
+		getCoin(id).then(coin => {
+			if(!empty(coin.error)) {
+				Notify.error({
+					title:"Error",
+					description:"Coin not found."
+				});
+			} else {
+				createActivity(id, symbol.trim().toUpperCase(), date.trim(), amount, fee, notes.trim(), type, exchange.trim(), pair.trim().toUpperCase(), price, from.trim(), to.trim()).then(response => {
+					clearActivityList();
+
+					hidePopup();
+
+					if("message" in response) {
+						Notify.success({
+							title:"Event Recorded",
+							description:response.message
+						});
+					} else {
+						Notify.error({
+							title:"Error",
+							description:response.error
+						});
+					}
+				
+					listActivity();
+				}).catch(e => {
+					Notify.error({
+						title:"Error",
+						description:"Event couldn't be recorded."
+					});
+				});
+			}
+		}).catch(e => {
+			console.log(e);
+		});
 	}
 
 	function getCoin(id) {
@@ -1930,6 +2083,29 @@ document.addEventListener("DOMContentLoaded", async () => {
 				let list = Object.keys(coins).join("%2C");
 
 				xhr.open("GET", "https://api.coingecko.com/api/v3/coins/markets?vs_currency=" + settings.currency + "&ids=" + list + "&order=market_cap_desc&per_page=250&page=1&sparkline=false", true);
+				xhr.send();
+			} catch(e) {
+				reject(e);
+			}
+		});
+	}
+
+	function getActivity() {
+		return new Promise((resolve, reject) => {
+			try {
+				let xhr = new XMLHttpRequest();
+
+				xhr.addEventListener("readystatechange", () => {
+					if(xhr.readyState === XMLHttpRequest.DONE) {
+						if(validJSON(xhr.responseText)) {
+							resolve(JSON.parse(xhr.responseText));
+						} else {
+							reject("Invalid JSON.");
+						}
+					}
+				});
+
+				xhr.open("GET", api + "activity/read.php?token=" + sessionToken, true);
 				xhr.send();
 			} catch(e) {
 				reject(e);

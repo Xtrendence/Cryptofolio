@@ -81,5 +81,9 @@
 				file_put_contents($this->coinsFile, json_encode($pairs));
 			}
 		}
+
+		function validDate($date){
+			return (bool)strtotime($date);
+		}
 	}
 ?>

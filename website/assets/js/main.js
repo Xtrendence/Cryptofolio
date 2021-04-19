@@ -897,7 +897,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 		divPopupOverlay.classList.remove("active");
 		divPopupWrapper.classList.remove("active");
 		spanPopupTitle.textContent = "Popup Title";
-		divPopupBottom.innerHTML = "";
+		divPopupBottom.remove();
+
+		let div = document.createElement("div");
+		div.classList.add("bottom");
+		divPopupWrapper.appendChild(div);
+		divPopupBottom = divPopupWrapper.getElementsByClassName("bottom")[0];
 	}
 
 	function switchTheme(theme) {
@@ -1473,22 +1478,33 @@ document.addEventListener("DOMContentLoaded", async () => {
 							divActivityList.classList.remove("loading");
 						}
 
+						events = sortActivity(events);
 						Object.keys(events).map(event => {
 							let activity = events[event];
 			
 							let id = "activity-event-" + event;
+							let date = activity.date;
+							let symbol = activity.symbol.toUpperCase();
+							let amount = activity.amount;
+							let type = capitalizeFirstLetter(activity.type);
+							let notes = activity.notes;
 
 							let div;
 
 							try {
 								if(document.getElementById(id)) {
 									div = document.getElementById(id);
+									div.getElementsByClassName("date")[0].textContent = date;
+									div.getElementsByClassName("symbol")[0].textContent = symbol;
+									div.getElementsByClassName("amount")[0].textContent = amount;
+									div.getElementsByClassName("type")[0].textContent = type;
+									div.getElementsByClassName("notes")[0].textContent = notes;
 								} else {
 									div = document.createElement("div");
 									div.id = id;
 									div.classList.add("event-wrapper");
 
-									
+									div.innerHTML = '<span class="date">' + date + '</span><span class="symbol">' + symbol + '</span><span class="amount">' + amount + '</span><span class="type">' + type + '</span><span class="notes">' + notes + '</span>';
 
 									divActivityList.appendChild(div);
 								}
@@ -2111,6 +2127,24 @@ document.addEventListener("DOMContentLoaded", async () => {
 				reject(e);
 			}
 		});
+	}
+
+	function sortActivity(events) {
+		let sorted = {};
+		let array = [];
+		for(let event in events) {
+			array.push([event, events[event].time]);
+		}
+
+		array.sort(function(a, b) {
+			return a[1] - b[1];
+		});
+
+		array.reverse().map(item => {
+			sorted[item[0]] = events[item[0]];
+		});
+
+		return sorted;
 	}
 });
 

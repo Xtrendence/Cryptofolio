@@ -174,6 +174,7 @@ input[type=number] {
 .popup-wrapper .bottom div .choice.active {
 	background:var(--accent-first);
 	color:var(--accent-contrast);
+	pointer-events:none;
 }
 .popup-wrapper button.reject, .popup-wrapper button.resolve {
 	margin-bottom:40px;
@@ -983,27 +984,30 @@ html.dark .highlight .coin-wrapper.negative {
 	overflow:hidden;
 }
 .activity-list-wrapper .header.date {
-	width:110px;
+	width:170px;
 }
-.activity-list-wrapper .header.coin {
-	width:120px;
+.activity-list-wrapper .header.symbol {
+	width:70px;
 }
 .activity-list-wrapper .header.amount {
 	width:120px;
 }
 .activity-list-wrapper .header.type {
-	width:170px;
+	width:100px;
 }
 .activity-list-wrapper .header.notes {
 	width:170px;
 }
 
+.event-wrapper:nth-of-type(even) {
+	background:var(--main-second);
+}
 .activity-list-wrapper .event-wrapper .date {
-	width:110px;
+	width:170px;
 	text-align:left;
 }
-.activity-list-wrapper .event-wrapper .coin {
-	width:120px;
+.activity-list-wrapper .event-wrapper .symbol {
+	width:70px;
 	text-align:left;
 }
 .activity-list-wrapper .event-wrapper .amount {
@@ -1011,11 +1015,11 @@ html.dark .highlight .coin-wrapper.negative {
 	text-align:left;
 }
 .activity-list-wrapper .event-wrapper .type {
-	width:170px;
+	width:100px;
 	text-align:left;
 }
 .activity-list-wrapper .event-wrapper .notes {
-	width:calc(100% - 110px - 120px - 120px - 170px - 220px);
+	width:calc(100% - 170px - 70px - 120px - 100px - 220px);
 	text-align:left;
 	text-overflow:ellipsis;
 	white-space:nowrap;

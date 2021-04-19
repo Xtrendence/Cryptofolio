@@ -23,7 +23,7 @@
 			$notes = !empty($_POST["notes"]) ? $_POST["notes"] : die();
 
 			if($helper->validDate($date)) {
-				$activity = array("id" => $id, "symbol" => $symbol, "date" => $date, "type" => $type, "amount" => $amount, "fee" => $fee, "notes" => $notes);
+				$activity = array("id" => $id, "symbol" => $symbol, "date" => $date, "time" => strtotime($date), "type" => $type, "amount" => $amount, "fee" => $fee, "notes" => $notes);
 			
 				if($type == "buy" || $type == "sell" || $type == "transfer") {
 					if($type == "buy" || $type == "sell") {

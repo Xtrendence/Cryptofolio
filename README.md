@@ -6,7 +6,7 @@ Cryptofolio is an open-source, and self-hosted solution for tracking your crypto
 
 ### How can I view a list of upcoming features?
 
-The [project board](https://github.com/Xtrendence/Cryptofolio/projects/1) will be updated with any features that are currently in development.
+The [project board](https://github.com/Xtrendence/Cryptofolio/projects/1?fullscreen=true) will be updated with any features that are currently in development.
 
 ### What's the tech stack?
 

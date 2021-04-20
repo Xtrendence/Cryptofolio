@@ -1,4 +1,4 @@
-# Cryptofolio
+# ![Image](https://i.imgur.com/XcDdWHP.png)
 
 ### What is Cryptofolio?
 
@@ -63,7 +63,6 @@ In order to add an asset to your list of holdings, you will need to find out wha
 - Your PIN code for sharing your portfolio is stored in plaintext.
 - CoinGecko's API is limited in terms of both functionality, and how often requests can be made. As such, be careful not to refresh **too** often. Any rate limits are temporary though, you won't get banned or anything permanently.
 
-![Image](https://i.imgur.com/XcDdWHP.png)
 ![Image](https://i.imgur.com/eL5jRzj.png)
 ![Image](https://i.imgur.com/vpkydcc.png)
 ![Image](https://i.imgur.com/ldN5rsi.png)

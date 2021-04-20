@@ -437,149 +437,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 	});
 
 	divActivityAddCard.addEventListener("click", () => {
-		let html = "";
-
-		html += '<input id="popup-symbol" placeholder="Symbol... (e.g. BTC)">';
-		html += '<input id="popup-date" placeholder="Date... (e.g. 2021/04/18 04:20)">';
-		html += '<div id="popup-choice"><button id="popup-buy" data-value="buy" class="choice active">Buy</button>';
-		html += '<button id="popup-sell" data-value="sell" class="choice">Sell</button>';
-		html += '<button id="popup-transfer" data-value="transfer" class="choice">Transfer</button></div>';
-		html += '<input id="popup-amount" placeholder="Amount... (e.g. 2.5)" type="number">';
-		html += '<input id="popup-fee" placeholder="Fee... (e.g. 0.25)" type="number">';
-		html += '<input id="popup-notes" placeholder="Notes... (e.g. Rent)">';
-		html += '<input id="popup-exchange" placeholder="Exchange... (e.g. Coinbase)">';
-		html += '<input id="popup-pair" placeholder="Pair... (e.g. BTC/USDT)">';
-		html += '<input id="popup-price" placeholder="Price... (e.g. 59000)">';
-		html += '<input id="popup-from" class="hidden" placeholder="From... (e.g. Kraken)">';
-		html += '<input id="popup-to" class="hidden" placeholder="To... (e.g. Cold Wallet)">';
-		html += '<button class="reject" id="popup-cancel">Cancel</button><button class="resolve" id="popup-confirm">Confirm</button>';
-
-		let popupHeight = 300;
-	
-		popup("Recording Event", html, 300, popupHeight);
-
-		let popupSymbol = document.getElementById("popup-symbol");
-		let popupDate = document.getElementById("popup-date");
-		let popupAmount = document.getElementById("popup-amount");
-		let popupFee = document.getElementById("popup-fee");
-		let popupNotes = document.getElementById("popup-notes");
-		let popupExchange = document.getElementById("popup-exchange");
-		let popupPair = document.getElementById("popup-pair");
-		let popupPrice = document.getElementById("popup-price");
-		let popupFrom = document.getElementById("popup-from");
-		let popupTo = document.getElementById("popup-to");
-
-		let choices = document.getElementById("popup-choice").getElementsByClassName("choice");
-		for(let i = 0; i < choices.length; i++) {
-			choices[i].addEventListener("click", () => {
-				for(let j = 0; j < choices.length; j++) {
-					choices[j].classList.remove("active");
-				}
-				choices[i].classList.add("active");
-
-				if(choices[i].getAttribute("data-value") === "transfer") {
-					popupExchange.classList.add("hidden");
-					popupPair.classList.add("hidden");
-					popupPrice.classList.add("hidden");
-					popupFrom.classList.remove("hidden");
-					popupTo.classList.remove("hidden");
-				} else {
-					popupExchange.classList.remove("hidden");
-					popupPair.classList.remove("hidden");
-					popupPrice.classList.remove("hidden");
-					popupFrom.classList.add("hidden");
-					popupTo.classList.add("hidden");
-				}
-			});
-		}
-	
-		document.getElementById("popup-cancel").addEventListener("click", () => {
-			hidePopup();
-		});
-	
-		document.getElementById("popup-confirm").addEventListener("click", () => {
-			let symbol = popupSymbol.value;
-			let date = popupDate.value;
-			let amount = popupAmount.value;
-			let fee = popupFee.value;
-			let notes = popupNotes.value;
-			let type = document.getElementById("popup-choice").getElementsByClassName("active")[0].getAttribute("data-value");
-			let exchange = popupExchange.value;
-			let pair = popupPair.value;
-			let price = popupPrice.value;
-			let from = popupFrom.value;
-			let to = popupTo.value;
-			
-			if(isNaN(amount) || isNaN(fee) || (isNaN(price) && !empty(price))) {
-				Notify.error({
-					title:"Error",
-					description:"The amount, fee, and price fields must be numbers."
-				});
-			} else {
-				symbol = symbol.trim().toLowerCase();
-
-				getCoinID("symbol", symbol).then(response => {
-					Notify.alert({
-						title:"Checking...",
-						description:"Checking whether or not that coin exists."
-					});
-
-					for(let i = 0; i < document.getElementsByClassName("popup-list").length; i++) {
-						document.getElementsByClassName("popup-list")[i].remove();
-					}
-
-					if("id" in response) {
-						let id = response.id;
-						addActivity(id, symbol, date, amount, fee, notes, type, exchange, pair, price, from, to);
-					} else if("matches" in response) {
-						Notify.info({
-							title:"Multiple Results",
-							description:"There are " + response.matches.length + " coins with that symbol. Please choose one from the list.",
-							duration:8000
-						});
-
-						let wrapper = document.createElement("div");
-						wrapper.classList.add("popup-list");
-
-						let matches = response.matches;
-						Object.keys(matches).map(key => {
-							let match = matches[key];
-							let symbol = Object.keys(match)[0];
-							let id = match[symbol];
-
-							let row = document.createElement("div");
-							row.innerHTML = '<span class="title">' + symbol.toUpperCase() + '</span><span class="subtitle">' + capitalizeFirstLetter(id) + '</span>';
-
-							row.addEventListener("click", () => {
-								addActivity(id, symbol, date, amount, fee, notes, type, exchange, pair, price, from, to);
-							});
-
-							wrapper.appendChild(row);
-						});
-
-						let addedHeight = matches * 40;
-
-						if(matches.length >= 3) {
-							addedHeight = 120;
-						}
-
-						let adjustedHeight = (popupHeight + addedHeight) + 20;
-
-						divPopupWrapper.style.height = adjustedHeight + "px";
-						divPopupWrapper.style.top = "calc(50% - " + adjustedHeight + "px / 2)";
-
-						insertAfter(wrapper, popupTo);
-					} else {
-						Notify.error({
-							title:"Error",
-							description:"Couldn't find coin. Try searching by ID."
-						});
-					}
-				}).catch(e => {
-					console.log(e);
-				});
-			}
-		});
+		activityPopup("create");
 	});
 
 	divThemeToggle.addEventListener("click", () => {
@@ -1479,21 +1337,45 @@ document.addEventListener("DOMContentLoaded", async () => {
 						}
 
 						events = sortActivity(events);
-						Object.keys(events).map(event => {
-							let activity = events[event];
+						Object.keys(events).map(txID => {
+							let activity = events[txID];
 			
-							let id = "activity-event-" + event;
-							let date = activity.date;
+							let id = "activity-event-" + txID;
 							let symbol = activity.symbol.toUpperCase();
+							let date = activity.date;
 							let amount = activity.amount;
-							let type = capitalizeFirstLetter(activity.type);
+							let fee = activity.fee;
 							let notes = activity.notes;
+							let type = capitalizeFirstLetter(activity.type);
+							let exchange = activity.exchange;
+							let pair = activity.pair;
+							let price = activity.price;
+							let from = activity.from;
+							let to = activity.to;
 
 							let div;
 
 							try {
 								if(document.getElementById(id)) {
 									div = document.getElementById(id);
+
+									div.setAttribute("data-tx", txID);
+									div.setAttribute("data-symbol", symbol);
+									div.setAttribute("data-date", date);
+									div.setAttribute("data-amount", amount);
+									div.setAttribute("data-fee", fee);
+									div.setAttribute("data-notes", notes);
+									div.setAttribute("data-type", type);
+
+									if(type.toLowerCase() === "transfer") {
+										div.setAttribute("data-from", from);
+										div.setAttribute("data-to", to);
+									} else {
+										div.setAttribute("data-exchange", exchange);
+										div.setAttribute("data-pair", pair);
+										div.setAttribute("data-price", price);
+									}
+
 									div.getElementsByClassName("date")[0].textContent = date;
 									div.getElementsByClassName("symbol")[0].textContent = symbol;
 									div.getElementsByClassName("amount")[0].textContent = amount;
@@ -1502,9 +1384,31 @@ document.addEventListener("DOMContentLoaded", async () => {
 								} else {
 									div = document.createElement("div");
 									div.id = id;
+
+									div.setAttribute("data-tx", txID);
+									div.setAttribute("data-symbol", symbol);
+									div.setAttribute("data-date", date);
+									div.setAttribute("data-amount", amount);
+									div.setAttribute("data-fee", fee);
+									div.setAttribute("data-notes", notes);
+									div.setAttribute("data-type", type);
+									
+									if(type.toLowerCase() === "transfer") {
+										div.setAttribute("data-from", from);
+										div.setAttribute("data-to", to);
+									} else {
+										div.setAttribute("data-exchange", exchange);
+										div.setAttribute("data-pair", pair);
+										div.setAttribute("data-price", price);
+									}
+
 									div.classList.add("event-wrapper");
 
 									div.innerHTML = '<span class="date">' + date + '</span><span class="symbol">' + symbol + '</span><span class="amount">' + amount + '</span><span class="type">' + type + '</span><span class="notes">' + notes + '</span>';
+
+									div.addEventListener("click", () => {
+										activityPopup("update", { txID:txID });
+									});
 
 									divActivityList.appendChild(div);
 								}
@@ -1825,6 +1729,213 @@ document.addEventListener("DOMContentLoaded", async () => {
 		});
 	}
 
+	function activityPopup(action, params) {
+		let html = "";
+
+		html += '<input id="popup-symbol" placeholder="Symbol... (e.g. BTC)">';
+		html += '<input id="popup-date" placeholder="Date... (e.g. 2021/04/18 04:20)">';
+		html += '<div id="popup-choice"><button id="popup-buy" data-value="buy" class="choice active">Buy</button>';
+		html += '<button id="popup-sell" data-value="sell" class="choice">Sell</button>';
+		html += '<button id="popup-transfer" data-value="transfer" class="choice">Transfer</button></div>';
+		html += '<input id="popup-amount" placeholder="Amount... (e.g. 2.5)" type="number">';
+		html += '<input id="popup-fee" placeholder="Fee... (e.g. 0.25)" type="number">';
+		html += '<input id="popup-notes" placeholder="Notes... (e.g. Rent)">';
+		html += '<input id="popup-exchange" placeholder="Exchange... (e.g. Coinbase)">';
+		html += '<input id="popup-pair" placeholder="Pair... (e.g. BTC/USDT)">';
+		html += '<input id="popup-price" placeholder="Price... (e.g. 59000)">';
+		html += '<input id="popup-from" class="hidden" placeholder="From... (e.g. Kraken)">';
+		html += '<input id="popup-to" class="hidden" placeholder="To... (e.g. Cold Wallet)">';
+		html += '<button class="reject" id="popup-cancel">Cancel</button><button class="resolve" id="popup-confirm">Confirm</button>';
+
+		let popupHeight = 300;
+	
+		popup((action === "create") ? "Recording Event" : "Editing Event", html, 300, popupHeight);
+
+		let popupSymbol = document.getElementById("popup-symbol");
+		let popupDate = document.getElementById("popup-date");
+		let popupAmount = document.getElementById("popup-amount");
+		let popupFee = document.getElementById("popup-fee");
+		let popupNotes = document.getElementById("popup-notes");
+		let popupExchange = document.getElementById("popup-exchange");
+		let popupPair = document.getElementById("popup-pair");
+		let popupPrice = document.getElementById("popup-price");
+		let popupFrom = document.getElementById("popup-from");
+		let popupTo = document.getElementById("popup-to");
+
+		let choices = document.getElementById("popup-choice").getElementsByClassName("choice");
+		for(let i = 0; i < choices.length; i++) {
+			choices[i].addEventListener("click", () => {
+				for(let j = 0; j < choices.length; j++) {
+					choices[j].classList.remove("active");
+				}
+				choices[i].classList.add("active");
+
+				if(choices[i].getAttribute("data-value") === "transfer") {
+					popupExchange.classList.add("hidden");
+					popupPair.classList.add("hidden");
+					popupPrice.classList.add("hidden");
+					popupFrom.classList.remove("hidden");
+					popupTo.classList.remove("hidden");
+				} else {
+					popupExchange.classList.remove("hidden");
+					popupPair.classList.remove("hidden");
+					popupPrice.classList.remove("hidden");
+					popupFrom.classList.add("hidden");
+					popupTo.classList.add("hidden");
+				}
+			});
+
+			if(action !== "create") {
+				let event = document.getElementById("activity-event-" + params.txID);
+				if(choices[i].getAttribute("data-value") === event.getAttribute("data-type").toLowerCase()) {
+					choices[i].click();
+				}
+			}
+		}
+
+		if(action !== "create") {
+			let event = document.getElementById("activity-event-" + params.txID);
+			popupSymbol.value = event.getAttribute("data-symbol");
+			popupDate.value = event.getAttribute("data-date");
+			popupAmount.value = event.getAttribute("data-amount");
+			popupFee.value = event.getAttribute("data-fee");
+			popupNotes.value = event.getAttribute("data-notes");
+			if(event.getAttribute("data-type").toLowerCase() === "transfer") {
+				popupFrom.value = event.getAttribute("data-from");
+				popupTo.value = event.getAttribute("data-to");
+			} else {
+				popupExchange.value = event.getAttribute("data-exchange");
+				popupPair.value = event.getAttribute("data-pair");
+				popupPrice.value = event.getAttribute("data-price");
+			}
+		}
+	
+		document.getElementById("popup-cancel").addEventListener("click", () => {
+			hidePopup();
+		});
+	
+		document.getElementById("popup-confirm").addEventListener("click", () => {
+			let symbol = popupSymbol.value;
+			let date = popupDate.value;
+			let amount = popupAmount.value;
+			let fee = popupFee.value;
+			let notes = popupNotes.value;
+			let type = document.getElementById("popup-choice").getElementsByClassName("active")[0].getAttribute("data-value");
+			let exchange = popupExchange.value;
+			let pair = popupPair.value;
+			let price = popupPrice.value;
+			let from = popupFrom.value;
+			let to = popupTo.value;
+			
+			if(isNaN(amount) || isNaN(fee) || (isNaN(price) && !empty(price))) {
+				Notify.error({
+					title:"Error",
+					description:"The amount, fee, and price fields must be numbers."
+				});
+			} else {
+				symbol = symbol.trim().toLowerCase();
+
+				getCoinID("symbol", symbol).then(response => {
+					Notify.alert({
+						title:"Checking...",
+						description:"Checking whether or not that coin exists."
+					});
+
+					for(let i = 0; i < document.getElementsByClassName("popup-list").length; i++) {
+						document.getElementsByClassName("popup-list")[i].remove();
+					}
+
+					if("id" in response) {
+						let id = response.id;
+						if(action === "create") {
+							addActivity(id, symbol, date, amount, fee, notes, type, exchange, pair, price, from, to);
+						} else {
+							updateActivity(params.txID, id, symbol, date, amount, fee, notes, type, exchange, pair, price, from, to).then(response => {
+								hidePopup();
+
+								listActivity();
+
+								Notify.success({
+									title:"Event Updated",
+									description:response.message
+								});
+							}).catch(e => {
+								console.log(e);
+							});
+						}
+					} else if("matches" in response) {
+						Notify.info({
+							title:"Multiple Results",
+							description:"There are " + response.matches.length + " coins with that symbol. Please choose one from the list.",
+							duration:8000
+						});
+
+						let wrapper = document.createElement("div");
+						wrapper.classList.add("popup-list");
+
+						let matches = response.matches;
+						Object.keys(matches).map(key => {
+							let match = matches[key];
+							let symbol = Object.keys(match)[0];
+							let id = match[symbol];
+
+							let row = document.createElement("div");
+							row.innerHTML = '<span class="title">' + symbol.toUpperCase() + '</span><span class="subtitle">' + capitalizeFirstLetter(id) + '</span>';
+
+							row.addEventListener("click", () => {
+								if(action === "create") {
+									addActivity(id, symbol, date, amount, fee, notes, type, exchange, pair, price, from, to);
+								} else {
+									updateActivity(params.txID, id, symbol, date, amount, fee, notes, type, exchange, pair, price, from, to).then(response => {
+										if("error" in response) {
+											Notify.error({
+												title:"Error",
+												description:response.error
+											});
+										} else {
+											hidePopup();
+
+											listActivity();
+
+											Notify.success({
+												title:"Event Updated",
+												description:response.message
+											});
+										}
+									}).catch(e => {
+										console.log(e);
+									});
+								}
+							});
+
+							wrapper.appendChild(row);
+						});
+
+						let addedHeight = matches * 40;
+
+						if(matches.length >= 3) {
+							addedHeight = 120;
+						}
+
+						let adjustedHeight = (popupHeight + addedHeight) + 20;
+
+						divPopupWrapper.style.height = adjustedHeight + "px";
+						divPopupWrapper.style.top = "calc(50% - " + adjustedHeight + "px / 2)";
+
+						insertAfter(wrapper, popupTo);
+					} else {
+						Notify.error({
+							title:"Error",
+							description:"Couldn't find coin. Try searching by ID."
+						});
+					}
+				}).catch(e => {
+					console.log(e);
+				});
+			}
+		});
+	}
+
 	function createActivity(id, symbol, date, amount, fee, notes, type, exchange, pair, price, from, to) {
 		return new Promise((resolve, reject) => {
 			try {
@@ -1864,7 +1975,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 				});
 
 				xhr.open("PUT", api + "activity/update.php", true);
-				xhr.send(JSON.stringify({ token:sessionToken, txID, id:id, symbol:symbol, date:date, amount:amount, fee:fee, notes:notes, type:type, exchange:exchange, pair:pair, price:price, from:from, to:to }));
+				xhr.send(JSON.stringify({ token:sessionToken, txID:txID, id:id, symbol:symbol, date:date, amount:amount, fee:fee, notes:notes, type:type, exchange:exchange, pair:pair, price:price, from:from, to:to }));
 			} catch(e) {
 				reject(e);
 			}

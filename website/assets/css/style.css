@@ -999,6 +999,12 @@ html.dark .highlight .coin-wrapper.negative {
 	width:170px;
 }
 
+.event-wrapper {
+	cursor:pointer;
+}
+#desktop .event-wrapper:hover {
+	background:var(--main-third);
+}
 .event-wrapper:nth-of-type(even) {
 	background:var(--main-second);
 }

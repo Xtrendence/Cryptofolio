@@ -85,6 +85,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 	let divActivityAddCard = document.getElementById("activity-add-card");
 
+	let inputActivitySearch = document.getElementById("activity-search-input");
+
+	let buttonActivitySearch = document.getElementById("activity-search-button");
+
 	let buttonMoreEdit = document.getElementById("more-edit");
 	let buttonMoreRemove = document.getElementById("more-remove");
 
@@ -434,6 +438,77 @@ document.addEventListener("DOMContentLoaded", async () => {
 				}
 			}
 		});
+	});
+
+	inputActivitySearch.addEventListener("keydown", (e) => {
+		if(e.key.toLowerCase() === "enter") {
+			buttonActivitySearch.click();
+		}
+	});
+
+	inputActivitySearch.addEventListener("input", () => {
+		if(empty(inputActivitySearch.value) || empty(inputActivitySearch.value.trim())) {
+			let events = divActivityList.getElementsByClassName("event-wrapper");
+			for(let i = 0; i < events.length; i++) {
+				events[i].classList.remove("hidden");
+			}
+		}
+	});
+
+	buttonActivitySearch.addEventListener("click", () => {
+		let input = inputActivitySearch.value;
+		if(!empty(input)) {
+			let query = input.toLowerCase().trim();
+
+			let events = divActivityList.getElementsByClassName("event-wrapper");
+
+			for(let i = 0; i < events.length; i++) {
+				let match = false;
+				let data = [];
+
+				let symbol = events[i].getAttribute("data-symbol").toLowerCase().trim();
+				let date = events[i].getAttribute("data-date");
+				let amount = events[i].getAttribute("data-amount");
+				let fee = events[i].getAttribute("data-fee");
+				let notes = events[i].getAttribute("data-notes").toLowerCase().trim();
+				let type = events[i].getAttribute("data-type").toLowerCase().trim();
+
+				data.push(symbol);
+				data.push(date);
+				data.push(amount);
+				data.push(fee);
+				data.push(notes);
+				data.push(type);
+									
+				if(type.toLowerCase() === "transfer") {
+					let from = events[i].getAttribute("data-from").toLowerCase().trim();
+					let to = events[i].getAttribute("data-to").toLowerCase().trim();
+
+					data.push(from);
+					data.push(to);
+				} else {
+					let exchange = events[i].getAttribute("data-exchange").toLowerCase().trim();
+					let pair = events[i].getAttribute("data-pair").toLowerCase().trim();
+					let price = events[i].getAttribute("data-price");
+
+					data.push(exchange);
+					data.push(pair);
+					data.push(price);
+				}
+
+				data.map(value => {
+					if(value.includes(query)) {
+						match = true;
+					}
+				});
+
+				if(match) {
+					events[i].classList.remove("hidden");
+				} else {
+					events[i].classList.add("hidden");
+				}
+			}
+		}
 	});
 
 	divActivityAddCard.addEventListener("click", () => {

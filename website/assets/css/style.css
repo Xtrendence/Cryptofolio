@@ -712,6 +712,7 @@ html.dark .highlight .coin-wrapper.negative {
 	display:inline-block;
 	line-height:60px;
 	font-weight:bold;
+	vertical-align:top;
 	padding:0 20px 0 20px;
 	color:var(--main-contrast-light);
 	text-align:left;
@@ -1006,7 +1007,7 @@ html.dark .highlight .coin-wrapper.negative {
 	width:100px;
 }
 .activity-list-wrapper .header.notes {
-	width:170px;
+	width:120px;
 }
 
 .event-wrapper {

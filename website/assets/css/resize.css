@@ -123,7 +123,12 @@
 }
 
 @media screen and (max-width:930px) {
-	
+	.activity-list-wrapper .header.notes {
+		display:none;
+	}
+	.activity-list-wrapper .event-wrapper .notes {
+		display:none;
+	}
 }
 
 @media screen and (max-width:880px) {
@@ -179,6 +184,15 @@
 	}
 
 	.market .stats-wrapper .stats-card.dominance {
+		display:none;
+	}
+}
+
+@media screen and (max-width:800px) {
+	.activity-list-wrapper .header.type {
+		display:none;
+	}
+	.activity-list-wrapper .event-wrapper .type {
 		display:none;
 	}
 }
@@ -348,6 +362,28 @@
 	}
 	.holdings-list-wrapper .coin-wrapper .amount {
 		width:80px;
+	}
+
+	.activity-list-wrapper .header.date {
+		width:calc(100% - 70px - 120px - 135px);
+		text-align:left;
+		text-overflow:ellipsis;
+		white-space:nowrap;
+		overflow:hidden;
+	}
+
+	.activity-list-wrapper .event-wrapper .date {
+		width:calc(100% - 70px - 120px - 135px);
+		text-align:left;
+		text-overflow:ellipsis;
+		white-space:nowrap;
+		overflow:hidden;
+	}
+}
+
+@media screen and (max-width:500px) {
+	.activity-search-wrapper {
+		width:calc(100% - 300px);
 	}
 }
 

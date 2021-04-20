@@ -1453,7 +1453,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 									div.getElementsByClassName("date")[0].textContent = date;
 									div.getElementsByClassName("symbol")[0].textContent = symbol;
-									div.getElementsByClassName("amount")[0].textContent = amount;
+									div.getElementsByClassName("amount")[0].textContent = separateThousands(amount);
 									div.getElementsByClassName("type")[0].textContent = type;
 									div.getElementsByClassName("notes")[0].textContent = notes;
 								} else {
@@ -1479,7 +1479,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 									div.classList.add("event-wrapper");
 
-									div.innerHTML = '<span class="date">' + date + '</span><span class="symbol">' + symbol + '</span><span class="amount">' + amount + '</span><span class="type">' + type + '</span><span class="notes">' + notes + '</span>';
+									div.innerHTML = '<span class="date">' + date + '</span><span class="symbol">' + symbol + '</span><span class="amount">' + separateThousands(amount) + '</span><span class="type">' + type + '</span><span class="notes">' + notes + '</span>';
 
 									div.addEventListener("click", () => {
 										activityPopup("update", { txID:txID });

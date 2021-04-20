@@ -1745,6 +1745,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 		html += '<input id="popup-price" placeholder="Price... (e.g. 59000)">';
 		html += '<input id="popup-from" class="hidden" placeholder="From... (e.g. Kraken)">';
 		html += '<input id="popup-to" class="hidden" placeholder="To... (e.g. Cold Wallet)">';
+
+		if(action !== "create") {
+			html += '<button class="delete" id="popup-delete">Delete Event</button>';
+		}
+		
 		html += '<button class="reject" id="popup-cancel">Cancel</button><button class="resolve" id="popup-confirm">Confirm</button>';
 
 		let popupHeight = 300;
@@ -1808,6 +1813,29 @@ document.addEventListener("DOMContentLoaded", async () => {
 				popupPair.value = event.getAttribute("data-pair");
 				popupPrice.value = event.getAttribute("data-price");
 			}
+
+			document.getElementById("popup-delete").addEventListener("click", () => {
+				deleteActivity(params.txID).then(response => {
+					if("error" in response) {
+						Notify.error({
+							title:"Error",
+							description:response.error
+						});
+					} else {
+						hidePopup();
+
+						clearActivityList();
+						listActivity();
+
+						Notify.success({
+							title:"Event Deleted",
+							description:response.message
+						});
+					}
+				}).catch(e => {
+					console.log(e);
+				});
+			});
 		}
 	
 		document.getElementById("popup-cancel").addEventListener("click", () => {
@@ -1853,6 +1881,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 							updateActivity(params.txID, id, symbol, date, amount, fee, notes, type, exchange, pair, price, from, to).then(response => {
 								hidePopup();
 
+								clearActivityList();
 								listActivity();
 
 								Notify.success({
@@ -1895,6 +1924,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 										} else {
 											hidePopup();
 
+											clearActivityList();
 											listActivity();
 
 											Notify.success({
@@ -1997,7 +2027,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 					}
 				});
 
-				xhr.open("DELETE", api + "holdings/delete.php", true);
+				xhr.open("DELETE", api + "activity/delete.php", true);
 				xhr.send(JSON.stringify({ token:sessionToken, txID:txID }));
 			} catch(e) {
 				reject(e);

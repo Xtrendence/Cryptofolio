@@ -176,6 +176,15 @@ input[type=number] {
 	color:var(--accent-contrast);
 	pointer-events:none;
 }
+.popup-wrapper button.delete {
+	background:rgb(230,50,50);
+	margin:0 auto 20px auto;
+	width:calc(100% - 40px);
+	display:block;
+}
+#desktop .popup-wrapper button.delete:hover {
+	background:rgb(150,30,30);
+}
 .popup-wrapper button.reject, .popup-wrapper button.resolve {
 	margin-bottom:40px;
 }

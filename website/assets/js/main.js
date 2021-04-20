@@ -1827,7 +1827,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 		
 		html += '<button class="reject" id="popup-cancel">Cancel</button><button class="resolve" id="popup-confirm">Confirm</button>';
 
-		let popupHeight = 300;
+		let popupHeight = 360;
 	
 		popup((action === "create") ? "Recording Event" : "Editing Event", html, 300, popupHeight);
 

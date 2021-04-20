@@ -178,6 +178,7 @@ input[type=number] {
 }
 .popup-wrapper button.delete {
 	background:rgb(230,50,50);
+	color:var(--accent-contrast);
 	margin:0 auto 20px auto;
 	width:calc(100% - 40px);
 	display:block;

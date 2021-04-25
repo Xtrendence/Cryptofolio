@@ -19,24 +19,24 @@
 			$date = !empty($_POST["date"]) ? $_POST["date"] : die();
 			$type = !empty($_POST["type"]) ? $_POST["type"] : die();
 			$amount = !empty($_POST["amount"]) ? $_POST["amount"] : die();
-			$fee = !empty($_POST["fee"]) ? $_POST["fee"] : die();
-			$notes = !empty($_POST["notes"]) ? $_POST["notes"] : die();
+			$fee = !empty($_POST["fee"]) ? $_POST["fee"] : 0;
+			$notes = !empty($_POST["notes"]) ? $_POST["notes"] : "-";
 
 			if($helper->validDate($date)) {
 				$activity = array("id" => $id, "symbol" => $symbol, "date" => $date, "time" => strtotime($date), "type" => $type, "amount" => $amount, "fee" => $fee, "notes" => $notes);
 			
 				if($type == "buy" || $type == "sell" || $type == "transfer") {
 					if($type == "buy" || $type == "sell") {
-						$exchange = !empty($_POST["exchange"]) ? $_POST["exchange"] : die();
-						$pair = !empty($_POST["pair"]) ? $_POST["pair"] : die();
-						$price = !empty($_POST["price"]) ? $_POST["price"] : die();
+						$exchange = !empty($_POST["exchange"]) ? $_POST["exchange"] : "-";
+						$pair = !empty($_POST["pair"]) ? $_POST["pair"] : "-";
+						$price = !empty($_POST["price"]) ? $_POST["price"] : 0;
 					
 						$activity["exchange"] = $exchange;
 						$activity["pair"] = $pair;
 						$activity["price"] = $price;
 					} else if($type == "transfer") {
-						$from = !empty($_POST["from"]) ? $_POST["from"] : die();
-						$to = !empty($_POST["to"]) ? $_POST["to"] : die();
+						$from = !empty($_POST["from"]) ? $_POST["from"] : "-";
+						$to = !empty($_POST["to"]) ? $_POST["to"] : "-";
 
 						$activity["from"] = $from;
 						$activity["to"] = $to;

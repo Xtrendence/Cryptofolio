@@ -17,24 +17,24 @@
 			$date = !empty($input["date"]) ? $input["date"] : die();
 			$type = !empty($input["type"]) ? $input["type"] : die();
 			$amount = !empty($input["amount"]) ? $input["amount"] : die();
-			$fee = !empty($input["fee"]) ? $input["fee"] : die();
-			$notes = !empty($input["notes"]) ? $input["notes"] : die();
+			$fee = !empty($input["fee"]) ? $input["fee"] : 0;
+			$notes = !empty($input["notes"]) ? $input["notes"] : "-";
 
 			if($helper->validDate($date)) {
 				$activity = array("id" => $id, "symbol" => $symbol, "date" => $date, "time" => strtotime($date), "type" => $type, "amount" => $amount, "fee" => $fee, "notes" => $notes);
 			
 				if($type == "buy" || $type == "sell" || $type == "transfer") {
 					if($type == "buy" || $type == "sell") {
-						$exchange = !empty($input["exchange"]) ? $input["exchange"] : die();
-						$pair = !empty($input["pair"]) ? $input["pair"] : die();
-						$price = !empty($input["price"]) ? $input["price"] : die();
+						$exchange = !empty($input["exchange"]) ? $input["exchange"] : "-";
+						$pair = !empty($input["pair"]) ? $input["pair"] : "-";
+						$price = !empty($input["price"]) ? $input["price"] : 0;
 					
 						$activity["exchange"] = $exchange;
 						$activity["pair"] = $pair;
 						$activity["price"] = $price;
 					} else if($type == "transfer") {
-						$from = !empty($input["from"]) ? $input["from"] : die();
-						$to = !empty($input["to"]) ? $input["to"] : die();
+						$from = !empty($input["from"]) ? $input["from"] : "-";
+						$to = !empty($input["to"]) ? $input["to"] : "-";
 
 						$activity["from"] = $from;
 						$activity["to"] = $to;

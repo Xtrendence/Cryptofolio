@@ -713,18 +713,22 @@ document.addEventListener("DOMContentLoaded", async () => {
 	buttonImportActivity.addEventListener("click", () => {
 		upload().then(data => {
 			let rows = data.split(/\r?\n/);
-			if(rows[0] === "txID,id,symbol,date,time,type,amount,fee,notes,exchange,pair,price,from,to") {
+			if(rows[0].includes("id,symbol,date,time,type,amount,fee,notes,exchange,pair,price,from,to")) {
 				let formatted = [];
 				rows.map(row => {
 					if(!empty(row) && !row.toLowerCase().includes("symbol,")) {
-						formatted.push(row);
+						if(rows[0].includes("txID")) {
+							formatted.push(row);
+						} else {
+							formatted.push("-," + row);
+						}
 					}
 				});
 				importActivity(formatted);
 			} else {
 				Notify.error({
 					title:"Error",
-					description:"Invalid column order. Expected: txID, id, symbol, date, time, type, amount, fee, notes, exchange, pair, price, from, to. Make sure to include the header row as well.",
+					description:"Invalid column order. Expected: id, symbol, date, time, type, amount, fee, notes, exchange, pair, price, from, to. Make sure to include the header row as well.",
 					duration:12000
 				});
 			}

@@ -23,6 +23,14 @@
 			foreach($rows as $row) {
 				$data = explode(",", $row);
 				$txID = !empty($data[0]) ? $data[0] : $valid = false;
+
+				if($txID == "-") {
+					$txID = time() . $helper->getRandomHex(8);
+					while(array_key_exists($txID, $current)) {
+						$txID = time() . $helper->getRandomHex(8);
+					}
+				}
+
 				$id = !empty($data[1]) ? $data[1] : $valid = false;
 				$symbol = !empty($data[2]) ? $data[2] : $valid = false;
 				$date = !empty($data[3]) ? str_replace("'", "", str_replace('"', "", $data[3])) : $valid = false;

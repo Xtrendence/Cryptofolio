@@ -686,7 +686,16 @@ document.addEventListener("DOMContentLoaded", async () => {
 	});
 
 	buttonImportHoldings.addEventListener("click", () => {
-
+		upload().then(data => {
+			let rows = data.split(/\r?\n/);
+			let formatted = [];
+			rows.map(row => {
+				if(!empty(row) && !row.toLowerCase().includes("symbol,")) {
+					formatted.push(row);
+				}
+			});
+			importHoldings(formatted);
+		});
 	});
 
 	buttonExportHoldings.addEventListener("click", () => {
@@ -694,7 +703,16 @@ document.addEventListener("DOMContentLoaded", async () => {
 	});
 
 	buttonImportActivity.addEventListener("click", () => {
-
+		upload().then(data => {
+			let rows = data.split(/\r?\n/);
+			let formatted = [];
+			rows.map(row => {
+				if(!empty(row) && !row.toLowerCase().includes("symbol,")) {
+					formatted.push(row);
+				}
+			});
+			importActivity(formatted);
+		});
 	});
 
 	buttonExportActivity.addEventListener("click", () => {
@@ -1294,6 +1312,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 			getHoldings().then(coins => {
 				try {
 					if(Object.keys(coins).length === 0) {
+						clearActivityList();
 						if(divHoldingsList.getElementsByClassName("coin-wrapper loading").length > 0) {
 							divHoldingsList.getElementsByClassName("coin-wrapper loading")[0].innerHTML = '<span>No Holdings Found...</span>';
 						}
@@ -1424,6 +1443,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 			getActivity().then(events => {
 				try {
 					if(Object.keys(events).length === 0) {
+						clearActivityList();
 						if(divActivityList.getElementsByClassName("event-wrapper loading").length > 0) {
 							divActivityList.getElementsByClassName("event-wrapper loading")[0].innerHTML = '<span>No Activity Found...</span>';
 						}
@@ -1826,6 +1846,38 @@ document.addEventListener("DOMContentLoaded", async () => {
 		});
 	}
 
+	function importHoldings(rows) {
+		let xhr = new XMLHttpRequest();
+
+		xhr.addEventListener("readystatechange", () => {
+			if(xhr.readyState === XMLHttpRequest.DONE) {
+				if(validJSON(xhr.responseText)) {
+					let response = JSON.parse(xhr.responseText);
+
+					if("error" in response) {
+						Notify.error({
+							title:"Error",
+							description:response.error
+						});
+					} else {
+						Notify.success({
+							title:"Holdings Imported",
+							description:response.message
+						});
+					}
+				} else {
+					Notify.error({
+						title:"Error",
+						description:"Invalid JSON."
+					});
+				}
+			}
+		});
+
+		xhr.open("POST", api + "holdings/import.php", true);
+		xhr.send(JSON.stringify({ token:sessionToken, rows:rows }));
+	}
+
 	function activityPopup(action, params) {
 		let html = "";
 
@@ -2170,6 +2222,39 @@ document.addEventListener("DOMContentLoaded", async () => {
 		});
 	}
 
+	function importActivity(rows) {
+		let xhr = new XMLHttpRequest();
+
+		xhr.addEventListener("readystatechange", () => {
+			if(xhr.readyState === XMLHttpRequest.DONE) {
+				console.log(xhr.responseText);
+				if(validJSON(xhr.responseText)) {
+					let response = JSON.parse(xhr.responseText);
+
+					if("error" in response) {
+						Notify.error({
+							title:"Error",
+							description:response.error
+						});
+					} else {
+						Notify.success({
+							title:"Activity Imported",
+							description:response.message
+						});
+					}
+				} else {
+					Notify.error({
+						title:"Error",
+						description:"Invalid JSON."
+					});
+				}
+			}
+		});
+
+		xhr.open("POST", api + "activity/import.php", true);
+		xhr.send(JSON.stringify({ token:sessionToken, rows:rows }));
+	}
+
 	function getCoin(id) {
 		return new Promise((resolve, reject) => {
 			try {
@@ -2383,6 +2468,37 @@ document.addEventListener("DOMContentLoaded", async () => {
 		});
 
 		return sorted;
+	}
+
+	function upload() {
+		return new Promise((resolve, reject) => {
+			let input = document.createElement("input");
+			input.type = "file";
+			input.click();
+			input.addEventListener("input", () => {
+				if(!empty(input.files)) {
+					let file = input.files[0];
+					let reader = new FileReader();
+					reader.readAsText(file, "UTF-8");
+					reader.addEventListener("load", (event) => {
+						let data = event.target.result;
+						input.remove();
+						resolve(data);
+					});
+					reader.addEventListener("error", (error) => {
+						input.remove();
+						Notify.error({
+							title:"Error",
+							description:"Couldn't read file content."
+						});
+						reject(error);
+					});
+				} else {
+					input.remove();
+					reject("No File Uploaded.");
+				}
+			});
+		});
 	}
 
 	function download(url) {

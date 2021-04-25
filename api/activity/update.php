@@ -48,12 +48,16 @@
 				if(array_key_exists($txID, $current)) {
 					$current[$txID] = $activity;
 
-					$update = file_put_contents($helper->activityFile, json_encode($current));
+					if(time() - 1 > filemtime($helper->activityFile)) {
+						$update = file_put_contents($helper->activityFile, json_encode($current));
 
-					if($update) {
-						echo json_encode(array("message" => "The activity has been updated."));
+						if($update) {
+							echo json_encode(array("message" => "The activity has been updated."));
+						} else {
+							echo json_encode(array("error" => "Activity couldn't be updated."));
+						}
 					} else {
-						echo json_encode(array("error" => "Activity couldn't be updated."));
+						echo json_encode(array("error" => "Duplicate request detected. Only the first was processed."));
 					}
 				} else {
 					echo json_encode(array("error" => "Activity not found."));

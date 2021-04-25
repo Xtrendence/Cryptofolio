@@ -54,12 +54,16 @@
 		
 				$current[$txID] = $activity;
 
-				$create = file_put_contents($helper->activityFile, json_encode($current));
+				if(time() - 1 > filemtime($helper->activityFile)) {
+					$create = file_put_contents($helper->activityFile, json_encode($current));
 
-				if($create) {
-					echo json_encode(array("message" => "The activity has been recorded."));
+					if($create) {
+						echo json_encode(array("message" => "The activity has been recorded."));
+					} else {
+						echo json_encode(array("error" => "Activity couldn't be recorded."));
+					}
 				} else {
-					echo json_encode(array("error" => "Activity couldn't be recorded."));
+					echo json_encode(array("error" => "Duplicate request detected. Only the first was processed."));
 				}
 			} else {
 				echo json_encode(array("error" => "Invalid date."));

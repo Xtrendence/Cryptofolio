@@ -26,12 +26,16 @@
 				$current[$id] = array("symbol" => $symbol, "amount" => $amount);
 			}
 
-			$create = file_put_contents($helper->holdingsFile, json_encode($current));
+			if(time() - 1 > filemtime($helper->holdingsFile)) {
+				$create = file_put_contents($helper->holdingsFile, json_encode($current));
 
-			if($create) {
-				echo json_encode(array("message" => "The asset has been created."));
+				if($create) {
+					echo json_encode(array("message" => "The asset has been created."));
+				} else {
+					echo json_encode(array("error" => "Asset couldn't be created."));
+				}
 			} else {
-				echo json_encode(array("error" => "Asset couldn't be created."));
+				echo json_encode(array("error" => "Duplicate request detected. Only the first was processed."));
 			}
 		} else {
 			echo json_encode(array("error" => "You need to be logged in to do that."));

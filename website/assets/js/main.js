@@ -113,6 +113,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 	let buttonChangePIN = document.getElementById("change-pin-button");
 	let buttonCopyURL = document.getElementById("copy-url-button");
 
+	let buttonImportHoldings = document.getElementById("import-holdings-button");
+	let buttonExportHoldings = document.getElementById("export-holdings-button");
+
+	let buttonImportActivity = document.getElementById("import-activity-button");
+	let buttonExportActivity = document.getElementById("export-activity-button");
+
 	detectMobile() ? body.id = "mobile" : body.id = "desktop";
 
 	adjustToScreen();
@@ -677,6 +683,22 @@ document.addEventListener("DOMContentLoaded", async () => {
 			title:"Copied To Clipboard",
 			description:"The URL has been copied to your clipboard."
 		});
+	});
+
+	buttonImportHoldings.addEventListener("click", () => {
+
+	});
+
+	buttonExportHoldings.addEventListener("click", () => {
+		download(api + "holdings/export.php?token=" + sessionToken);
+	});
+
+	buttonImportActivity.addEventListener("click", () => {
+
+	});
+
+	buttonExportActivity.addEventListener("click", () => {
+		download(api + "activity/export.php?token=" + sessionToken);
 	});
 
 	function login(password) {
@@ -2361,6 +2383,16 @@ document.addEventListener("DOMContentLoaded", async () => {
 		});
 
 		return sorted;
+	}
+
+	function download(url) {
+		let frame = document.createElement("iframe");
+		frame.src = url;
+		frame.classList.add("hidden");
+		divPageSettings.appendChild(frame);
+		frame.addEventListener("load", () => {
+			frame.remove();
+		});
 	}
 });
 

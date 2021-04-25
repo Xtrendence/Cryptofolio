@@ -257,9 +257,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 			updateHolding(id, amount).then(response => {
 				clearHoldingsList();
 
-				hidePopup();
-
 				if("message" in response) {
+					hidePopup();
+
 					Notify.success({
 						title:"Asset Updated",
 						description:response.message
@@ -1750,9 +1750,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 				createHolding(id, coin.symbol, amount).then(response => {
 					clearHoldingsList();
 
-					hidePopup();
-
 					if("message" in response) {
+						hidePopup();
+
 						Notify.success({
 							title:"Asset Created",
 							description:response.message
@@ -2195,9 +2195,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 				createActivity(id, symbol.trim().toUpperCase(), date.trim(), amount, fee, notes.trim(), type, exchange.trim(), pair.trim().toUpperCase(), price, from.trim(), to.trim()).then(response => {
 					clearActivityList();
 
-					hidePopup();
-
 					if("message" in response) {
+						hidePopup();
+
 						Notify.success({
 							title:"Event Recorded",
 							description:response.message

@@ -34,27 +34,26 @@
 				$id = !empty($data[1]) ? $data[1] : $valid = false;
 				$symbol = !empty($data[2]) ? $data[2] : $valid = false;
 				$date = !empty($data[3]) ? str_replace("'", "", str_replace('"', "", $data[3])) : $valid = false;
-				$time = !empty($data[4]) ? $data[4] : $valid = false;
-				$type = !empty($data[5]) ? strtolower($data[5]) : $valid = false;
-				$amount = !empty($data[6]) ? $data[6] : $valid = false;
-				$fee = !empty($data[7]) ? $data[7] : 0;
-				$notes = !empty($data[8]) ? str_replace('"', "", $data[8]) : "-";
+				$type = !empty($data[4]) ? strtolower($data[4]) : $valid = false;
+				$amount = !empty($data[5]) ? $data[5] : $valid = false;
+				$fee = !empty($data[6]) ? $data[6] : 0;
+				$notes = !empty($data[7]) ? str_replace('"', "", $data[7]) : "-";
 
 				if($helper->validDate($date)) {
-					$activity = array("id" => $id, "symbol" => $symbol, "date" => $date, "time" => $time, "type" => $type, "amount" => $amount, "fee" => $fee, "notes" => $notes);
+					$activity = array("id" => $id, "symbol" => $symbol, "date" => $date, "time" => strtotime($date), "type" => $type, "amount" => $amount, "fee" => $fee, "notes" => $notes);
 			
 					if($type == "buy" || $type == "sell" || $type == "transfer") {
 						if($type == "buy" || $type == "sell") {
-							$exchange = !empty($data[9]) ? str_replace('"', "", $data[9]) : "-";
-							$pair = !empty($data[10]) ? str_replace('"', "", $data[10]) : "-";
-							$price = !empty($data[11]) ? $data[11] : 0;
+							$exchange = !empty($data[8]) ? str_replace('"', "", $data[8]) : "-";
+							$pair = !empty($data[9]) ? str_replace('"', "", $data[9]) : "-";
+							$price = !empty($data[10]) ? $data[10] : 0;
 					
 							$activity["exchange"] = $exchange;
 							$activity["pair"] = $pair;
 							$activity["price"] = $price;
 						} else if($type == "transfer") {
-							$from = !empty($data[12]) ? str_replace('"', "", $data[12]) : "-";
-							$to = !empty($data[13]) ? str_replace('"', "", $data[13]) : "-";
+							$from = !empty($data[11]) ? str_replace('"', "", $data[11]) : "-";
+							$to = !empty($data[12]) ? str_replace('"', "", $data[12]) : "-";
 
 							$activity["from"] = $from;
 							$activity["to"] = $to;

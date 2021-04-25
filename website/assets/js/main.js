@@ -713,7 +713,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 	buttonImportActivity.addEventListener("click", () => {
 		upload().then(data => {
 			let rows = data.split(/\r?\n/);
-			if(rows[0].includes("id,symbol,date,time,type,amount,fee,notes,exchange,pair,price,from,to")) {
+			if(rows[0].includes("id,symbol,date,type,amount,fee,notes,exchange,pair,price,from,to")) {
 				let formatted = [];
 				rows.map(row => {
 					if(!empty(row) && !row.toLowerCase().includes("symbol,")) {
@@ -728,7 +728,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 			} else {
 				Notify.error({
 					title:"Error",
-					description:"Invalid column order. Expected: id, symbol, date, time, type, amount, fee, notes, exchange, pair, price, from, to. Make sure to include the header row as well.",
+					description:"Invalid column order. Expected: id, symbol, date, type, amount, fee, notes, exchange, pair, price, from, to. Make sure to include the header row as well.",
 					duration:12000
 				});
 			}
@@ -2205,41 +2205,56 @@ document.addEventListener("DOMContentLoaded", async () => {
 	}
 
 	function addActivity(id, symbol, date, amount, fee, notes, type, exchange, pair, price, from, to) {
-		getCoin(id).then(coin => {
-			if(!empty(coin.error)) {
-				Notify.error({
-					title:"Error",
-					description:"Coin not found."
-				});
-			} else {
-				createActivity(id, symbol.trim().toUpperCase(), date.trim(), amount, fee, notes.trim(), type, exchange.trim(), pair.trim().toUpperCase(), price, from.trim(), to.trim()).then(response => {
-					clearActivityList();
+		let valid = true;
+		for(let i = 0; i < arguments.length; i++) {
+			let argument = arguments[i];
+			if(argument.includes(",")) {
+				valid = false;
+			}
+		}
 
-					if("message" in response) {
-						hidePopup();
-
-						Notify.success({
-							title:"Event Recorded",
-							description:response.message
-						});
-					} else {
-						Notify.error({
-							title:"Error",
-							description:response.error
-						});
-					}
-				
-					listActivity();
-				}).catch(e => {
+		if(valid) {
+			getCoin(id).then(coin => {
+				if(!empty(coin.error)) {
 					Notify.error({
 						title:"Error",
-						description:"Event couldn't be recorded."
+						description:"Coin not found."
 					});
-				});
-			}
-		}).catch(e => {
-			console.log(e);
-		});
+				} else {
+					createActivity(id, symbol.trim().toUpperCase(), date.trim(), amount, fee, notes.trim(), type, exchange.trim(), pair.trim().toUpperCase(), price, from.trim(), to.trim()).then(response => {
+						clearActivityList();
+
+						if("message" in response) {
+							hidePopup();
+
+							Notify.success({
+								title:"Event Recorded",
+								description:response.message
+							});
+						} else {
+							Notify.error({
+								title:"Error",
+								description:response.error
+							});
+						}
+					
+						listActivity();
+					}).catch(e => {
+						Notify.error({
+							title:"Error",
+							description:"Event couldn't be recorded."
+						});
+					});
+				}
+			}).catch(e => {
+				console.log(e);
+			});
+		} else {
+			Notify.error({
+				title:"Error",
+				description:"You cannot use commas in any fields."
+			});
+		}
 	}
 
 	function importActivity(rows) {

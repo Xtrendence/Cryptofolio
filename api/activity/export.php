@@ -18,12 +18,12 @@
 
 			$output = fopen("php://output", "w");
 
-			fputcsv($output, array("txID", "id", "symbol", "date", "time", "type", "amount", "fee", "notes", "exchange", "pair", "price", "from", "to"));
+			fputcsv($output, array("txID", "id", "symbol", "date", "type", "amount", "fee", "notes", "exchange", "pair", "price", "from", "to"));
 
 			$txIDs = array_keys($current);
 
 			for($i = 0; $i < count($txIDs); $i++) {
-				fputcsv($output, array($txIDs[$i], $current[$txIDs[$i]]["id"], strtoupper($current[$txIDs[$i]]["symbol"]), $current[$txIDs[$i]]["date"], $current[$txIDs[$i]]["time"], ucfirst($current[$txIDs[$i]]["type"]), $current[$txIDs[$i]]["amount"], $current[$txIDs[$i]]["fee"], $current[$txIDs[$i]]["notes"], $current[$txIDs[$i]]["exchange"], strtoupper($current[$txIDs[$i]]["pair"]), $current[$txIDs[$i]]["price"], $current[$txIDs[$i]]["from"], $current[$txIDs[$i]]["to"]));
+				fputcsv($output, array($txIDs[$i], $current[$txIDs[$i]]["id"], strtoupper($current[$txIDs[$i]]["symbol"]), $current[$txIDs[$i]]["date"], ucfirst($current[$txIDs[$i]]["type"]), $current[$txIDs[$i]]["amount"], $current[$txIDs[$i]]["fee"], $current[$txIDs[$i]]["notes"], $current[$txIDs[$i]]["exchange"], strtoupper($current[$txIDs[$i]]["pair"]), $current[$txIDs[$i]]["price"], $current[$txIDs[$i]]["from"], $current[$txIDs[$i]]["to"]));
 			}
 
 			fclose($output);

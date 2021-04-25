@@ -442,10 +442,10 @@ html.light .highlight .coin-wrapper.negative {
 }
 
 html.dark .highlight .coin-wrapper.positive {
-	background:rgba(0,255,150,0.05);
+	background:rgba(0,255,150,0.1);
 }
 html.dark .highlight .coin-wrapper.negative {
-	background:rgba(255,0,0,0.1);
+	background:rgba(255,0,0,0.15);
 }
 
 .dashboard-market-list-wrapper .coin-wrapper img {

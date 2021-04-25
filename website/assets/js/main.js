@@ -688,13 +688,21 @@ document.addEventListener("DOMContentLoaded", async () => {
 	buttonImportHoldings.addEventListener("click", () => {
 		upload().then(data => {
 			let rows = data.split(/\r?\n/);
-			let formatted = [];
-			rows.map(row => {
-				if(!empty(row) && !row.toLowerCase().includes("symbol,")) {
-					formatted.push(row);
-				}
-			});
-			importHoldings(formatted);
+			if(rows[0] === "id,symbol,amount") {
+				let formatted = [];
+				rows.map(row => {
+					if(!empty(row) && !row.toLowerCase().includes("symbol,")) {
+						formatted.push(row);
+					}
+				});
+				importHoldings(formatted);
+			} else {
+				Notify.error({
+					title:"Error",
+					description:"Invalid column order. Expected: id, symbol, amount. Make sure to include the header row as well.",
+					duration:8000
+				});
+			}
 		});
 	});
 
@@ -705,13 +713,21 @@ document.addEventListener("DOMContentLoaded", async () => {
 	buttonImportActivity.addEventListener("click", () => {
 		upload().then(data => {
 			let rows = data.split(/\r?\n/);
-			let formatted = [];
-			rows.map(row => {
-				if(!empty(row) && !row.toLowerCase().includes("symbol,")) {
-					formatted.push(row);
-				}
-			});
-			importActivity(formatted);
+			if(rows[0] === "txID,id,symbol,date,time,type,amount,fee,notes,exchange,pair,price,from,to") {
+				let formatted = [];
+				rows.map(row => {
+					if(!empty(row) && !row.toLowerCase().includes("symbol,")) {
+						formatted.push(row);
+					}
+				});
+				importActivity(formatted);
+			} else {
+				Notify.error({
+					title:"Error",
+					description:"Invalid column order. Expected: txID, id, symbol, date, time, type, amount, fee, notes, exchange, pair, price, from, to. Make sure to include the header row as well.",
+					duration:12000
+				});
+			}
 		});
 	});
 
@@ -2227,7 +2243,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 		xhr.addEventListener("readystatechange", () => {
 			if(xhr.readyState === XMLHttpRequest.DONE) {
-				console.log(xhr.responseText);
 				if(validJSON(xhr.responseText)) {
 					let response = JSON.parse(xhr.responseText);
 

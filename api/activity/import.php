@@ -30,23 +30,23 @@
 				$type = !empty($data[5]) ? strtolower($data[5]) : $valid = false;
 				$amount = !empty($data[6]) ? $data[6] : $valid = false;
 				$fee = !empty($data[7]) ? $data[7] : 0;
-				$notes = !empty($data[8]) ? $data[8] : "-";
+				$notes = !empty($data[8]) ? str_replace('"', "", $data[8]) : "-";
 
 				if($helper->validDate($date)) {
 					$activity = array("id" => $id, "symbol" => $symbol, "date" => $date, "time" => $time, "type" => $type, "amount" => $amount, "fee" => $fee, "notes" => $notes);
 			
 					if($type == "buy" || $type == "sell" || $type == "transfer") {
 						if($type == "buy" || $type == "sell") {
-							$exchange = !empty($data[9]) ? $data[9] : "-";
-							$pair = !empty($data[10]) ? $data[10] : "-";
+							$exchange = !empty($data[9]) ? str_replace('"', "", $data[9]) : "-";
+							$pair = !empty($data[10]) ? str_replace('"', "", $data[10]) : "-";
 							$price = !empty($data[11]) ? $data[11] : 0;
 					
 							$activity["exchange"] = $exchange;
 							$activity["pair"] = $pair;
 							$activity["price"] = $price;
 						} else if($type == "transfer") {
-							$from = !empty($data[12]) ? $data[12] : "-";
-							$to = !empty($data[13]) ? $data[13] : "-";
+							$from = !empty($data[12]) ? str_replace('"', "", $data[12]) : "-";
+							$to = !empty($data[13]) ? str_replace('"', "", $data[13]) : "-";
 
 							$activity["from"] = $from;
 							$activity["to"] = $to;

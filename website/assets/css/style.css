@@ -2,7 +2,7 @@ html {
 	font-family:var(--font-family);
 }
 body {
-	background:var(--main-second);
+	background:var(--main-third);
 	color:var(--main-contrast);
 	margin:0;
 	padding:0;
@@ -1230,6 +1230,9 @@ html.dark .highlight .coin-wrapper.negative {
 }
 .settings .section .submit {
 	display:block;
+}
+.settings .section .submit.inline {
+	display:inline-block;
 }
 .settings .section .choice.active, .settings .section .server-choice.active {
 	pointer-events:none;

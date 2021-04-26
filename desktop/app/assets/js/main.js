@@ -15,6 +15,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 	let updateDashboardListInterval = setInterval(listDashboard, updateInterval);
 	let updateMarketListInterval = setInterval(listMarket, updateInterval);
 	let updateHoldingsListInterval = setInterval(listHoldings, updateInterval);
+	let updateActivityListInterval = setInterval(listActivity, updateInterval);
 
 	let currencies = {
 		usd: "$",
@@ -59,6 +60,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 	let divPageDashboard = document.getElementById("page-dashboard");
 	let divPageMarket = document.getElementById("page-market");
 	let divPageHoldings = document.getElementById("page-holdings");
+	let divPageActivity = document.getElementById("page-activity");
 	let divPageSettings = document.getElementById("page-settings");
 
 	let divDashboardMarketList = document.getElementById("dashboard-market-list");
@@ -82,14 +84,22 @@ document.addEventListener("DOMContentLoaded", async () => {
 	let divNavbarDashboard = document.getElementById("navbar-dashboard");
 	let divNavbarMarket = document.getElementById("navbar-market");
 	let divNavbarHoldings = document.getElementById("navbar-holdings");
+	let divNavbarActivity = document.getElementById("navbar-activity");
 	let divNavbarSettings = document.getElementById("navbar-settings");
 
 	let divPageNavigation = document.getElementById("page-navigation");
 	let divMarketList = document.getElementById("market-list");
 	let divHoldingsList = document.getElementById("holdings-list");
+	let divActivityList = document.getElementById("activity-list");
 
 	let divHoldingsAddCard = document.getElementById("holdings-add-card");
 	let divHoldingsMoreMenu = document.getElementById("holdings-more-menu");
+
+	let divActivityAddCard = document.getElementById("activity-add-card");
+
+	let inputActivitySearch = document.getElementById("activity-search-input");
+
+	let buttonActivitySearch = document.getElementById("activity-search-button");
 
 	let buttonMoreEdit = document.getElementById("more-edit");
 	let buttonMoreRemove = document.getElementById("more-remove");
@@ -111,6 +121,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 	let buttonChangePIN = document.getElementById("change-pin-button");
 	let buttonCopyURL = document.getElementById("copy-url-button");
+
+	let buttonImportHoldings = document.getElementById("import-holdings-button");
+	let buttonExportHoldings = document.getElementById("export-holdings-button");
+
+	let buttonImportActivity = document.getElementById("import-activity-button");
+	let buttonExportActivity = document.getElementById("export-activity-button");
 
 	adjustToScreen();
 
@@ -193,6 +209,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 				document.getElementById("popup-confirm").click();
 			}
 		}
+		if(divLoginWrapper.classList.contains("active")) {
+			inputLoginPassword.focus();
+		}
 	});
 
 	buttonClose.addEventListener("click", () => {
@@ -259,9 +278,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 			updateHolding(id, amount).then(response => {
 				clearHoldingsList();
 
-				hidePopup();
-
 				if("message" in response) {
+					hidePopup();
+
 					Notify.success({
 						title:"Asset Updated",
 						description:response.message
@@ -338,6 +357,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 		switchPage("holdings");
 	});
 
+	divNavbarActivity.addEventListener("click", () => {
+		switchPage("activity");
+	});
+
 	divNavbarSettings.addEventListener("click", () => {
 		switchPage("settings");
 	});
@@ -384,6 +407,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 							description:"Checking whether or not that coin exists."
 						});
 
+						for(let i = 0; i < document.getElementsByClassName("popup-list").length; i++) {
+							document.getElementsByClassName("popup-list")[i].remove();
+						}
+
 						if("id" in response) {
 							addHolding(response.id, amount);
 						} else if("matches" in response) {
@@ -394,10 +421,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 							});
 
 							let inputAmount = document.getElementById("popup-amount");
-
-							for(let i = 0; i < document.getElementsByClassName("popup-list").length; i++) {
-								document.getElementsByClassName("popup-list")[i].remove();
-							}
 
 							let wrapper = document.createElement("div");
 							wrapper.classList.add("popup-list");
@@ -442,6 +465,81 @@ document.addEventListener("DOMContentLoaded", async () => {
 				}
 			}
 		});
+	});
+
+	inputActivitySearch.addEventListener("keydown", (e) => {
+		if(e.key.toLowerCase() === "enter") {
+			buttonActivitySearch.click();
+		}
+	});
+
+	inputActivitySearch.addEventListener("input", () => {
+		if(empty(inputActivitySearch.value) || empty(inputActivitySearch.value.trim())) {
+			let events = divActivityList.getElementsByClassName("event-wrapper");
+			for(let i = 0; i < events.length; i++) {
+				events[i].classList.remove("hidden");
+			}
+		}
+	});
+
+	buttonActivitySearch.addEventListener("click", () => {
+		let input = inputActivitySearch.value;
+		if(!empty(input)) {
+			let query = input.toLowerCase().trim();
+
+			let events = divActivityList.getElementsByClassName("event-wrapper");
+
+			for(let i = 0; i < events.length; i++) {
+				let match = false;
+				let data = [];
+
+				let symbol = events[i].getAttribute("data-symbol").toLowerCase().trim();
+				let date = events[i].getAttribute("data-date");
+				let amount = events[i].getAttribute("data-amount");
+				let fee = events[i].getAttribute("data-fee");
+				let notes = events[i].getAttribute("data-notes").toLowerCase().trim();
+				let type = events[i].getAttribute("data-type").toLowerCase().trim();
+
+				data.push(symbol);
+				data.push(date);
+				data.push(amount);
+				data.push(fee);
+				data.push(notes);
+				data.push(type);
+									
+				if(type.toLowerCase() === "transfer") {
+					let from = events[i].getAttribute("data-from").toLowerCase().trim();
+					let to = events[i].getAttribute("data-to").toLowerCase().trim();
+
+					data.push(from);
+					data.push(to);
+				} else {
+					let exchange = events[i].getAttribute("data-exchange").toLowerCase().trim();
+					let pair = events[i].getAttribute("data-pair").toLowerCase().trim();
+					let price = events[i].getAttribute("data-price");
+
+					data.push(exchange);
+					data.push(pair);
+					data.push(price);
+				}
+
+				data.map(value => {
+					if(value.includes(query)) {
+						match = true;
+					}
+				});
+
+				if(match) {
+					events[i].classList.remove("hidden");
+				} else {
+					events[i].classList.add("hidden");
+				}
+			}
+		}
+	});
+
+	divActivityAddCard.addEventListener("click", () => {
+		activityPopup("create");
 	});
 
 	divThemeToggle.addEventListener("click", () => {
@@ -588,6 +686,60 @@ document.addEventListener("DOMContentLoaded", async () => {
 				description:"All fields must be filled out."
 			});
 		}
+	});
+
+	buttonImportHoldings.addEventListener("click", () => {
+		upload().then(data => {
+			let rows = data.split(/\r?\n/);
+			if(rows[0] === "id,symbol,amount") {
+				let formatted = [];
+				rows.map(row => {
+					if(!empty(row) && !row.toLowerCase().includes("symbol,")) {
+						formatted.push(row);
+					}
+				});
+				importHoldings(formatted);
+			} else {
+				Notify.error({
+					title:"Error",
+					description:"Invalid column order. Expected: id, symbol, amount. Make sure to include the header row as well.",
+					duration:8000
+				});
+			}
+		});
+	});
+
+	buttonExportHoldings.addEventListener("click", () => {
+		download(api + "holdings/export.php?token=" + sessionToken);
+	});
+
+	buttonImportActivity.addEventListener("click", () => {
+		upload().then(data => {
+			let rows = data.split(/\r?\n/);
+			if(rows[0].includes("id,symbol,date,type,amount,fee,notes,exchange,pair,price,from,to")) {
+				let formatted = [];
+				rows.map(row => {
+					if(!empty(row) && !row.toLowerCase().includes("symbol,")) {
+						if(rows[0].includes("txID")) {
+							formatted.push(row);
+						} else {
+							formatted.push("-," + row);
+						}
+					}
+				});
+				importActivity(formatted);
+			} else {
+				Notify.error({
+					title:"Error",
+					description:"Invalid column order. Expected: id, symbol, date, type, amount, fee, notes, exchange, pair, price, from, to. Make sure to include the header row as well.",
+					duration:12000
+				});
+			}
+		});
+	});
+
+	buttonExportActivity.addEventListener("click", () => {
+		download(api + "activity/export.php?token=" + sessionToken);
 	});
 
 	function login(password) {
@@ -751,7 +903,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 		divPopupOverlay.classList.remove("active");
 		divPopupWrapper.classList.remove("active");
 		spanPopupTitle.textContent = "Popup Title";
-		divPopupBottom.innerHTML = "";
+		divPopupBottom.remove();
+
+		let div = document.createElement("div");
+		div.classList.add("bottom");
+		divPopupWrapper.appendChild(div);
+		divPopupBottom = divPopupWrapper.getElementsByClassName("bottom")[0];
 	}
 
 	async function switchTheme(theme) {
@@ -776,11 +933,13 @@ document.addEventListener("DOMContentLoaded", async () => {
 		divNavbarDashboard.classList.remove("active");
 		divNavbarMarket.classList.remove("active");
 		divNavbarHoldings.classList.remove("active");
+		divNavbarActivity.classList.remove("active");
 		divNavbarSettings.classList.remove("active");
 
 		divPageDashboard.classList.remove("active");
 		divPageMarket.classList.remove("active");
 		divPageHoldings.classList.remove("active");
+		divPageActivity.classList.remove("active");
 		divPageSettings.classList.remove("active");
 
 		if(!empty(api)) {
@@ -803,6 +962,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 						divPageHoldings.classList.add("active");
 						divNavbarBackground.setAttribute("class", "background holdings");
 						listHoldings();
+						break;
+					case "activity":
+						divNavbarActivity.classList.add("active");
+						divPageActivity.classList.add("active");
+						divNavbarBackground.setAttribute("class", "background activity");
+						listActivity();
 						break;
 					case "settings":
 						divNavbarSettings.classList.add("active");
@@ -855,6 +1020,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 	function clearHoldingsList() {
 		divHoldingsList.classList.add("loading");
 		divHoldingsList.innerHTML = '<div class="coin-wrapper loading"><span>Loading...</span></div>';
+	}
+
+	function clearActivityList() {
+		divActivityList.classList.add("loading");
+		divActivityList.innerHTML = '<div class="event-wrapper loading"><span>Loading...</span></div>';
 	}
 
 	function clearStats() {
@@ -1177,6 +1347,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 			getHoldings().then(coins => {
 				try {
 					if(Object.keys(coins).length === 0) {
+						clearHoldingsList();
 						if(divHoldingsList.getElementsByClassName("coin-wrapper loading").length > 0) {
 							divHoldingsList.getElementsByClassName("coin-wrapper loading")[0].innerHTML = '<span>No Holdings Found...</span>';
 						}
@@ -1289,6 +1460,123 @@ document.addEventListener("DOMContentLoaded", async () => {
 			});
 
 			updateHoldingsListInterval = setInterval(listHoldings, updateInterval);
+		}
+	}
+
+	function listActivity() {
+		if(!divLoginWrapper.classList.contains("active") && divNavbarActivity.classList.contains("active")) {
+			clearInterval(updateActivityListInterval);
+	
+			divPageNavigation.classList.remove("active");
+	
+			setTimeout(() => {
+				if(divActivityList.classList.contains("loading")) {
+					listActivity();
+				}
+			}, 5000);
+
+			getActivity().then(events => {
+				try {
+					if(Object.keys(events).length === 0) {
+						clearActivityList();
+						if(divActivityList.getElementsByClassName("event-wrapper loading").length > 0) {
+							divActivityList.getElementsByClassName("event-wrapper loading")[0].innerHTML = '<span>No Activity Found...</span>';
+						}
+					} else {
+						if(divActivityList.getElementsByClassName("event-wrapper loading").length > 0) {
+							divActivityList.getElementsByClassName("event-wrapper loading")[0].remove();
+							divActivityList.classList.remove("loading");
+						}
+
+						events = sortActivity(events);
+						Object.keys(events).map(txID => {
+							let activity = events[txID];
+			
+							let id = "activity-event-" + txID;
+							let symbol = activity.symbol.toUpperCase();
+							let date = activity.date;
+							let amount = activity.amount;
+							let fee = activity.fee;
+							let notes = activity.notes;
+							let type = capitalizeFirstLetter(activity.type);
+							let exchange = activity.exchange;
+							let pair = activity.pair;
+							let price = activity.price;
+							let from = activity.from;
+							let to = activity.to;
+
+							let div;
+
+							try {
+								if(document.getElementById(id)) {
+									div = document.getElementById(id);
+
+									div.setAttribute("data-tx", txID);
+									div.setAttribute("data-symbol", symbol);
+									div.setAttribute("data-date", date);
+									div.setAttribute("data-amount", amount);
+									div.setAttribute("data-fee", fee);
+									div.setAttribute("data-notes", notes);
+									div.setAttribute("data-type", type);
+
+									if(type.toLowerCase() === "transfer") {
+										div.setAttribute("data-from", from);
+										div.setAttribute("data-to", to);
+									} else {
+										div.setAttribute("data-exchange", exchange);
+										div.setAttribute("data-pair", pair);
+										div.setAttribute("data-price", price);
+									}
+
+									div.getElementsByClassName("date")[0].textContent = date;
+									div.getElementsByClassName("symbol")[0].textContent = symbol;
+									div.getElementsByClassName("amount")[0].textContent = separateThousands(amount);
+									div.getElementsByClassName("type")[0].textContent = type;
+									div.getElementsByClassName("notes")[0].textContent = notes;
+								} else {
+									div = document.createElement("div");
+									div.id = id;
+
+									div.setAttribute("data-tx", txID);
+									div.setAttribute("data-symbol", symbol);
+									div.setAttribute("data-date", date);
+									div.setAttribute("data-amount", amount);
+									div.setAttribute("data-fee", fee);
+									div.setAttribute("data-notes", notes);
+									div.setAttribute("data-type", type);
+									
+									if(type.toLowerCase() === "transfer") {
+										div.setAttribute("data-from", from);
+										div.setAttribute("data-to", to);
+									} else {
+										div.setAttribute("data-exchange", exchange);
+										div.setAttribute("data-pair", pair);
+										div.setAttribute("data-price", price);
+									}
+
+									div.classList.add("event-wrapper");
+
+									div.innerHTML = '<span class="date">' + date + '</span><span class="symbol">' + symbol + '</span><span class="amount">' + separateThousands(amount) + '</span><span class="type">' + type + '</span><span class="notes">' + notes + '</span>';
+
+									div.addEventListener("click", () => {
+										activityPopup("update", { txID:txID });
+									});
+
+									divActivityList.appendChild(div);
+								}
+							} catch(e) {
+								console.log(e);
+							}
+						});
+					}
+				} catch(e) {
+					console.log(e);
+				}
+			}).catch(e => {
+				console.log(e);
+			});
+
+			updateActivityListInterval = setInterval(listActivity, updateInterval);
 		}
 	}
 
@@ -1493,9 +1781,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 				createHolding(id, coin.symbol, amount).then(response => {
 					clearHoldingsList();
 
-					hidePopup();
-
 					if("message" in response) {
+						hidePopup();
+
 						Notify.success({
 							title:"Asset Created",
 							description:response.message
@@ -1587,6 +1875,429 @@ document.addEventListener("DOMContentLoaded", async () => {
 				reject(e);
 			}
 		});
+	}
+
+	function importHoldings(rows) {
+		let xhr = new XMLHttpRequest();
+
+		xhr.addEventListener("readystatechange", () => {
+			if(xhr.readyState === XMLHttpRequest.DONE) {
+				if(validJSON(xhr.responseText)) {
+					let response = JSON.parse(xhr.responseText);
+
+					if("error" in response) {
+						Notify.error({
+							title:"Error",
+							description:response.error
+						});
+					} else {
+						Notify.success({
+							title:"Holdings Imported",
+							description:response.message
+						});
+					}
+				} else {
+					Notify.error({
+						title:"Error",
+						description:"Invalid JSON."
+					});
+				}
+			}
+		});
+
+		xhr.open("POST", api + "holdings/import.php", true);
+		xhr.send(JSON.stringify({ token:sessionToken, rows:rows }));
+	}
+
+	function activityPopup(action, params) {
+		let html = "";
+
+		html += '<input id="popup-symbol" placeholder="Symbol... (e.g. BTC)">';
+		html += '<input id="popup-date" placeholder="Date... (e.g. 2021/04/18 04:20)">';
+		html += '<div id="popup-choice"><button id="popup-buy" data-value="buy" class="choice active">Buy</button>';
+		html += '<button id="popup-sell" data-value="sell" class="choice">Sell</button>';
+		html += '<button id="popup-transfer" data-value="transfer" class="choice">Transfer</button></div>';
+		html += '<input id="popup-amount" placeholder="Amount... (e.g. 2.5)" type="number">';
+		html += '<input id="popup-fee" placeholder="Fee... (e.g. 0.25)" type="number">';
+		html += '<input id="popup-notes" placeholder="Notes... (e.g. Rent)">';
+		html += '<input id="popup-exchange" placeholder="Exchange... (e.g. Coinbase)">';
+		html += '<input id="popup-pair" placeholder="Pair... (e.g. BTC/USDT)">';
+		html += '<input id="popup-price" placeholder="Price... (e.g. 59000)">';
+		html += '<input id="popup-from" class="hidden" placeholder="From... (e.g. Kraken)">';
+		html += '<input id="popup-to" class="hidden" placeholder="To... (e.g. Cold Wallet)">';
+
+		if(action !== "create") {
+			html += '<button class="delete" id="popup-delete">Delete Event</button>';
+		}
+		
+		html += '<button class="reject" id="popup-cancel">Cancel</button><button class="resolve" id="popup-confirm">Confirm</button>';
+
+		let popupHeight = 360;
+	
+		popup((action === "create") ? "Recording Event" : "Editing Event", html, 300, popupHeight);
+
+		let popupSymbol = document.getElementById("popup-symbol");
+		let popupDate = document.getElementById("popup-date");
+		let popupAmount = document.getElementById("popup-amount");
+		let popupFee = document.getElementById("popup-fee");
+		let popupNotes = document.getElementById("popup-notes");
+		let popupExchange = document.getElementById("popup-exchange");
+		let popupPair = document.getElementById("popup-pair");
+		let popupPrice = document.getElementById("popup-price");
+		let popupFrom = document.getElementById("popup-from");
+		let popupTo = document.getElementById("popup-to");
+
+		let choices = document.getElementById("popup-choice").getElementsByClassName("choice");
+		for(let i = 0; i < choices.length; i++) {
+			choices[i].addEventListener("click", () => {
+				for(let j = 0; j < choices.length; j++) {
+					choices[j].classList.remove("active");
+				}
+				choices[i].classList.add("active");
+
+				if(choices[i].getAttribute("data-value") === "transfer") {
+					popupExchange.classList.add("hidden");
+					popupPair.classList.add("hidden");
+					popupPrice.classList.add("hidden");
+					popupFrom.classList.remove("hidden");
+					popupTo.classList.remove("hidden");
+				} else {
+					popupExchange.classList.remove("hidden");
+					popupPair.classList.remove("hidden");
+					popupPrice.classList.remove("hidden");
+					popupFrom.classList.add("hidden");
+					popupTo.classList.add("hidden");
+				}
+			});
+
+			if(action !== "create") {
+				let event = document.getElementById("activity-event-" + params.txID);
+				if(choices[i].getAttribute("data-value") === event.getAttribute("data-type").toLowerCase()) {
+					choices[i].click();
+				}
+			}
+		}
+
+		if(action !== "create") {
+			let event = document.getElementById("activity-event-" + params.txID);
+			popupSymbol.value = event.getAttribute("data-symbol");
+			popupDate.value = event.getAttribute("data-date");
+			popupAmount.value = event.getAttribute("data-amount");
+			popupFee.value = event.getAttribute("data-fee");
+			popupNotes.value = event.getAttribute("data-notes");
+			if(event.getAttribute("data-type").toLowerCase() === "transfer") {
+				popupFrom.value = event.getAttribute("data-from");
+				popupTo.value = event.getAttribute("data-to");
+			} else {
+				popupExchange.value = event.getAttribute("data-exchange");
+				popupPair.value = event.getAttribute("data-pair");
+				popupPrice.value = event.getAttribute("data-price");
+			}
+
+			document.getElementById("popup-delete").addEventListener("click", () => {
+				deleteActivity(params.txID).then(response => {
+					if("error" in response) {
+						Notify.error({
+							title:"Error",
+							description:response.error
+						});
+					} else {
+						hidePopup();
+
+						clearActivityList();
+						listActivity();
+
+						Notify.success({
+							title:"Event Deleted",
+							description:response.message
+						});
+					}
+				}).catch(e => {
+					console.log(e);
+				});
+			});
+		}
+	
+		document.getElementById("popup-cancel").addEventListener("click", () => {
+			hidePopup();
+		});
+	
+		document.getElementById("popup-confirm").addEventListener("click", () => {
+			let symbol = popupSymbol.value;
+			let date = popupDate.value;
+			let amount = popupAmount.value;
+			let fee = popupFee.value;
+			let notes = popupNotes.value;
+			let type = document.getElementById("popup-choice").getElementsByClassName("active")[0].getAttribute("data-value");
+			let exchange = popupExchange.value;
+			let pair = popupPair.value;
+			let price = popupPrice.value;
+			let from = popupFrom.value;
+			let to = popupTo.value;
+			
+			if(isNaN(amount) || isNaN(fee) || (isNaN(price) && !empty(price))) {
+				Notify.error({
+					title:"Error",
+					description:"The amount, fee, and price fields must be numbers."
+				});
+			} else {
+				symbol = symbol.trim().toLowerCase();
+
+				getCoinID("symbol", symbol).then(response => {
+					Notify.alert({
+						title:"Checking...",
+						description:"Checking whether or not that coin exists."
+					});
+
+					for(let i = 0; i < document.getElementsByClassName("popup-list").length; i++) {
+						document.getElementsByClassName("popup-list")[i].remove();
+					}
+
+					if("id" in response) {
+						let id = response.id;
+						if(action === "create") {
+							addActivity(id, symbol, date, amount, fee, notes, type, exchange, pair, price, from, to);
+						} else {
+							updateActivity(params.txID, id, symbol, date, amount, fee, notes, type, exchange, pair, price, from, to).then(response => {
+								hidePopup();
+
+								clearActivityList();
+								listActivity();
+
+								Notify.success({
+									title:"Event Updated",
+									description:response.message
+								});
+							}).catch(e => {
+								console.log(e);
+							});
+						}
+					} else if("matches" in response) {
+						Notify.info({
+							title:"Multiple Results",
+							description:"There are " + response.matches.length + " coins with that symbol. Please choose one from the list.",
+							duration:8000
+						});
+
+						let wrapper = document.createElement("div");
+						wrapper.classList.add("popup-list");
+
+						let matches = response.matches;
+						Object.keys(matches).map(key => {
+							let match = matches[key];
+							let symbol = Object.keys(match)[0];
+							let id = match[symbol];
+
+							let row = document.createElement("div");
+							row.innerHTML = '<span class="title">' + symbol.toUpperCase() + '</span><span class="subtitle">' + capitalizeFirstLetter(id) + '</span>';
+
+							row.addEventListener("click", () => {
+								if(action === "create") {
+									addActivity(id, symbol, date, amount, fee, notes, type, exchange, pair, price, from, to);
+								} else {
+									updateActivity(params.txID, id, symbol, date, amount, fee, notes, type, exchange, pair, price, from, to).then(response => {
+										if("error" in response) {
+											Notify.error({
+												title:"Error",
+												description:response.error
+											});
+										} else {
+											hidePopup();
+
+											clearActivityList();
+											listActivity();
+
+											Notify.success({
+												title:"Event Updated",
+												description:response.message
+											});
+										}
+									}).catch(e => {
+										console.log(e);
+									});
+								}
+							});
+
+							wrapper.appendChild(row);
+						});
+
+						let addedHeight = matches * 40;
+
+						if(matches.length >= 3) {
+							addedHeight = 120;
+						}
+
+						let adjustedHeight = (popupHeight + addedHeight) + 20;
+
+						divPopupWrapper.style.height = adjustedHeight + "px";
+						divPopupWrapper.style.top = "calc(50% - " + adjustedHeight + "px / 2)";
+
+						insertAfter(wrapper, popupTo);
+					} else {
+						Notify.error({
+							title:"Error",
+							description:"Couldn't find coin. Try searching by ID."
+						});
+					}
+				}).catch(e => {
+					console.log(e);
+				});
+			}
+		});
+	}
+
+	function createActivity(id, symbol, date, amount, fee, notes, type, exchange, pair, price, from, to) {
+		return new Promise((resolve, reject) => {
+			try {
+				let xhr = new XMLHttpRequest();
+
+				xhr.addEventListener("readystatechange", () => {
+					if(xhr.readyState === XMLHttpRequest.DONE) {
+						if(validJSON(xhr.responseText)) {
+							resolve(JSON.parse(xhr.responseText));
+						} else {
+							reject("Invalid JSON.");
+						}
+					}
+				});
+
+				xhr.open("POST", api + "activity/create.php", true);
+				xhr.send(JSON.stringify({ token:sessionToken, id:id, symbol:symbol, date:date, amount:amount, fee:fee, notes:notes, type:type, exchange:exchange, pair:pair, price:price, from:from, to:to }));
+			} catch(e) {
+				reject(e);
+			}
+		});
+	}
+
+	function updateActivity(txID, id, symbol, date, amount, fee, notes, type, exchange, pair, price, from, to) {
+		return new Promise((resolve, reject) => {
+			try {
+				let xhr = new XMLHttpRequest();
+
+				xhr.addEventListener("readystatechange", () => {
+					if(xhr.readyState === XMLHttpRequest.DONE) {
+						if(validJSON(xhr.responseText)) {
+							resolve(JSON.parse(xhr.responseText));
+						} else {
+							reject("Invalid JSON.");
+						}
+					}
+				});
+
+				xhr.open("PUT", api + "activity/update.php", true);
+				xhr.send(JSON.stringify({ token:sessionToken, txID:txID, id:id, symbol:symbol, date:date, amount:amount, fee:fee, notes:notes, type:type, exchange:exchange, pair:pair, price:price, from:from, to:to }));
+			} catch(e) {
+				reject(e);
+			}
+		});
+	}
+
+	function deleteActivity(txID) {
+		return new Promise((resolve, reject) => {
+			try {
+				let xhr = new XMLHttpRequest();
+
+				xhr.addEventListener("readystatechange", () => {
+					if(xhr.readyState === XMLHttpRequest.DONE) {
+						if(validJSON(xhr.responseText)) {
+							resolve(JSON.parse(xhr.responseText));
+						} else {
+							reject("Invalid JSON.");
+						}
+					}
+				});
+
+				xhr.open("DELETE", api + "activity/delete.php", true);
+				xhr.send(JSON.stringify({ token:sessionToken, txID:txID }));
+			} catch(e) {
+				reject(e);
+			}
+		});
+	}
+
+	function addActivity(id, symbol, date, amount, fee, notes, type, exchange, pair, price, from, to) {
+		let valid = true;
+		for(let i = 0; i < arguments.length; i++) {
+			let argument = arguments[i];
+			if(argument.includes(",")) {
+				valid = false;
+			}
+		}
+
+		if(valid) {
+			getCoin(id).then(coin => {
+				if(!empty(coin.error)) {
+					Notify.error({
+						title:"Error",
+						description:"Coin not found."
+					});
+				} else {
+					createActivity(id, symbol.trim().toUpperCase(), date.trim(), amount, fee, notes.trim(), type, exchange.trim(), pair.trim().toUpperCase(), price, from.trim(), to.trim()).then(response => {
+						clearActivityList();
+
+						if("message" in response) {
+							hidePopup();
+
+							Notify.success({
+								title:"Event Recorded",
+								description:response.message
+							});
+						} else {
+							Notify.error({
+								title:"Error",
+								description:response.error
+							});
+						}
+					
+						listActivity();
+					}).catch(e => {
+						Notify.error({
+							title:"Error",
+							description:"Event couldn't be recorded."
+						});
+					});
+				}
+			}).catch(e => {
+				console.log(e);
+			});
+		} else {
+			Notify.error({
+				title:"Error",
+				description:"You cannot use commas in any fields."
+			});
+		}
+	}
+
+	function importActivity(rows) {
+		let xhr = new XMLHttpRequest();
+
+		xhr.addEventListener("readystatechange", () => {
+			if(xhr.readyState === XMLHttpRequest.DONE) {
+				if(validJSON(xhr.responseText)) {
+					let response = JSON.parse(xhr.responseText);
+
+					if("error" in response) {
+						Notify.error({
+							title:"Error",
+							description:response.error
+						});
+					} else {
+						Notify.success({
+							title:"Activity Imported",
+							description:response.message
+						});
+					}
+				} else {
+					Notify.error({
+						title:"Error",
+						description:"Invalid JSON."
+					});
+				}
+			}
+		});
+
+		xhr.open("POST", api + "activity/import.php", true);
+		xhr.send(JSON.stringify({ token:sessionToken, rows:rows }));
 	}
 
 	function getCoin(id) {
@@ -1760,6 +2471,88 @@ document.addEventListener("DOMContentLoaded", async () => {
 			} catch(e) {
 				reject(e);
 			}
+		});
+	}
+
+	function getActivity() {
+		return new Promise((resolve, reject) => {
+			try {
+				let xhr = new XMLHttpRequest();
+
+				xhr.addEventListener("readystatechange", () => {
+					if(xhr.readyState === XMLHttpRequest.DONE) {
+						if(validJSON(xhr.responseText)) {
+							resolve(JSON.parse(xhr.responseText));
+						} else {
+							reject("Invalid JSON.");
+						}
+					}
+				});
+
+				xhr.open("GET", api + "activity/read.php?token=" + sessionToken, true);
+				xhr.send();
+			} catch(e) {
+				reject(e);
+			}
+		});
+	}
+
+	function sortActivity(events) {
+		let sorted = {};
+		let array = [];
+		for(let event in events) {
+			array.push([event, events[event].time]);
+		}
+
+		array.sort(function(a, b) {
+			return a[1] - b[1];
+		});
+
+		array.reverse().map(item => {
+			sorted[item[0]] = events[item[0]];
+		});
+
+		return sorted;
+	}
+
+	function upload() {
+		return new Promise((resolve, reject) => {
+			let input = document.createElement("input");
+			input.type = "file";
+			input.click();
+			input.addEventListener("input", () => {
+				if(!empty(input.files)) {
+					let file = input.files[0];
+					let reader = new FileReader();
+					reader.readAsText(file, "UTF-8");
+					reader.addEventListener("load", (event) => {
+						let data = event.target.result;
+						input.remove();
+						resolve(data);
+					});
+					reader.addEventListener("error", (error) => {
+						input.remove();
+						Notify.error({
+							title:"Error",
+							description:"Couldn't read file content."
+						});
+						reject(error);
+					});
+				} else {
+					input.remove();
+					reject("No File Uploaded.");
+				}
+			});
+		});
+	}
+
+	function download(url) {
+		let frame = document.createElement("iframe");
+		frame.src = url;
+		frame.classList.add("hidden");
+		divPageSettings.appendChild(frame);
+		frame.addEventListener("load", () => {
+			frame.remove();
 		});
 	}
 });

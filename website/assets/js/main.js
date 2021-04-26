@@ -1332,7 +1332,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 			getHoldings().then(coins => {
 				try {
 					if(Object.keys(coins).length === 0) {
-						clearActivityList();
+						clearHoldingsList();
 						if(divHoldingsList.getElementsByClassName("coin-wrapper loading").length > 0) {
 							divHoldingsList.getElementsByClassName("coin-wrapper loading")[0].innerHTML = '<span>No Holdings Found...</span>';
 						}

@@ -67,6 +67,12 @@
 						<span>Holdings</span>
 					</div>
 				</div>
+				<div class="item" id="navbar-activity">
+					<div class="content">
+						<svg width="1792" height="1792" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1792 1184v192q0 13-9.5 22.5t-22.5 9.5h-1376v192q0 13-9.5 22.5t-22.5 9.5q-12 0-24-10l-319-320q-9-9-9-22 0-14 9-23l320-320q9-9 23-9 13 0 22.5 9.5t9.5 22.5v192h1376q13 0 22.5 9.5t9.5 22.5zm0-544q0 14-9 23l-320 320q-9 9-23 9-13 0-22.5-9.5t-9.5-22.5v-192h-1376q-13 0-22.5-9.5t-9.5-22.5v-192q0-13 9.5-22.5t22.5-9.5h1376v-192q0-14 9-23t23-9q12 0 24 10l319 319q9 9 9 23z"/></svg>
+						<span>Activity</span>
+					</div>
+				</div>
 				<div class="item" id="navbar-settings">
 					<div class="content">
 						<svg width="1792" height="1792" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1152 896q0-106-75-181t-181-75-181 75-75 181 75 181 181 75 181-75 75-181zm512-109v222q0 12-8 23t-20 13l-185 28q-19 54-39 91 35 50 107 138 10 12 10 25t-9 23q-27 37-99 108t-94 71q-12 0-26-9l-138-108q-44 23-91 38-16 136-29 186-7 28-36 28h-222q-14 0-24.5-8.5t-11.5-21.5l-28-184q-49-16-90-37l-141 107q-10 9-25 9-14 0-25-11-126-114-165-168-7-10-7-23 0-12 8-23 15-21 51-66.5t54-70.5q-27-50-41-99l-183-27q-13-2-21-12.5t-8-23.5v-222q0-12 8-23t19-13l186-28q14-46 39-92-40-57-107-138-10-12-10-24 0-10 9-23 26-36 98.5-107.5t94.5-71.5q13 0 26 10l138 107q44-23 91-38 16-136 29-186 7-28 36-28h222q14 0 24.5 8.5t11.5 21.5l28 184q49 16 90 37l142-107q9-9 24-9 13 0 25 10 129 119 165 170 7 8 7 22 0 12-8 23-15 21-51 66.5t-54 70.5q26 50 41 98l183 28q13 2 21 12.5t8 23.5z"/></svg>
@@ -185,6 +191,32 @@
 					</div>
 				</div>
 			</div>
+			<div class="page activity" id="page-activity">
+				<div class="activity-list-wrapper noselect">
+					<div class="headers-wrapper">
+						<span class="header date">Date</span>
+						<span class="header symbol">Coin</span>
+						<span class="header amount">Amount</span>
+						<span class="header type">Type</span>
+						<span class="header notes">Notes</span>
+					</div>
+					<div class="activity-list loading" id="activity-list">
+						<div class="event-wrapper loading">
+							<span>Loading...</span>
+						</div>
+					</div>
+				</div>
+				<div class="activity-card-wrapper noselect">
+					<div class="activity-add-card" id="activity-add-card">
+						<span class="title">Record Event</span>
+						<svg width="1792" height="1792" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1600 736v192q0 40-28 68t-68 28h-416v416q0 40-28 68t-68 28h-192q-40 0-68-28t-28-68v-416h-416q-40 0-68-28t-28-68v-192q0-40 28-68t68-28h416v-416q0-40 28-68t68-28h192q40 0 68 28t28 68v416h416q40 0 68 28t28 68z"/></svg>
+					</div>
+				</div>
+				<div class="activity-search-wrapper">
+					<input type="text" id="activity-search-input" placeholder="Query...">
+					<button id="activity-search-button">Search</button>
+				</div>
+			</div>
 			<div class="page settings" id="page-settings">
 				<div class="section">
 					<div class="top noselect">
@@ -280,7 +312,26 @@
 						<button class="choice" data-value="dashboard">Dashboard</button>
 						<button class="choice" data-value="market">Market</button>
 						<button class="choice" data-value="holdings">Holdings</button>
+						<button class="choice" data-value="activity">Activity</button>
 						<button class="choice" data-value="settings">Settings</button>
+					</div>
+				</div>
+				<div class="section">
+					<div class="top noselect">
+						<span class="title">Holdings</span>
+					</div>
+					<div class="bottom">
+						<button class="submit inline" id="import-holdings-button">Import Holdings</button>
+						<button class="submit inline" id="export-holdings-button">Export Holdings</button>
+					</div>
+				</div>
+				<div class="section">
+					<div class="top noselect">
+						<span class="title">Activity</span>
+					</div>
+					<div class="bottom">
+						<button class="submit inline" id="import-activity-button">Import Activity</button>
+						<button class="submit inline" id="export-activity-button">Export Activity</button>
 					</div>
 				</div>
 			</div>

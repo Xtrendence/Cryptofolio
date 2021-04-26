@@ -18,6 +18,9 @@ const globalColorsLight = {
 	blueGradient:["#4facfe", "#00bdc7"],
 	purpleGradient:["#667eea", "#764ba2"],
 	greenerGradient:["#11998e", "#38ef7d"],
+	cosmicGradient:["#ff00cc", "#333399"],
+	playfulGradient:["#fc00ff", "#27bcbe"],
+	atlasGradient:["#feac5e", "#c779d0", "#4bc0c8"],
 };
 
 const globalColorsDark = {
@@ -40,6 +43,9 @@ const globalColorsDark = {
 	blueGradient:["#4facfe", "#00bdc7"],
 	purpleGradient:["#667eea", "#764ba2"],
 	greenerGradient:["#11998e", "#38ef7d"],
+	cosmicGradient:["#ff00cc", "#333399"],
+	playfulGradient:["#fc00ff", "#27bcbe"],
+	atlasGradient:["#feac5e", "#c779d0", "#4bc0c8"],
 };
 
 export const globalColors = { Light:globalColorsLight, Dark:globalColorsDark };

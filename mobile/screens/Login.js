@@ -67,7 +67,7 @@ export default function Login({ navigation, route }) {
 				if(response.valid) {
 					setPassword();
 
-					let validPages = ["Dashboard", "Market", "Holdings", "Settings"];
+					let validPages = ["Dashboard", "Market", "Holdings", "Activity", "Settings"];
 					let page = await AsyncStorage.getItem("defaultPage");
 					if(empty(page) || !validPages.includes(page)) {
 						navigation.navigate("Dashboard");

@@ -26,8 +26,6 @@
 	}
 	
 	function findBySymbol($coins, $symbol, $retry) {
-		$symbol = $_GET["symbol"];
-
 		$matches = array();
 
 		foreach($coins as $coin) {

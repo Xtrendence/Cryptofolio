@@ -40,6 +40,13 @@ export default function BottomBar({ screen, navigation }) {
 						</View>
 					</View>
 				</TouchableOpacity>
+				<TouchableOpacity style={styles.tab} onPress={() => { screen.setActive("Activity") }}>
+					<View style={styles.itemWrapper}>
+						<View style={styles.iconWrapper}>
+							<Icon name="exchange-alt" size={iconSize} color={globalColors[theme].mainContrastLight}></Icon>
+						</View>
+					</View>
+				</TouchableOpacity>
 				<TouchableOpacity style={styles.tab} onPress={() => { screen.setActive("Settings") }}>
 					<View style={styles.itemWrapper}>
 						<View style={styles.iconWrapper}>
@@ -58,15 +65,19 @@ export default function BottomBar({ screen, navigation }) {
 				navigation.current.navigate("Dashboard");
 				break;
 			case "Market":
-				animateLeft(25);
+				animateLeft(20);
 				navigation.current.navigate("Market");
 				break;
 			case "Holdings":
-				animateLeft(50);
+				animateLeft(40);
 				navigation.current.navigate("Holdings");
 				break;
+			case "Activity":
+				animateLeft(60);
+				navigation.current.navigate("Activity");
+				break;
 			case "Settings":
-				animateLeft(75);
+				animateLeft(80);
 				navigation.current.navigate("Settings");
 				break;
 		}
@@ -125,7 +136,7 @@ const styles = StyleSheet.create({
 	},
 	backdrop: {
 		top:"15%",
-		width:"20%",
+		width:"15%",
 		borderRadius:40,
 		marginLeft:"2.5%",
 		height:"70%",
@@ -135,7 +146,7 @@ const styles = StyleSheet.create({
 		backgroundColor:globalColors["Dark"].mainThird
 	},
 	tab: {
-		width:"25%"
+		width:"20%"
 	},
 	itemWrapper: {
 		flex:1,

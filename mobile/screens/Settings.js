@@ -22,6 +22,10 @@ export default function Settings({ navigation, route }) {
 	const [newPassword, setNewPassword] = React.useState();
 	const [repeatPassword, setRepeatPassword] = React.useState();
 
+	const [holdingsMessage, setHoldingsMessage] = React.useState();
+
+	const [activityMessage, setActivityMessage] = React.useState();
+
 	useEffect(() => {
 		getSettings();
 	}, []);
@@ -46,6 +50,9 @@ export default function Settings({ navigation, route }) {
 					</TouchableOpacity>
 					<TouchableOpacity style={[styles.inlineButton, styles[`inlineButton${theme}`], (defaultPage === "Holdings") ? styles.inlineButtonActive : null]} onPress={() => { changeDefaultPage("Holdings")}}>
 						<Text style={[styles.buttonText, styles[`buttonText${theme}`], (defaultPage === "Holdings") ? styles.buttonTextActive : null]}>Holdings</Text>
+					</TouchableOpacity>
+					<TouchableOpacity style={[styles.inlineButton, styles[`inlineButton${theme}`], (defaultPage === "Activity") ? styles.inlineButtonActive : null]} onPress={() => { changeDefaultPage("Activity")}}>
+						<Text style={[styles.buttonText, styles[`buttonText${theme}`], (defaultPage === "Activity") ? styles.buttonTextActive : null]}>Activity</Text>
 					</TouchableOpacity>
 					<TouchableOpacity style={[styles.inlineButton, styles[`inlineButton${theme}`], (defaultPage === "Settings") ? styles.inlineButtonActive : null]} onPress={() => { changeDefaultPage("Settings")}}>
 						<Text style={[styles.buttonText, styles[`buttonText${theme}`], (defaultPage === "Settings") ? styles.buttonTextActive : null]}>Settings</Text>
@@ -81,6 +88,34 @@ export default function Settings({ navigation, route }) {
 				</TouchableOpacity>
 				<TouchableOpacity style={styles.button} onPress={() => { logout() }}>
 					<Text style={styles.text}>Logout</Text>
+				</TouchableOpacity>
+			</View>
+			<View style={[styles.section, styles[`section${theme}`]]}>
+				<Text style={[styles.header, styles[`header${theme}`]]}>Holdings</Text>
+				{ !empty(holdingsMessage) &&
+					<View style={styles.messageWrapper}>
+						<Text style={styles.message}>{holdingsMessage}</Text>
+					</View>
+				}
+				<TouchableOpacity style={styles.button} onPress={() => {  }}>
+					<Text style={styles.text}>Import Holdings</Text>
+				</TouchableOpacity>
+				<TouchableOpacity style={styles.button} onPress={() => {  }}>
+					<Text style={styles.text}>Export Holdings</Text>
+				</TouchableOpacity>
+			</View>
+			<View style={[styles.section, styles[`section${theme}`]]}>
+				<Text style={[styles.header, styles[`header${theme}`]]}>Activity</Text>
+				{ !empty(activityMessage) &&
+					<View style={styles.messageWrapper}>
+						<Text style={styles.message}>{activityMessage}</Text>
+					</View>
+				}
+				<TouchableOpacity style={styles.button} onPress={() => {  }}>
+					<Text style={styles.text}>Import Activity</Text>
+				</TouchableOpacity>
+				<TouchableOpacity style={styles.button} onPress={() => {  }}>
+					<Text style={styles.text}>Export Activity</Text>
 				</TouchableOpacity>
 			</View>
 			<StatusBar style={theme === "Dark" ? "light" : "dark"}/>
@@ -150,7 +185,7 @@ export default function Settings({ navigation, route }) {
 	}
 
 	async function changeDefaultPage(page) {
-		let validPages = ["Dashboard", "Market", "Holdings", "Settings"];
+		let validPages = ["Dashboard", "Market", "Holdings", "Activity", "Settings"];
 		if(empty(page) || !validPages.includes(page)) {
 			setDefaultPage("Dashboard");
 			await AsyncStorage.setItem("defaultPage", "Dashboard");
@@ -178,7 +213,7 @@ export default function Settings({ navigation, route }) {
 		}
 		setCurrency(currency);
 
-		let validPages = ["Dashboard", "Market", "Holdings", "Settings"];
+		let validPages = ["Dashboard", "Market", "Holdings", "Activity", "Settings"];
 		let page = await AsyncStorage.getItem("defaultPage");
 		if(empty(page) || !validPages.includes(page)) {
 			setDefaultPage("Dashboard");

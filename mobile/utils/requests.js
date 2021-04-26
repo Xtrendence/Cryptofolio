@@ -106,3 +106,28 @@ export async function verifySession(token) {
 		}
 	});
 }
+
+export async function getCoinID(key, value) {
+	return new Promise(async (resolve, reject) => {
+		let api = await AsyncStorage.getItem("api");
+		let token = await AsyncStorage.getItem("token");
+
+		let endpoint = api + "coins/read.php?" + key + "=" + value + "&token=" + token;
+
+		fetch(endpoint, {
+			method: "GET",
+			headers: {
+				Accept: "application/json", "Content-Type": "application/json"
+			}
+		})
+		.then((json) => {
+			return json.json();
+		})
+		.then(async (response) => {
+			resolve(response);
+		}).catch(error => {
+			console.log(error);
+			reject(error);
+		});
+	});
+}

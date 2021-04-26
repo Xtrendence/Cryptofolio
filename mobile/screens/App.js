@@ -8,6 +8,7 @@ import Login from "../screens/Login";
 import Dashboard from "../screens/Dashboard";
 import Market from "../screens/Market";
 import Holdings from "../screens/Holdings";
+import Activity from "../screens/Activity";
 import Settings from "../screens/Settings";
 import { ThemeProvider } from "../utils/theme";
 
@@ -51,6 +52,7 @@ export default function App() {
 					<Stack.Screen name="Dashboard" component={Dashboard} options={horizontalAnimation}></Stack.Screen>
 					<Stack.Screen name="Market" component={Market} options={horizontalAnimation}></Stack.Screen>	
 					<Stack.Screen name="Holdings" component={Holdings} options={horizontalAnimation}></Stack.Screen>
+					<Stack.Screen name="Activity" component={Activity} options={horizontalAnimation}></Stack.Screen>
 					<Stack.Screen name="Settings" component={Settings} options={horizontalAnimation}></Stack.Screen>
 				</Stack.Navigator>
 				{ active !== "Login" && 

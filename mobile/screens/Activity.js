@@ -2,7 +2,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { useEffect } from "react";
 import { Text, StyleSheet, View, Image, Dimensions, ScrollView, Modal, TouchableOpacity, TextInput, RefreshControl, SafeAreaView } from "react-native";
 import { StatusBar } from "expo-status-bar";
-import changeNavigationBarColor from "react-native-navigation-bar-color";
 import LinearGradient from "react-native-linear-gradient";
 import { globalColors, globalStyles } from "../styles/global";
 import { ThemeContext } from "../utils/theme";
@@ -12,10 +11,10 @@ import { empty, separateThousands, abbreviateNumber, epoch, capitalizeFirstLette
 const screenWidth = Dimensions.get("screen").width;
 const screenHeight = Dimensions.get("screen").height;
 
-export default function Holdings({ navigation }) {
+export default function Activity({ navigation }) {
 	const { theme } = React.useContext(ThemeContext);
 
-	const holdingsRef = React.createRef();
+	const activityRef = React.createRef();
 
 	const loadingText = "Loading...";
 
@@ -26,59 +25,41 @@ export default function Holdings({ navigation }) {
 	const [modal, setModal] = React.useState(false);
 	const [modalMessage, setModalMessage] = React.useState();
 	const [action, setAction] = React.useState("create");
-	const [coinID, setCoinID] = React.useState();
-	const [coinSymbol, setCoinSymbol] = React.useState();
-	const [coinAmount, setCoinAmount] = React.useState();
-	const [showCoinList, setShowCoinList] = React.useState(false);
-	const [coinList, setCoinList] = React.useState();
 
-	const [holdingsValue, setHoldingsValue] = React.useState(loadingText);
-
-	const [holdingsData, setHoldingsData] = React.useState([<Text key="loading" style={[styles.loadingText, styles.headerText, styles[`headerText${theme}`]]}>Loading...</Text>]);
+	const [activityData, setActivityData] = React.useState([<Text key="loading" style={[styles.loadingText, styles.headerText, styles[`headerText${theme}`]]}>Loading...</Text>]);
 
 	useEffect(() => {
 		setInterval(() => {
 			if(navigation.isFocused()) {
-				getHoldings();
+				getActivity();
 			}
-		}, 10000)
+		}, 15000)
 	}, []);
 
 	useEffect(() => {
-		setHoldingsData([<Text key="loading" style={[styles.loadingText, styles.headerText, styles[`headerText${theme}`]]}>Loading...</Text>]);
+		setActivityData([<Text key="loading" style={[styles.loadingText, styles.headerText, styles[`headerText${theme}`]]}>Loading...</Text>]);
 
 		setPageKey(epoch());
 
-		getHoldings();
+		getActivity();
 	}, [theme]);
 
 	const onRefresh = React.useCallback(() => {
 		setRefreshing(true);
-		getHoldings();
+		getActivity();
 		wait(750).then(() => setRefreshing(false));
 	}, []);
 
 	return (
 		<ScrollView style={[styles.page, styles[`page${theme}`]]} key={pageKey} contentContainerStyle={{ padding:20 }} nestedScrollEnabled={true} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[globalColors[theme].accentFirst]} progressBackgroundColor={globalColors[theme].mainFirst}/>}>
-			<Modal animationType="fade" visible={modal} onRequestClose={() => { setAction("create"); setCoinID(); setCoinSymbol(); setCoinAmount(); setShowCoinList(false); setCoinList(); setModalMessage(); setModal(false)}} transparent={false}>
+			<Modal animationType="fade" visible={modal} onRequestClose={() => { setAction("create"); setModalMessage(); setModal(false)}} transparent={false}>
 				<View style={[styles.modalWrapper, styles[`modalWrapper${theme}`]]}>
 					<View stlye={[styles.modal, styles[`modal${theme}`]]}>
-						<TextInput style={[styles.input, styles[`input${theme}`], (action !== "create") ? { backgroundColor:globalColors[theme].mainFourth, color:globalColors[theme].mainContrastLight } : null]} placeholder={"Coin Symbol... (e.g. BTC)"} onChangeText={(value) => { setCoinSymbol(value)}} value={coinSymbol} placeholderTextColor={globalColors[theme].mainContrastLight} editable={(action === "create")} spellCheck={false}/>
-						<TextInput style={[styles.input, styles[`input${theme}`]]} placeholder={"Amount... (e.g. 2.5)"} onChangeText={(value) => { setCoinAmount(value)}} value={coinAmount} placeholderTextColor={globalColors[theme].mainContrastLight} onSubmitEditing={() => createHolding(coinSymbol, coinAmount)}/>
-						{ showCoinList && !empty(coinList) &&
-							<ScrollView style={[styles.coinList, styles[`coinList${theme}`]]} nestedScrollEnabled={true}>
-								{
-									coinList.map(row => {
-										return row;
-									})
-								}
-							</ScrollView>
-						}
 						<View style={styles.buttonWrapper}>
-							<TouchableOpacity style={[styles.button, styles[`button${theme}`]]} onPress={() => { setAction("create"); setCoinID(); setCoinSymbol(); setCoinAmount(); setShowCoinList(false); setCoinList(); setModalMessage(); setModal(false)}}>
+							<TouchableOpacity style={[styles.button, styles[`button${theme}`]]} onPress={() => { setAction("create"); setModalMessage(); setModal(false)}}>
 								<Text style={styles.text}>Cancel</Text>
 							</TouchableOpacity>
-							<TouchableOpacity style={[styles.button, styles.buttonConfirm, styles[`buttonConfirm${theme}`]]} onPress={() => { createHolding(coinSymbol, coinAmount)}}>
+							<TouchableOpacity style={[styles.button, styles.buttonConfirm, styles[`buttonConfirm${theme}`]]} onPress={() => { }}>
 								<Text style={styles.text}>Confirm</Text>
 							</TouchableOpacity>
 						</View>
@@ -89,32 +70,29 @@ export default function Holdings({ navigation }) {
 						}
 					</View>
 					{ action !== "create" &&
-						<TouchableOpacity style={[styles.button, styles.buttonDelete]} onPress={() => { deleteHolding(coinID)}}>
-							<Text style={styles.text}>Remove Asset</Text>
+						<TouchableOpacity style={[styles.button, styles.buttonDelete]} onPress={() => { deleteActivity(txID)}}>
+							<Text style={styles.text}>Remove Activity</Text>
 						</TouchableOpacity>
 					}
 				</View>
 			</Modal>
-			<LinearGradient style={[styles.card, { marginBottom:20 }]} colors={globalColors[theme].greenerGradient} useAngle={true} angle={45}>
-				<Text style={[styles.cardText, styles[`cardText${theme}`]]}>{holdingsValue}</Text>
-			</LinearGradient>
-			<ScrollView ref={holdingsRef} style={[styles.tableWrapper, styles[`tableWrapper${theme}`]]} contentContainerStyle={{ paddingTop:10, paddingBottom:10 }} nestedScrollEnabled={true}>
-				{ !empty(holdingsData) &&
-					holdingsData.map(row => {
+			<ScrollView ref={activityRef} style={[styles.tableWrapper, styles[`tableWrapper${theme}`]]} contentContainerStyle={{ paddingTop:10, paddingBottom:10 }} nestedScrollEnabled={true}>
+				{ !empty(activityData) &&
+					activityData.map(row => {
 						return row;
 					})
 				}
 			</ScrollView>
-			<LinearGradient style={[styles.card, { marginTop:20 }]} colors={globalColors[theme].calmGradient} useAngle={true} angle={45}>
+			<LinearGradient style={[styles.card, { marginTop:20 }]} colors={globalColors[theme].atlasGradient} useAngle={true} angle={45}>
 				<TouchableOpacity onPress={() => { setAction("create"); setModal(true)}}>
-					<Text style={[styles.cardText, styles[`cardText${theme}`]]}>Add Coin</Text>
+					<Text style={[styles.cardText, styles[`cardText${theme}`]]}>Record Event</Text>
 				</TouchableOpacity>
 			</LinearGradient>
 			<StatusBar style={theme === "Dark" ? "light" : "dark"}/>
 		</ScrollView>
 	);
 
-	async function createHolding(id, amount) {
+	async function createActivity(id, amount) {
 		if(!empty(id) && !empty(amount) && !isNaN(amount)) {
 			setModalMessage("Checking coin...");
 
@@ -160,7 +138,7 @@ export default function Holdings({ navigation }) {
 		}
 	}
 
-	async function processHolding(id, amount) {
+	async function processActivity(id, amount) {
 		let api = await AsyncStorage.getItem("api");
 		let token = await AsyncStorage.getItem("token");
 
@@ -224,7 +202,7 @@ export default function Holdings({ navigation }) {
 		});
 	}
 
-	async function deleteHolding(id) {
+	async function deleteActivity(id) {
 		if(!empty(id)) {
 			id = id.toLowerCase().replaceAll(" ", "-");
 
@@ -267,20 +245,15 @@ export default function Holdings({ navigation }) {
 		}
 	}
 
-	async function getHoldings() {
-		console.log("Holdings - Getting Holdings - " + epoch());
-
-		let currency = await AsyncStorage.getItem("currency");
-		if(empty(currency)) {
-			currency = "usd";
-		}
+	async function getActivity() {
+		console.log("Activity - Getting Activity - " + epoch());
 		
 		let theme = empty(await AsyncStorage.getItem("theme")) ? "Light" : await AsyncStorage.getItem("theme");
 
 		let api = await AsyncStorage.getItem("api");
 		let token = await AsyncStorage.getItem("token");
 
-		let endpoint = api + "holdings/read.php?platform=app&token=" + token;
+		let endpoint = api + "activity/read.php?platform=app&token=" + token;
 
 		fetch(endpoint, {
 			method: "GET",
@@ -291,139 +264,18 @@ export default function Holdings({ navigation }) {
 		.then((response) => {
 			return response.json();
 		})
-		.then(async (coins) => {
-			if(Object.keys(coins).length === 0) {
+		.then(async (events) => {
+			if(Object.keys(events).length === 0) {
 				if(navigation.isFocused()) {
-					setHoldingsData([<Text key="empty" style={[styles.headerText, styles[`headerText${theme}`], { marginLeft:20 }]}>No Holdings Found.</Text>]);
-					setHoldingsValue("-");
+					setActivityData([<Text key="empty" style={[styles.headerText, styles[`headerText${theme}`], { marginLeft:20 }]}>No Activity Found.</Text>]);
 				}
 			} else {
-				parseHoldings(coins).then(holdings => {
-					let data = [];
+				let data = [];
 
-					data.push(
-						<View style={styles.row} key={epoch() + "holdings-header"}>
-							<Text style={[styles.headerText, styles[`headerText${theme}`], styles.headerRank]} ellipsizeMode="tail">#</Text>
-							<Text style={[styles.headerText, styles[`headerText${theme}`], styles.headerCoin]} ellipsizeMode="tail">Coin</Text>
-							<Text style={[styles.headerText, styles[`headerText${theme}`], styles.headerAmount]} ellipsizeMode="tail">Amount</Text>
-							<Text style={[styles.headerText, styles[`headerText${theme}`], styles.headerValue]} ellipsizeMode="tail">Value</Text>
-						</View>
-					);
-
-					let rank = 0;
-
-					Object.keys(holdings).map(holding => {
-						rank += 1;
-
-						let coin = holdings[holding];
-
-						let icon = coin.image;
-						let amount = coin.amount;
-						let symbol = coin.symbol;
-						let value = separateThousands(abbreviateNumber(coin.value.toFixed(2), 2));
-
-						data.push(
-							<TouchableOpacity onPress={() => { setAction("update"); setCoinID(capitalizeFirstLetter(holding)); setCoinSymbol(symbol.toUpperCase()); setCoinAmount(amount.toString()); setModal(true); }} key={epoch() + holding}>
-								<View style={[styles.row, rank % 2 ? {...styles.rowOdd, ...styles[`rowOdd${theme}`]} : null]}>
-									<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellRank]} ellipsizeMode="tail">{rank}</Text>
-									<Image style={styles.cellImage} source={{uri:icon}}/>
-									<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellSymbol]} ellipsizeMode="tail">{symbol}</Text>
-									<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellAmount]} ellipsizeMode="tail">{separateThousands(amount)}</Text>
-									<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellValue]} ellipsizeMode="tail">{currencies[currency] + value}</Text>
-								</View>
-							</TouchableOpacity>
-						);
-					});
-
-					if(navigation.isFocused()) {
-						setHoldingsData(data);
-					}
-				}).catch(e => {
-					console.log(e);
-				});
+				
 			}
 		}).catch(error => {
 			console.log(arguments.callee.name + " - " + error);
-		});
-	}
-
-	function parseHoldings(coins) {
-		return new Promise(async (resolve, reject) => {
-			try {
-				console.log("Parsing Holdings - " + epoch());
-
-				let currency = await AsyncStorage.getItem("currency");
-				if(empty(currency)) {
-					currency = "usd";
-				}
-
-				let list = Object.keys(coins).join("%2C");
-
-				let endpoint = "https://api.coingecko.com/api/v3/coins/markets?vs_currency=" + currency + "&ids=" + list + "&order=market_cap_desc&per_page=250&page=1&sparkline=false";
-
-				fetch(endpoint, {
-					method: "GET",
-					headers: {
-						Accept: "application/json", "Content-Type": "application/json"
-					}
-				})
-				.then((json) => {
-					return json.json();
-				})
-				.then(async (response) => {
-					let holdingsValue = 0;
-
-					let holdings = {};
-
-					Object.keys(response).map(index => {
-						let coin = response[index];
-						let id = coin.id;
-						let price = coin.current_price;
-						let amount = coins[id].amount;
-						let value = price * amount;
-						let priceChangeDay = coin.price_change_percentage_24h;
-
-						if(!empty(priceChangeDay)) {
-							priceChangeDay = priceChangeDay.toFixed(2);
-						} else {
-							priceChangeDay = "-";
-						}
-
-						holdings[id] = {
-							symbol:coins[id].symbol.toUpperCase(),
-							amount:amount,
-							value:value,
-							price:price,
-							change:priceChangeDay,
-							image:coin.image
-						};
-
-						holdingsValue += value;
-					});
-
-					if(holdingsValue > 0 && navigation.isFocused()) {
-						let currency = await AsyncStorage.getItem("currency");
-						if(empty(currency)) {
-							currency = "usd";
-						}
-						
-						if(screenWidth > 380) {
-							setHoldingsValue(currencies[currency] + separateThousands(holdingsValue.toFixed(2)));
-						} else {
-							setHoldingsValue(currencies[currency] + abbreviateNumber(holdingsValue, 2));
-						}
-					}
-
-					resolve(Object.fromEntries(
-						Object.entries(holdings).sort(([,a],[,b]) => b.value - a.value)
-					));
-				}).catch(error => {
-					console.log(error);
-					reject(error);
-				});
-			} catch(error) {
-				reject(error);
-			}
 		});
 	}
 }
@@ -557,8 +409,8 @@ const styles = StyleSheet.create({
 		shadowRadius:globalStyles.shadowRadius,
 		elevation:globalStyles.shadowElevation,
 		borderRadius:globalStyles.borderRadius,
-		height:screenHeight - 390,
-		maxHeight:screenHeight - 390
+		height:screenHeight - 310,
+		maxHeight:screenHeight - 310
 	},
 	tableWrapperDark: {
 		backgroundColor:globalColors["Dark"].mainFirst

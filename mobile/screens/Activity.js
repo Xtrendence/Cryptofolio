@@ -16,8 +16,6 @@ export default function Activity({ navigation }) {
 
 	const activityRef = React.createRef();
 
-	const loadingText = "Loading...";
-
 	const [pageKey, setPageKey] = React.useState(epoch());
 
 	const [refreshing, setRefreshing] = React.useState(false);
@@ -25,15 +23,28 @@ export default function Activity({ navigation }) {
 	const [modal, setModal] = React.useState(false);
 	const [modalMessage, setModalMessage] = React.useState();
 	const [action, setAction] = React.useState("create");
+	const [eventID, setEventID] = React.useState();
+	const [coinID, setCoinID] = React.useState();
+	const [coinSymbol, setCoinSymbol] = React.useState();
+	const [eventDate, setEventDate] = React.useState();
+	const [eventType, setEventType] = React.useState("buy");
+	const [coinAmount, setCoinAmount] = React.useState();
+	const [eventFee, setEventFee] = React.useState();
+	const [eventNotes, setEventNotes] = React.useState();
+	const [eventExchange, setEventExchange] = React.useState();
+	const [coinPair, setCoinPair] = React.useState();
+	const [coinPrice, setCoinPrice] = React.useState();
+	const [eventFrom, setEventFrom] = React.useState();
+	const [eventTo, setEventTo] = React.useState();
 
 	const [activityData, setActivityData] = React.useState([<Text key="loading" style={[styles.loadingText, styles.headerText, styles[`headerText${theme}`]]}>Loading...</Text>]);
 
 	useEffect(() => {
-		setInterval(() => {
-			if(navigation.isFocused()) {
-				getActivity();
-			}
-		}, 15000)
+		// setInterval(() => {
+		// 	if(navigation.isFocused()) {
+		// 		getActivity();
+		// 	}
+		// }, 15000);
 	}, []);
 
 	useEffect(() => {
@@ -52,31 +63,62 @@ export default function Activity({ navigation }) {
 
 	return (
 		<ScrollView style={[styles.page, styles[`page${theme}`]]} key={pageKey} contentContainerStyle={{ padding:20 }} nestedScrollEnabled={true} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[globalColors[theme].accentFirst]} progressBackgroundColor={globalColors[theme].mainFirst}/>}>
-			<Modal animationType="fade" visible={modal} onRequestClose={() => { setAction("create"); setModalMessage(); setModal(false)}} transparent={false}>
-				<View style={[styles.modalWrapper, styles[`modalWrapper${theme}`]]}>
-					<View stlye={[styles.modal, styles[`modal${theme}`]]}>
-						<View style={styles.buttonWrapper}>
-							<TouchableOpacity style={[styles.button, styles[`button${theme}`]]} onPress={() => { setAction("create"); setModalMessage(); setModal(false)}}>
-								<Text style={styles.text}>Cancel</Text>
-							</TouchableOpacity>
-							<TouchableOpacity style={[styles.button, styles.buttonConfirm, styles[`buttonConfirm${theme}`]]} onPress={() => { }}>
-								<Text style={styles.text}>Confirm</Text>
-							</TouchableOpacity>
-						</View>
-						{ !empty(modalMessage) &&
-							<View style={styles.modalMessageWrapper}>
-								<Text style={styles.modalMessage}>{modalMessage}</Text>
+			<Modal animationType="fade" visible={modal} onRequestClose={() => { hideModal()}} transparent={false}>
+				<ScrollView style={[styles.modalScroll, styles[`modalScroll${theme}`]]} contentContainerStyle={{ padding:20 }}>
+					<View style={styles.modalWrapper}>
+						<View stlye={[styles.modal, styles[`modal${theme}`]]}>
+							<TextInput style={[styles.input, styles[`input${theme}`]]} placeholder={"Symbol... (e.g. BTC)"} onChangeText={(value) => { setCoinSymbol(value)}} value={coinSymbol} placeholderTextColor={globalColors[theme].mainContrastLight}/>
+							<TextInput style={[styles.input, styles[`input${theme}`]]} placeholder={"Date... (e.g. 2021/04/18 04:20)"} onChangeText={(value) => { setEventDate(value)}} value={eventDate} placeholderTextColor={globalColors[theme].mainContrastLight}/>
+							<View style={styles.inlineContainer}>
+								<TouchableOpacity style={[styles.inlineButton, styles[`inlineButton${theme}`], (eventType === "buy") ? styles.inlineButtonActive : null]} onPress={() => { setEventType("buy")}}>
+									<Text style={[styles.buttonText, styles[`buttonText${theme}`], (eventType === "buy") ? styles.buttonTextActive : null]}>Buy</Text>
+								</TouchableOpacity>
+								<TouchableOpacity style={[styles.inlineButton, styles[`inlineButton${theme}`], (eventType === "sell") ? styles.inlineButtonActive : null]} onPress={() => { setEventType("sell")}}>
+									<Text style={[styles.buttonText, styles[`buttonText${theme}`], (eventType === "sell") ? styles.buttonTextActive : null]}>Sell</Text>
+								</TouchableOpacity>
+								<TouchableOpacity style={[styles.inlineButton, styles[`inlineButton${theme}`], (eventType === "transfer") ? styles.inlineButtonActive : null]} onPress={() => { setEventType("transfer")}}>
+									<Text style={[styles.buttonText, styles[`buttonText${theme}`], (eventType === "transfer") ? styles.buttonTextActive : null]}>Transfer</Text>
+								</TouchableOpacity>
 							</View>
-						}
+							<TextInput style={[styles.input, styles[`input${theme}`]]} placeholder={"Amount... (e.g. 2.5)"} onChangeText={(value) => { setCoinAmount(value)}} value={coinAmount} placeholderTextColor={globalColors[theme].mainContrastLight}/>
+							<TextInput style={[styles.input, styles[`input${theme}`]]} placeholder={"Fee... (e.g. 0.25)"} onChangeText={(value) => { setEventFee(value)}} value={eventFee} placeholderTextColor={globalColors[theme].mainContrastLight}/>
+							<TextInput style={[styles.input, styles[`input${theme}`]]} placeholder={"Notes... (e.g. Rent)"} onChangeText={(value) => { setEventNotes(value)}} value={eventNotes} placeholderTextColor={globalColors[theme].mainContrastLight}/>
+							{ (eventType !== "transfer") &&
+								<View>
+									<TextInput style={[styles.input, styles[`input${theme}`]]} placeholder={"Exchange... (e.g. Coinbase)"} onChangeText={(value) => { setEventExchange(value)}} value={eventExchange} placeholderTextColor={globalColors[theme].mainContrastLight}/>
+									<TextInput style={[styles.input, styles[`input${theme}`]]} placeholder={"Pair... (e.g. BTC/USDT)"} onChangeText={(value) => { setCoinPair(value)}} value={coinPair} placeholderTextColor={globalColors[theme].mainContrastLight}/>
+									<TextInput style={[styles.input, styles[`input${theme}`]]} placeholder={"Price... (e.g. 59000)"} onChangeText={(value) => { setCoinPrice(value)}} value={coinPrice} placeholderTextColor={globalColors[theme].mainContrastLight}/>
+								</View>
+							}
+							{ (eventType === "transfer") &&
+								<View>
+									<TextInput style={[styles.input, styles[`input${theme}`]]} placeholder={"From... (e.g. Kraken)"} onChangeText={(value) => { setEventFrom(value)}} value={eventFrom} placeholderTextColor={globalColors[theme].mainContrastLight}/>
+									<TextInput style={[styles.input, styles[`input${theme}`]]} placeholder={"To... (e.g. Cold Wallet)"} onChangeText={(value) => { setEventTo(value)}} value={eventTo} placeholderTextColor={globalColors[theme].mainContrastLight}/>
+								</View>
+							}
+							{ action !== "create" &&
+								<TouchableOpacity style={[styles.button, styles.buttonDelete]} onPress={() => { deleteActivity(eventID)}}>
+									<Text style={styles.text}>Remove Activity</Text>
+								</TouchableOpacity>
+							}
+							<View style={styles.buttonWrapper}>
+								<TouchableOpacity style={[styles.button, styles[`button${theme}`]]} onPress={() => { hideModal()}}>
+									<Text style={styles.text}>Cancel</Text>
+								</TouchableOpacity>
+								<TouchableOpacity style={[styles.button, styles.buttonConfirm, styles[`buttonConfirm${theme}`]]} onPress={() => { }}>
+									<Text style={styles.text}>Confirm</Text>
+								</TouchableOpacity>
+							</View>
+							{ !empty(modalMessage) &&
+								<View style={styles.modalMessageWrapper}>
+									<Text style={styles.modalMessage}>{modalMessage}</Text>
+								</View>
+							}
+						</View>
 					</View>
-					{ action !== "create" &&
-						<TouchableOpacity style={[styles.button, styles.buttonDelete]} onPress={() => { deleteActivity(txID)}}>
-							<Text style={styles.text}>Remove Activity</Text>
-						</TouchableOpacity>
-					}
-				</View>
+				</ScrollView>
 			</Modal>
-			<ScrollView ref={activityRef} style={[styles.tableWrapper, styles[`tableWrapper${theme}`]]} contentContainerStyle={{ paddingTop:10, paddingBottom:10 }} nestedScrollEnabled={true}>
+			<ScrollView ref={activityRef} style={[styles.tableWrapper, styles[`tableWrapper${theme}`]]} nestedScrollEnabled={true}>
 				{ !empty(activityData) &&
 					activityData.map(row => {
 						return row;
@@ -91,6 +133,12 @@ export default function Activity({ navigation }) {
 			<StatusBar style={theme === "Dark" ? "light" : "dark"}/>
 		</ScrollView>
 	);
+
+	function hideModal() {
+		setAction("create");
+		setModalMessage();
+		setModal(false)
+	}
 
 	async function createActivity(id, amount) {
 		if(!empty(id) && !empty(amount) && !isNaN(amount)) {
@@ -181,14 +229,7 @@ export default function Activity({ navigation }) {
 				})
 				.then(async (response) => {
 					if("message" in response) {
-						setModal(false);
-						setModalMessage();
-						setAction("create");
-						setCoinID();
-						setCoinSymbol();
-						setCoinAmount();
-						setShowCoinList(false);
-						setCoinList();
+						hideModal();
 						getHoldings();
 					} else {
 						setModalMessage(response.error);
@@ -225,14 +266,7 @@ export default function Activity({ navigation }) {
 			})
 			.then(async (response) => {
 				if("message" in response) {
-					setModal(false);
-					setModalMessage();
-					setAction("create");
-					setCoinID();
-					setCoinSymbol();
-					setCoinAmount();
-					setShowCoinList(false);
-					setCoinList();
+					hideModal();
 					getHoldings();
 				} else {
 					setModalMessage(response.error);
@@ -270,13 +304,70 @@ export default function Activity({ navigation }) {
 					setActivityData([<Text key="empty" style={[styles.headerText, styles[`headerText${theme}`], { marginLeft:20 }]}>No Activity Found.</Text>]);
 				}
 			} else {
+				events = sortActivity(events);
+
 				let data = [];
 
-				
+				let index = 0;
+
+				Object.keys(events).map(txID => {
+					index += 1;
+
+					let activity = events[txID];
+	
+					let symbol = activity.symbol.toUpperCase();
+					let date = activity.date;
+					let amount = activity.amount;
+					let fee = activity.fee;
+					let notes = activity.notes;
+					let type = capitalizeFirstLetter(activity.type);
+					let exchange = activity.exchange;
+					let pair = activity.pair;
+					let price = activity.price;
+					let from = activity.from;
+					let to = activity.to;
+
+					data.push(
+						<TouchableOpacity onPress={() => { setAction("update"); setModal(true)}} key={epoch() + txID}>
+							<View style={[styles.row, index % 2 ? null : {...styles.rowEven, ...styles[`rowEven${theme}`]}]}>
+								<View style={[styles.column, styles.columnLeft]}>
+									<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellDate]} ellipsizeMode="tail">{date}</Text>
+									<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellType]} ellipsizeMode="tail">{type} - {symbol}</Text>
+								</View>
+								<View style={[styles.column, styles.columnRight]}>
+									<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellAmount]} ellipsizeMode="tail">{amount}</Text>
+									<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellNotes]} ellipsizeMode="tail" numberOfLines={1}>{notes}</Text>
+								</View>
+							</View>
+						</TouchableOpacity>
+					);
+				});
+
+				if(navigation.isFocused()) {
+					setActivityData(data);
+				}
 			}
 		}).catch(error => {
 			console.log(arguments.callee.name + " - " + error);
 		});
+	}
+
+	function sortActivity(events) {
+		let sorted = {};
+		let array = [];
+		for(let event in events) {
+			array.push([event, events[event].time]);
+		}
+
+		array.sort(function(a, b) {
+			return a[1] - b[1];
+		});
+
+		array.reverse().map(item => {
+			sorted[item[0]] = events[item[0]];
+		});
+
+		return sorted;
 	}
 }
 
@@ -292,16 +383,18 @@ const styles = StyleSheet.create({
 	pageDark: {
 		backgroundColor:globalColors["Dark"].mainSecond
 	},
+	modalScroll: {
+		backgroundColor:globalColors["Light"].mainThird
+	},
+	modalScrollDark: {
+		backgroundColor:globalColors["Dark"].mainThird
+	},
 	modalWrapper: {
 		width:"100%",
-		height:"100%",
+		minHeight:screenHeight - 120,
 		flex:1,
 		justifyContent:"center",
 		alignItems:"center",
-		backgroundColor:globalColors["Light"].mainThird
-	},
-	modalWrapperDark: {
-		backgroundColor:globalColors["Dark"].mainThird
 	},
 	modal: {
 		width:300,
@@ -324,6 +417,47 @@ const styles = StyleSheet.create({
 		fontSize:16,
 		fontFamily:globalStyles.fontFamily,
 		lineHeight:25,
+	},
+	inlineContainer: {
+		flexDirection:"row",
+		flexWrap:"wrap",
+		justifyContent:"center",
+		marginBottom:20,
+		marginLeft:-14,
+		width:screenWidth - 150,
+	},
+	inlineButton: {
+		alignItems:"center",
+		justifyContent:"center",
+		borderRadius:globalStyles.borderRadius,
+		padding:10,
+		marginRight:10,
+		marginLeft:10,
+		shadowColor:globalStyles.shadowColor,
+		shadowOffset:globalStyles.shadowOffset,
+		shadowOpacity:globalStyles.shadowOpacity,
+		shadowRadius:globalStyles.shadowRadius,
+		elevation:globalStyles.shadowElevation,
+		backgroundColor:globalColors["Light"].mainFirst
+	},
+	inlineButtonDark: {
+		backgroundColor:globalColors["Dark"].mainFirst
+	},
+	inlineButtonActive: {
+		backgroundColor:globalColors["Light"].accentFirst
+	},
+	buttonText: {
+		fontFamily:globalStyles.fontFamily,
+		fontSize:16,
+		fontWeight:"bold",
+		paddingBottom:2,
+		color:globalColors["Light"].mainContrastLight
+	},
+	buttonTextDark: {
+		color:globalColors["Dark"].mainContrastLight
+	},
+	buttonTextActive: {
+		color:globalColors["Light"].accentContrast
 	},
 	coinList: {
 		maxHeight:106,
@@ -351,19 +485,19 @@ const styles = StyleSheet.create({
 		paddingLeft:10,
 		paddingRight:10,
 		marginBottom:20,
-		width:screenWidth - 200,
+		width:screenWidth - 176,
 	},
 	inputDark: {
 		backgroundColor:globalColors["Dark"].mainFirst,
 		color:globalColors["Dark"].mainContrast
 	},
 	buttonWrapper: {
-		width:screenWidth - 200,
+		width:screenWidth - 180,
 		flexDirection:"row"
 	},
 	button: {
 		height:40,
-		width:((screenWidth - 200) / 2) - 10,
+		width:((screenWidth - 180) / 2) - 9,
 		shadowColor:globalStyles.shadowColor,
 		shadowOffset:globalStyles.shadowOffset,
 		shadowOpacity:globalStyles.shadowOpacity,
@@ -386,13 +520,9 @@ const styles = StyleSheet.create({
 		backgroundColor:globalColors["Dark"].accentFirst
 	},
 	buttonDelete: {
-		position:"absolute",
-		bottom:70,
 		backgroundColor:"rgb(230,50,50)",
-		width:"auto",
-		marginTop:20,
-		paddingLeft:14,
-		paddingRight:14,
+		width:screenWidth - 176,
+		marginBottom:20,
 	},
 	text: {
 		lineHeight:38,
@@ -418,15 +548,22 @@ const styles = StyleSheet.create({
 	row: {
 		flexDirection:"row",
 		alignItems:"center",
-		paddingTop:8,
-		paddingBottom:8,
-		paddingLeft:20,
+		padding:12
 	},
-	rowOdd: {
+	rowEven: {
 		backgroundColor:globalColors["Light"].mainSecond,
 	},
-	rowOddDark: {
+	rowEvenDark: {
 		backgroundColor:globalColors["Dark"].mainSecond,
+	},
+	column: {
+		width:"50%",
+	},
+	columnLeft: {
+		alignItems:"flex-start"
+	},
+	columnRight: {
+		alignItems:"flex-end"
 	},
 	loadingText: {
 		marginLeft:20,
@@ -441,36 +578,20 @@ const styles = StyleSheet.create({
 	headerTextDark: {
 		color:globalColors["Dark"].mainContrastLight
 	},
-	headerRank: {
-		width:30
-	},
-	headerCoin: {
-		width:100,
-		marginLeft:15,
-	},
-	headerAmount: {
-		width:100
-	},
 	cellText: {
 		color:globalColors["Light"].mainContrastLight
 	},
 	cellTextDark: {
 		color:globalColors["Dark"].mainContrastLight
 	},
-	cellRank: {
-		width:30
-	},
-	cellSymbol: {
-		width:74
+	cellDate: {
+		marginBottom:10
 	},
 	cellAmount: {
-		width:100,
+		marginBottom:10
 	},
-	cellImage: {
-		width:30,
-		height:30,
-		marginRight:10,
-		borderRadius:15,
+	cellNotes: {
+		maxWidth:120,
 	},
 	card: {
 		shadowColor:globalStyles.shadowColor,

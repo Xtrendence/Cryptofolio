@@ -34,7 +34,7 @@ export default function Market({ navigation }) {
 				getMarket();
 				getGlobal();
 			}
-		}, 15000)
+		}, 15000);
 	}, []);
 
 	useEffect(() => {

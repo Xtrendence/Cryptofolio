@@ -41,7 +41,7 @@ export default function Holdings({ navigation }) {
 			if(navigation.isFocused()) {
 				getHoldings();
 			}
-		}, 10000)
+		}, 10000);
 	}, []);
 
 	useEffect(() => {
@@ -60,7 +60,7 @@ export default function Holdings({ navigation }) {
 
 	return (
 		<ScrollView style={[styles.page, styles[`page${theme}`]]} key={pageKey} contentContainerStyle={{ padding:20 }} nestedScrollEnabled={true} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[globalColors[theme].accentFirst]} progressBackgroundColor={globalColors[theme].mainFirst}/>}>
-			<Modal animationType="fade" visible={modal} onRequestClose={() => { setAction("create"); setCoinID(); setCoinSymbol(); setCoinAmount(); setShowCoinList(false); setCoinList(); setModalMessage(); setModal(false)}} transparent={false}>
+			<Modal animationType="fade" visible={modal} onRequestClose={() => { hideModal()}} transparent={false}>
 				<View style={[styles.modalWrapper, styles[`modalWrapper${theme}`]]}>
 					<View stlye={[styles.modal, styles[`modal${theme}`]]}>
 						<TextInput style={[styles.input, styles[`input${theme}`], (action !== "create") ? { backgroundColor:globalColors[theme].mainFourth, color:globalColors[theme].mainContrastLight } : null]} placeholder={"Coin Symbol... (e.g. BTC)"} onChangeText={(value) => { setCoinSymbol(value)}} value={coinSymbol} placeholderTextColor={globalColors[theme].mainContrastLight} editable={(action === "create")} spellCheck={false}/>
@@ -75,7 +75,7 @@ export default function Holdings({ navigation }) {
 							</ScrollView>
 						}
 						<View style={styles.buttonWrapper}>
-							<TouchableOpacity style={[styles.button, styles[`button${theme}`]]} onPress={() => { setAction("create"); setCoinID(); setCoinSymbol(); setCoinAmount(); setShowCoinList(false); setCoinList(); setModalMessage(); setModal(false)}}>
+							<TouchableOpacity style={[styles.button, styles[`button${theme}`]]} onPress={() => { hideModal()}}>
 								<Text style={styles.text}>Cancel</Text>
 							</TouchableOpacity>
 							<TouchableOpacity style={[styles.button, styles.buttonConfirm, styles[`buttonConfirm${theme}`]]} onPress={() => { createHolding(coinSymbol, coinAmount)}}>
@@ -113,6 +113,17 @@ export default function Holdings({ navigation }) {
 			<StatusBar style={theme === "Dark" ? "light" : "dark"}/>
 		</ScrollView>
 	);
+
+	function hideModal() {
+		setAction("create");
+		setCoinID();
+		setCoinSymbol();
+		setCoinAmount();
+		setShowCoinList(false);
+		setCoinList();
+		setModalMessage();
+		setModal(false);
+	}
 
 	async function createHolding(id, amount) {
 		if(!empty(id) && !empty(amount) && !isNaN(amount)) {
@@ -203,14 +214,7 @@ export default function Holdings({ navigation }) {
 				})
 				.then(async (response) => {
 					if("message" in response) {
-						setModal(false);
-						setModalMessage();
-						setAction("create");
-						setCoinID();
-						setCoinSymbol();
-						setCoinAmount();
-						setShowCoinList(false);
-						setCoinList();
+						hideModal();
 						getHoldings();
 					} else {
 						setModalMessage(response.error);
@@ -247,14 +251,7 @@ export default function Holdings({ navigation }) {
 			})
 			.then(async (response) => {
 				if("message" in response) {
-					setModal(false);
-					setModalMessage();
-					setAction("create");
-					setCoinID();
-					setCoinSymbol();
-					setCoinAmount();
-					setShowCoinList(false);
-					setCoinList();
+					hideModal();
 					getHoldings();
 				} else {
 					setModalMessage(response.error);

@@ -36,7 +36,7 @@ export default function Dashboard({ navigation }) {
 				getGlobal();
 				getHoldings();
 			}
-		}, 20000)
+		}, 20000);
 	}, []);
 
 	useEffect(() => {

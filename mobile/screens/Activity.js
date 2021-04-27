@@ -328,7 +328,7 @@ export default function Activity({ navigation }) {
 					let to = activity.to;
 
 					data.push(
-						<TouchableOpacity onPress={() => { setAction("update"); setModal(true)}} key={epoch() + txID}>
+						<TouchableOpacity onPress={() => { setCoinSymbol(symbol); setEventDate(date); setEventType(type.toLowerCase()); setCoinAmount(amount); setEventFee(fee); setEventNotes(notes); setEventExchange(exchange); setCoinPair(pair); setCoinPrice(price); setEventFrom(from); setEventTo(to); setAction("update"); setModal(true)}} key={epoch() + txID}>
 							<View style={[styles.row, index % 2 ? null : {...styles.rowEven, ...styles[`rowEven${theme}`]}]}>
 								<View style={[styles.column, styles.columnLeft]}>
 									<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellDate]} ellipsizeMode="tail">{date}</Text>

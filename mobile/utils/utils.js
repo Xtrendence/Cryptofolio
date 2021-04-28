@@ -18,7 +18,9 @@ export function empty(value) {
 }
 
 export function separateThousands(number) {
-	return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+	var num_parts = number.toString().split(".");
+	num_parts[0] = num_parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+	return num_parts.join(".");
 }
 
 export function abbreviateNumber(num, digits) {

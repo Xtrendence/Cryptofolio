@@ -2597,7 +2597,9 @@ function validJSON(json) {
 
 // Separate number by thousands.
 function separateThousands(number) {
-	return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+	let parts = number.toString().split(".");
+	parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+	return parts.join(".");
 }
 
 function abbreviateNumber(num, digits) {

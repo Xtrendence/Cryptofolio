@@ -25,10 +25,6 @@ export default function Settings({ navigation, route }) {
 	const [newPassword, setNewPassword] = React.useState();
 	const [repeatPassword, setRepeatPassword] = React.useState();
 
-	const [holdingsMessage, setHoldingsMessage] = React.useState();
-
-	const [activityMessage, setActivityMessage] = React.useState();
-
 	useEffect(() => {
 		getSettings();
 	}, []);
@@ -95,11 +91,6 @@ export default function Settings({ navigation, route }) {
 			</View>
 			<View style={[styles.section, styles[`section${theme}`]]}>
 				<Text style={[styles.header, styles[`header${theme}`]]}>Holdings</Text>
-				{ !empty(holdingsMessage) &&
-					<View style={styles.messageWrapper}>
-						<Text style={styles.message}>{holdingsMessage}</Text>
-					</View>
-				}
 				<TouchableOpacity style={styles.button} onPress={() => { readData("holdings") }}>
 					<Text style={styles.text}>Import Holdings</Text>
 				</TouchableOpacity>
@@ -109,11 +100,6 @@ export default function Settings({ navigation, route }) {
 			</View>
 			<View style={[styles.section, styles[`section${theme}`]]}>
 				<Text style={[styles.header, styles[`header${theme}`]]}>Activity</Text>
-				{ !empty(activityMessage) &&
-					<View style={styles.messageWrapper}>
-						<Text style={styles.message}>{activityMessage}</Text>
-					</View>
-				}
 				<TouchableOpacity style={styles.button} onPress={() => { readData("activity") }}>
 					<Text style={styles.text}>Import Activity</Text>
 				</TouchableOpacity>

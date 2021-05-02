@@ -337,6 +337,7 @@ input[type=number] {
 	margin:0 auto 20px auto;
 	text-align:left;
 	border-radius:var(--border-radius);
+	box-shadow:var(--shadow-smooth);
 }
 .popup-wrapper .bottom .popup-canvas-wrapper {
 	width:calc(100% - 40px - 10px);
@@ -344,6 +345,7 @@ input[type=number] {
 	margin:0 auto 20px auto;
 	border-radius:var(--border-radius);
 	background:rgb(0,0,0);
+	box-shadow:var(--shadow-smooth);
 }
 
 .login-wrapper {

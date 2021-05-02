@@ -131,3 +131,49 @@ export async function getCoinID(key, value) {
 		});
 	});
 }
+
+export async function importData(type, rows) {
+	return new Promise(async (resolve, reject) => {
+		let isFulfilled = false;
+
+		setTimeout(() => {
+			if(!isFulfilled) {
+				isFulfilled = true;
+				reject("Data Import Failed");
+			}
+		}, 10000);
+
+		let api = await AsyncStorage.getItem("api");
+		let token = await AsyncStorage.getItem("token");
+
+		let endpoint = api + "holdings/import.php";
+
+		if(type === "activity") {
+			endpoint = api + "activity/import.php";
+		}
+
+		let body = { token:token, rows:rows };
+
+		fetch(endpoint, {
+			body: JSON.stringify(body),
+			method: "POST",
+			headers: {
+				Accept: "application/json", "Content-Type": "application/json"
+			}
+		})
+		.then((json) => {
+			return json.json();
+		})
+		.then(async (response) => {
+			if("error" in response) {
+				reject(response.error);
+			} else {
+				resolve(response.message);
+			}
+		}).catch(error => {
+			isFulfilled = true;
+			reject("Data Import Failed");
+			console.log(error);
+		});
+	});
+}

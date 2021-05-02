@@ -2,10 +2,13 @@ import React, { useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { NavigationActions } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
-import { Text, TouchableOpacity, View, StyleSheet, ScrollView, Dimensions, Switch, TextInput } from "react-native";
+import { Text, TouchableOpacity, View, StyleSheet, ScrollView, Dimensions, Switch, TextInput, Linking, ToastAndroid } from "react-native";
+import DocumentPicker from "react-native-document-picker";
+import * as RNFS from "react-native-fs";
 import { ThemeContext } from "../utils/theme";
 import { globalColors, globalStyles } from "../styles/global";
 import { empty } from "../utils/utils";
+import { importData } from "../utils/requests";
 
 const screenWidth = Dimensions.get("screen").width;
 const screenHeight = Dimensions.get("screen").height;
@@ -97,10 +100,10 @@ export default function Settings({ navigation, route }) {
 						<Text style={styles.message}>{holdingsMessage}</Text>
 					</View>
 				}
-				<TouchableOpacity style={styles.button} onPress={() => {  }}>
+				<TouchableOpacity style={styles.button} onPress={() => { readData("holdings") }}>
 					<Text style={styles.text}>Import Holdings</Text>
 				</TouchableOpacity>
-				<TouchableOpacity style={styles.button} onPress={() => {  }}>
+				<TouchableOpacity style={styles.button} onPress={() => { exportData("holdings") }}>
 					<Text style={styles.text}>Export Holdings</Text>
 				</TouchableOpacity>
 			</View>
@@ -111,16 +114,90 @@ export default function Settings({ navigation, route }) {
 						<Text style={styles.message}>{activityMessage}</Text>
 					</View>
 				}
-				<TouchableOpacity style={styles.button} onPress={() => {  }}>
+				<TouchableOpacity style={styles.button} onPress={() => { readData("activity") }}>
 					<Text style={styles.text}>Import Activity</Text>
 				</TouchableOpacity>
-				<TouchableOpacity style={styles.button} onPress={() => {  }}>
+				<TouchableOpacity style={styles.button} onPress={() => { exportData("activity") }}>
 					<Text style={styles.text}>Export Activity</Text>
 				</TouchableOpacity>
 			</View>
 			<StatusBar style={theme === "Dark" ? "light" : "dark"}/>
 		</ScrollView>
 	);
+
+	async function readData(type) {
+		DocumentPicker.pick({ type:"text/csv", copyTo:"cachesDirectory" }).then(result => {
+			RNFS.readFile(result.fileCopyUri, "ascii").then(data => {
+				if(type === "holdings") {
+					importHoldings(data);
+				} else if(type === "activity") {
+					importActivity(data);
+				}
+			}).catch(error => {
+				console.log(error);
+			});
+		}).catch(error => {
+			ToastAndroid.showWithGravity("Couldn't open the file picker, or no file was selected...", ToastAndroid.LONG, ToastAndroid.BOTTOM);
+			console.log(error);
+		});
+	}
+
+	async function importHoldings(data) {
+		let rows = data.split(/\r?\n/);
+		if(rows[0] === "id,symbol,amount") {
+			let formatted = [];
+			rows.map(row => {
+				if(!empty(row) && !row.toLowerCase().includes("symbol,")) {
+					formatted.push(row);
+				}
+			});
+			importData("holdings", formatted).then(result => {
+				ToastAndroid.showWithGravity(result, ToastAndroid.LONG, ToastAndroid.BOTTOM);
+			}).catch(error => {
+				ToastAndroid.showWithGravity(error, ToastAndroid.LONG, ToastAndroid.BOTTOM);
+			});
+		} else {
+			ToastAndroid.showWithGravity("Invalid column order. Expected: id, symbol, amount. Make sure to include the header row as well.", ToastAndroid.LONG, ToastAndroid.BOTTOM);
+		}
+	}
+
+	async function importActivity(data) {
+		let rows = data.split(/\r?\n/);
+		if(rows[0].includes("id,symbol,date,type,amount,fee,notes,exchange,pair,price,from,to")) {
+			let formatted = [];
+			rows.map(row => {
+				if(!empty(row) && !row.toLowerCase().includes("symbol,")) {
+					if(rows[0].includes("txID")) {
+						formatted.push(row);
+					} else {
+						formatted.push("-," + row);
+					}
+				}
+			});
+			importData("activity", formatted).then(result => {
+				ToastAndroid.showWithGravity(result, ToastAndroid.LONG, ToastAndroid.BOTTOM);
+			}).catch(error => {
+				ToastAndroid.showWithGravity(error, ToastAndroid.LONG, ToastAndroid.BOTTOM);
+			});
+		} else {
+			ToastAndroid.showWithGravity("Invalid column order. Expected: id, symbol, date, type, amount, fee, notes, exchange, pair, price, from, to. Make sure to include the header row as well.", ToastAndroid.LONG, ToastAndroid.BOTTOM);
+		}
+	}
+
+	async function exportData(type) {
+		let api = await AsyncStorage.getItem("api");
+		let token = await AsyncStorage.getItem("token");
+		let endpoint = api + "holdings/export.php?token=" + token;
+
+		if(type === "activity") {
+			endpoint = api + "activity/export.php?token=" + token;
+		}
+
+		Linking.openURL(endpoint).catch(error => {
+			ToastAndroid.showWithGravity("Couldn't open the browser...", ToastAndroid.LONG, ToastAndroid.BOTTOM);
+			console.log(error);
+		});
+	}
 
 	async function changePassword() {
 		if(!empty(currentPassword) && !empty(newPassword) && !empty(repeatPassword)) {

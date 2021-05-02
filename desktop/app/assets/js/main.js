@@ -128,6 +128,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 	let buttonImportActivity = document.getElementById("import-activity-button");
 	let buttonExportActivity = document.getElementById("export-activity-button");
 
+	let buttonShowQRCode = document.getElementById("show-qr-code-button");
+
 	adjustToScreen();
 
 	let url = new URL(window.location.href);
@@ -742,6 +744,75 @@ document.addEventListener("DOMContentLoaded", async () => {
 		download(api + "activity/export.php?token=" + sessionToken);
 	});
 
+	buttonShowQRCode.addEventListener("click", () => {
+		let html = '<span class="message">Generating a QR code would log you out of any mobile device you\'re currently logged in on.</span><input id="popup-password" placeholder="Password..." type="password"><button class="reject" id="popup-cancel">Cancel</button><button class="resolve" id="popup-confirm">Confirm</button>';
+
+		popup("Confirmation", html, 340, 310);
+
+		document.getElementById("popup-cancel").addEventListener("click", () => {
+			hidePopup();
+		});
+
+		document.getElementById("popup-confirm").addEventListener("click", () => {
+			let password = document.getElementById("popup-password").value;
+
+			if(!empty(password)) {
+				let xhr = new XMLHttpRequest();
+
+				xhr.addEventListener("readystatechange", () => {
+					if(xhr.readyState === XMLHttpRequest.DONE) {
+						if(validJSON(xhr.responseText)) {
+							let response = JSON.parse(xhr.responseText);
+
+							if("error" in response) {
+								Notify.error({
+									title:"Error",
+									description:response.error
+								});
+							} else {
+								if(response.valid) {
+									let token = response.token;
+
+									hidePopup();
+
+									let html = '<span class="message">Please scan the QR code with the Cryptofolio mobile app from the login screen.</span><div class="popup-canvas-wrapper"></div><button class="reject" id="popup-dismiss">Dismiss</button>';
+				
+									popup("QR Login Code", html, 400, 540);
+
+									let qrStyle = JSON.parse(qrCodeStyle);
+									qrStyle.width = 340;
+									qrStyle.height = 340;
+									qrStyle.data = token + "!" + new URL(api, document.baseURI).href;
+
+									let qrCode = new QRCodeStyling(qrStyle);
+
+									qrCode.append(document.getElementsByClassName("popup-canvas-wrapper")[0]);
+
+									document.getElementById("popup-dismiss").addEventListener("click", () => {
+										hidePopup();
+									});
+								}
+							}
+						} else {
+							Notify.error({
+								title:"Error",
+								description:"Invalid JSON."
+							});
+						}
+					}
+				});
+
+				xhr.open("POST", api + "account/login.php?platform=app", true);
+				xhr.send(JSON.stringify({ password:password }));
+			} else {
+				Notify.error({
+					title:"Error",
+					description:"Please enter your password."
+				});
+			}
+		});
+	});
+	
 	function login(password) {
 		try {
 			let xhr = new XMLHttpRequest();

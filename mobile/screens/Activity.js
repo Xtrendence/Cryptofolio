@@ -23,6 +23,8 @@ export default function Activity({ navigation }) {
 	const [modal, setModal] = React.useState(false);
 	const [modalMessage, setModalMessage] = React.useState();
 	const [action, setAction] = React.useState("create");
+	const [showCoinList, setShowCoinList] = React.useState(false);
+	const [coinList, setCoinList] = React.useState();
 	const [eventID, setEventID] = React.useState();
 	const [coinID, setCoinID] = React.useState();
 	const [coinSymbol, setCoinSymbol] = React.useState();
@@ -40,11 +42,11 @@ export default function Activity({ navigation }) {
 	const [activityData, setActivityData] = React.useState([<Text key="loading" style={[styles.loadingText, styles.headerText, styles[`headerText${theme}`]]}>Loading...</Text>]);
 
 	useEffect(() => {
-		// setInterval(() => {
-		// 	if(navigation.isFocused()) {
-		// 		getActivity();
-		// 	}
-		// }, 15000);
+		setInterval(() => {
+			if(navigation.isFocused()) {
+				getActivity();
+			}
+		}, 15000);
 	}, []);
 
 	useEffect(() => {
@@ -96,6 +98,15 @@ export default function Activity({ navigation }) {
 									<TextInput style={[styles.input, styles[`input${theme}`]]} placeholder={"To... (e.g. Cold Wallet)"} onChangeText={(value) => { setEventTo(value)}} value={eventTo} placeholderTextColor={globalColors[theme].mainContrastLight}/>
 								</View>
 							}
+							{ showCoinList && !empty(coinList) &&
+								<ScrollView style={[styles.coinList, styles[`coinList${theme}`]]} nestedScrollEnabled={true}>
+									{
+										coinList.map(row => {
+											return row;
+										})
+									}
+								</ScrollView>
+							}
 							{ action !== "create" &&
 								<TouchableOpacity style={[styles.button, styles.buttonDelete]} onPress={() => { deleteActivity(eventID)}}>
 									<Text style={styles.text}>Remove Activity</Text>
@@ -105,7 +116,7 @@ export default function Activity({ navigation }) {
 								<TouchableOpacity style={[styles.button, styles[`button${theme}`]]} onPress={() => { hideModal()}}>
 									<Text style={styles.text}>Cancel</Text>
 								</TouchableOpacity>
-								<TouchableOpacity style={[styles.button, styles.buttonConfirm, styles[`buttonConfirm${theme}`]]} onPress={() => { }}>
+								<TouchableOpacity style={[styles.button, styles.buttonConfirm, styles[`buttonConfirm${theme}`]]} onPress={() => { addActivity(coinID, coinSymbol, eventDate, coinAmount, eventFee, eventNotes, eventType, eventExchange, coinPair, coinPrice, eventFrom, eventTo) }}>
 									<Text style={styles.text}>Confirm</Text>
 								</TouchableOpacity>
 							</View>
@@ -147,25 +158,36 @@ export default function Activity({ navigation }) {
 		setCoinPrice();
 		setEventFrom();
 		setEventTo();
+		setShowCoinList(false);
+		setCoinList();
 		setAction("create");
 		setModalMessage();
 		setModal(false);
 	}
 
-	async function createActivity(id, amount) {
-		if(!empty(id) && !empty(amount) && !isNaN(amount)) {
+	function addActivity(id, symbol, date, amount, fee, notes, type, exchange, pair, price, from, to) {
+		let valid = true;
+		let functionArguments = [id, symbol, date, amount, fee, notes, type, exchange, pair, price, from, to];
+		for(let i = 0; i < functionArguments.length; i++) {
+			let argument = functionArguments[i];
+			if(!empty(argument) && argument.includes(",")) {
+				valid = false;
+			}
+		}
+
+		if(valid) {
 			setModalMessage("Checking coin...");
 
 			let key = "symbol";
-			let value = id.trim().toLowerCase();
-
-			if(action === "update") {
-				key = "id";
-			}
+			let value = symbol.trim().toLowerCase();
 
 			getCoinID(key, value).then(async response => {
 				if("id" in response) {
-					processHolding(response.id, amount);
+					if(action === "create") {
+						createActivity(response.id, symbol, date, amount, fee, notes, type, exchange, pair, price, from, to);
+					} else {
+						updateActivity(eventID, response.id, symbol, date, amount, fee, notes, type, exchange, pair, price, from, to);
+					}
 				} else if("matches" in response) {
 					let matches = response.matches;
 
@@ -177,7 +199,7 @@ export default function Activity({ navigation }) {
 						let id = match[symbol];
 
 						data.push(
-							<TouchableOpacity key={epoch() + id} onPress={() => { processHolding(id, amount) }}>
+							<TouchableOpacity key={epoch() + id} onPress={() => { (action === "create") ? createActivity(id, symbol, date, amount, fee, notes, type, exchange, pair, price, from, to) : updateActivity(eventID, id, symbol, date, amount, fee, notes, type, exchange, pair, price, from, to) }}>
 								<View style={[styles.row, key % 2 ? {...styles.rowOdd, ...styles[`rowOdd${theme}`]} : null]}>
 									<Text style={[styles.cellText, styles[`cellText${theme}`]]} ellipsizeMode="tail">{symbol.toUpperCase()}</Text>
 									<Text style={[styles.cellText, styles[`cellText${theme}`], { marginLeft:20 }]} ellipsizeMode="tail">{capitalizeFirstLetter(id)}</Text>
@@ -198,73 +220,74 @@ export default function Activity({ navigation }) {
 		}
 	}
 
-	async function processActivity(id, amount) {
+	async function createActivity(id, symbol, date, amount, fee, notes, type, exchange, pair, price, from, to) {
 		let api = await AsyncStorage.getItem("api");
 		let token = await AsyncStorage.getItem("token");
 
-		let endpoint = "https://api.coingecko.com/api/v3/coins/" + id;
+		let endpoint = api + "activity/create.php";
+
+		let body = { token:token, id:id, symbol:symbol, date:date, amount:amount, fee:fee, notes:notes, type:type, exchange:exchange, pair:pair, price:price, from:from, to:to };
 
 		fetch(endpoint, {
-			method: "GET",
+			body: JSON.stringify(body),
+			method: "POST",
 			headers: {
 				Accept: "application/json", "Content-Type": "application/json"
 			}
 		})
-		.then((response) => {
-			return response.json();
+		.then((json) => {
+			return json.json();
 		})
-		.then(async (coin) => {
-			if(!empty(coin.error)) {
-				setModalMessage("Coin not found. Make sure the ID is right.");
+		.then(async (response) => {
+			if(!empty(response.error)) {
+				setModalMessage(response.error);
 			} else {
-				let symbol = coin.symbol;
+				hideModal();
+				getActivity();
+			}
+		}).catch(error => {
+			console.log(error);
+		});
+	}
+	
+	async function updateActivity(txID, id, symbol, date, amount, fee, notes, type, exchange, pair, price, from, to) {
+		let api = await AsyncStorage.getItem("api");
+		let token = await AsyncStorage.getItem("token");
 
-				let endpoint = api + "holdings/create.php";
-				let method = "POST";
-				let body = { token:token, id:id, symbol:symbol, amount:amount };
+		let endpoint = api + "activity/update.php";
 
-				if(action === "update") {
-					endpoint = api + "holdings/update.php";
-					method = "PUT";
-					body = { token:token, id:id, amount:amount };
-				}
+		let body = { token:token, txID:txID, id:id, symbol:symbol, date:date, amount:amount, fee:fee, notes:notes, type:type, exchange:exchange, pair:pair, price:price, from:from, to:to };
 
-				fetch(endpoint, {
-					method: method,
-					body: JSON.stringify(body),
-					headers: {
-						Accept: "application/json", "Content-Type": "application/json"
-					}
-				})
-				.then((json) => {
-					return json.json();
-				})
-				.then(async (response) => {
-					if("message" in response) {
-						hideModal();
-						getHoldings();
-					} else {
-						setModalMessage(response.error);
-					}
-				}).catch(error => {
-					console.log(error);
-				});
+		fetch(endpoint, {
+			body: JSON.stringify(body),
+			method: "PUT",
+			headers: {
+				Accept: "application/json", "Content-Type": "application/json"
+			}
+		})
+		.then((json) => {
+			return json.json();
+		})
+		.then(async (response) => {
+			if(!empty(response.error)) {
+				setModalMessage(response.error);
+			} else {
+				hideModal();
+				getActivity();
 			}
 		}).catch(error => {
 			console.log(error);
 		});
 	}
 
-	async function deleteActivity(id) {
-		if(!empty(id)) {
-			id = id.toLowerCase().replaceAll(" ", "-");
-
+	async function deleteActivity(txID) {
+		if(!empty(txID)) {
 			let api = await AsyncStorage.getItem("api");
 			let token = await AsyncStorage.getItem("token");
 
-			let endpoint = api + "holdings/delete.php";
+			let endpoint = api + "activity/delete.php";
 
-			let body = { token:token, id:id };
+			let body = { token:token, txID:txID };
 
 			fetch(endpoint, {
 				method: "DELETE",
@@ -279,7 +302,7 @@ export default function Activity({ navigation }) {
 			.then(async (response) => {
 				if("message" in response) {
 					hideModal();
-					getHoldings();
+					getActivity();
 				} else {
 					setModalMessage(response.error);
 				}
@@ -420,7 +443,7 @@ const styles = StyleSheet.create({
 	modalMessageWrapper: {
 		backgroundColor:globalColors["Light"].accentFirst,
 		borderRadius:globalStyles.borderRadius,
-		width:screenWidth - 200,
+		width:screenWidth - 180,
 		padding:10,
 		marginTop:20,
 	},

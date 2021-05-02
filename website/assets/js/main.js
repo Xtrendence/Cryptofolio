@@ -741,11 +741,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 		download(api + "activity/export.php?token=" + sessionToken);
 	});
 
-	// TODO: Remove after development.
-	setTimeout(() => {
-		buttonShowQRCode.click();
-	}, 250);
-
 	buttonShowQRCode.addEventListener("click", () => {
 		let html = '<span class="message">Generating a QR code would log you out of any mobile device you\'re currently logged in on.</span><input id="popup-password" placeholder="Password..." type="password"><button class="reject" id="popup-cancel">Cancel</button><button class="resolve" id="popup-confirm">Confirm</button>';
 

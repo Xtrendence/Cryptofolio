@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Text, View, StyleSheet, TextInput, TouchableOpacity } from "react-native";
+import { Text, View, StyleSheet, TextInput, TouchableOpacity, Dimensions } from "react-native";
 import LinearGradient from "react-native-linear-gradient";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import FlashMessage, { showMessage, hideMessage } from "react-native-flash-message";
@@ -10,6 +10,9 @@ import { globalColors, globalStyles } from "../styles/global";
 import { empty } from "../utils/utils";
 import { login, verifySession } from "../utils/requests";
 import { ThemeContext } from "../utils/theme";
+
+const screenWidth = Dimensions.get("screen").width;
+const screenHeight = Dimensions.get("screen").height;
 
 export default function Login({ navigation, route }) {
 	const { theme } = React.useContext(ThemeContext);
@@ -52,6 +55,11 @@ export default function Login({ navigation, route }) {
 						reactivate={true}
 						onRead={(e) => processCode(e.data)} 
 						flashMode={RNCamera.Constants.FlashMode.off} 
+						topContent={
+							<View style={styles.cameraTextWrapper}>
+								<Text style={styles.cameraText}>You can only use a QR code once before having to generate a new one.</Text>
+							</View>
+						}
 						bottomContent={
 							<TouchableOpacity onPress={() => setShowCamera(false)}>
 								<LinearGradient colors={globalColors[theme].atlasGradient} style={[styles.button, styles.cameraButton, { marginTop:20 }]} useAngle={true} angle={45}>
@@ -223,4 +231,13 @@ const styles = StyleSheet.create({
 		height:"100%",
 		zIndex:4
 	},
+	cameraText: {
+		textAlign:"center",
+		width:screenWidth - 100,
+		lineHeight:30,
+		fontSize:18,
+		fontFamily:globalStyles.fontFamily,
+		color:"rgb(255,255,255)",
+		marginBottom:20
+	}
 });

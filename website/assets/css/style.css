@@ -265,7 +265,7 @@ input[type=number] {
 	padding:10px 5px 10px 5px;
 	margin:0 auto 20px auto;
 	border-radius:var(--border-radius);
-	background:rgb(10,10,10);
+	background:rgb(0,0,0);
 }
 
 .login-wrapper {

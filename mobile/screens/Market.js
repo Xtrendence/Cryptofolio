@@ -35,6 +35,13 @@ export default function Market({ navigation }) {
 				getGlobal();
 			}
 		}, 15000);
+
+		navigation.addListener("focus", () => {
+			if(navigation.isFocused()) {
+				getMarket();
+				getGlobal();
+			}
+		});
 	}, []);
 
 	useEffect(() => {

@@ -37,6 +37,14 @@ export default function Dashboard({ navigation }) {
 				getHoldings();
 			}
 		}, 20000);
+
+		navigation.addListener("focus", () => {
+			if(navigation.isFocused()) {
+				getMarket();
+				getGlobal();
+				getHoldings();
+			}
+		});
 	}, []);
 
 	useEffect(() => {

@@ -27,6 +27,12 @@ export default function Settings({ navigation, route }) {
 
 	useEffect(() => {
 		getSettings();
+
+		navigation.addListener("focus", () => {
+			if(navigation.isFocused()) {
+				getSettings();
+			}
+		});
 	}, []);
 
 	return (

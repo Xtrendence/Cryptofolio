@@ -47,6 +47,12 @@ export default function Activity({ navigation }) {
 				getActivity();
 			}
 		}, 15000);
+
+		navigation.addListener("focus", () => {
+			if(navigation.isFocused()) {
+				getActivity();
+			}
+		});
 	}, []);
 
 	useEffect(() => {
@@ -216,7 +222,7 @@ export default function Activity({ navigation }) {
 				console.log(error);
 			});
 		} else {
-			setModalMessage("Both fields must be filled out.");
+			setModalMessage("All fields must be filled out.");
 		}
 	}
 
@@ -246,6 +252,7 @@ export default function Activity({ navigation }) {
 				getActivity();
 			}
 		}).catch(error => {
+			setModalMessage("Couldn't record activity. Make sure all fields are filled out.");
 			console.log(error);
 		});
 	}
@@ -276,6 +283,7 @@ export default function Activity({ navigation }) {
 				getActivity();
 			}
 		}).catch(error => {
+			setModalMessage("Couldn't update activity. Make sure all fields are filled out.");
 			console.log(error);
 		});
 	}
@@ -310,7 +318,7 @@ export default function Activity({ navigation }) {
 				console.log(error);
 			});
 		} else {
-			setModalMessage("Coin ID field must be filled out.");
+			setModalMessage("Activity not found.");
 		}
 	}
 

@@ -234,7 +234,7 @@ input[type=number] {
 #desktop .popup-wrapper .bottom .popup-list div:hover {
 	background:var(--main-fourth);
 }
-.popup-wrapper .bottom .popup-list span {
+.popup-wrapper .bottom .popup-list span, .popup-wrapper .bottom span.message {
 	font-size:16px;
 	color:var(--main-contrast);
 	line-height:40px;
@@ -249,6 +249,23 @@ input[type=number] {
 	text-overflow:ellipsis;
 	white-space:nowrap;
 	overflow:hidden;
+}
+.popup-wrapper .bottom span.message {
+	line-height:30px;
+	background:var(--main-third);
+	width:calc(100% - 40px - 20px);
+	padding:10px;
+	display:block;
+	margin:0 auto 20px auto;
+	text-align:left;
+	border-radius:var(--border-radius);
+}
+.popup-wrapper .bottom .popup-canvas-wrapper {
+	width:calc(100% - 40px - 10px);
+	padding:10px 5px 10px 5px;
+	margin:0 auto 20px auto;
+	border-radius:var(--border-radius);
+	background:rgb(10,10,10);
 }
 
 .login-wrapper {

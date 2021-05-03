@@ -26,6 +26,8 @@ Since no private keys or actual funds are held on Cryptofolio, your assets aren'
 
 ### How do I set it up? 
 
+If you use Dockerhub, then simply follow the instructions on the [page there](https://hub.docker.com/r/xtrendence/cryptofolio).
+
 **Initial Password**: admin
 
 First, download the latest release from the [Releases](https://github.com/Xtrendence/Cryptofolio/releases) section. For the API and website, to ensure you don't get any unfinished code and that everything is compatible, download the "Source code (zip)" file from the Releases section rather than just downloading the source code containing the most recent commits. You'll then have to set up a server on your network using a guide such as [this](https://www.ionos.co.uk/digitalguide/server/tools/xampp-tutorial-create-your-own-local-test-server/) one.

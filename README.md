@@ -63,6 +63,14 @@ In order to add an asset to your list of holdings, you will need to find out wha
 - Your PIN code for sharing your portfolio is stored in plaintext.
 - CoinGecko's API is limited in terms of both functionality, and how often requests can be made. As such, be careful not to refresh **too** often. Any rate limits are temporary though, you won't get banned or anything permanently.
 
+#### Mobile App
+![Screenshot](https://i.imgur.com/cTYZdwT.png)
+![Screenshot](https://i.imgur.com/J7uQBu4.png)
+![Screenshot](https://i.imgur.com/lvFoLdy.png)
+![Screenshot](https://i.imgur.com/qddyV5R.png)
+![Screenshot](https://i.imgur.com/WiZ22jv.png)
+![Screenshot](https://i.imgur.com/OFO9zG6.png)
+#### Desktop App
 ![Screenshot](https://i.imgur.com/Jd2wig5.png)
 ![Screenshot](https://i.imgur.com/ZgvHwYn.png)
 ![Screenshot](https://i.imgur.com/LHcPpKL.png)
@@ -77,12 +85,7 @@ In order to add an asset to your list of holdings, you will need to find out wha
 ![Screenshot](https://i.imgur.com/a6eQVWF.png)
 ![Screenshot](https://i.imgur.com/SP8NfDV.png)
 ![Screenshot](https://i.imgur.com/udPlM1D.png)
-![Screenshot](https://i.imgur.com/cTYZdwT.png)
-![Screenshot](https://i.imgur.com/J7uQBu4.png)
-![Screenshot](https://i.imgur.com/lvFoLdy.png)
-![Screenshot](https://i.imgur.com/qddyV5R.png)
-![Screenshot](https://i.imgur.com/WiZ22jv.png)
-![Screenshot](https://i.imgur.com/OFO9zG6.png)
+#### Website
 ![Screenshot](https://i.imgur.com/vunbAIz.png)
 ![Screenshot](https://i.imgur.com/3JbN8Gt.png)
 ![Screenshot](https://i.imgur.com/aZdlJ3X.png)

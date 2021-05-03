@@ -1,4 +1,4 @@
-# ![Image](https://i.imgur.com/2qM4d4k.png)
+# ![Image](https://i.imgur.com/AlbPsuf.png)
 
 ### What is Cryptofolio?
 

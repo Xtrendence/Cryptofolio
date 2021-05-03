@@ -211,9 +211,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 				document.getElementById("popup-confirm").click();
 			}
 		}
-		if(divLoginWrapper.classList.contains("active")) {
-			inputLoginPassword.focus();
-		}
 	});
 
 	buttonClose.addEventListener("click", () => {

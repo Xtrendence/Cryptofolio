@@ -20,6 +20,10 @@ No. Cryptofolio is solely able to keep track of the value of any cryptoassets yo
 
 It can provide you with a quick glance at the market, while also keeping track of your assets and their value. It also includes a feature that allows you to share your portfolio in a read-only way with anyone you choose to give the link to. In order to set this up, please go into the "Settings" section of the web interface, enable portfolio sharing, set a PIN code, and use the generated URL to view your assets without having to login. This allows you to share your portfolio with friends, family, or strangers without them being able to modify it.
 
+### Is my data kept private?
+
+Since your data never leaves whatever device the API is hosted on, it's as private as you make it. Cryptofolio doesn't ever send your data anywhere, and there's no centralized server or anything to phone home to; it's entirely self-contained and under your control.
+
 ### Is it secure?
 
 Since no private keys or actual funds are held on Cryptofolio, your assets aren't at risk in any way. User passwords are hashed with bcrypt, and there are client-side validation checks when performing actions that modify any data. However, since this is a self-hosted application that's only intended to be used by one person, there aren't that many validation checks on the server-side, so if you tried to break it on purpose, you'd probably succeed. The idea here is that you wouldn't try to mess up your own data. In any case, if you do break things, deleting "account.json", "holdings.json", and "settings.json" in the "/api/data/" directory, and subsequently logging in again would generate a fresh working copy of the files (though you'd lose your data).

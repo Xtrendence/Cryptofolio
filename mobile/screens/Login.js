@@ -28,6 +28,10 @@ export default function Login({ navigation, route }) {
 			checkSession();
 			setShowCamera(false);
 		});
+		
+		navigation.addListener("blur", () => {
+			setShowCamera(false);
+		});
 	}, []);
 
 	return (

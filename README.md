@@ -28,7 +28,7 @@ Since no private keys or actual funds are held on Cryptofolio, your assets aren'
 
 **Initial Password**: admin
 
-First, download the latest release from the [Releases](https://github.com/Xtrendence/Cryptofolio/releases) section. For the API and website, to ensure you don't get any unfinished code and that everything is compatible, download the "Source code (zip)" file from the Releases section rather than just downloading the source code containing the most recent commits. You'll then have to set up a server on your network using a guide such as [this](https://www.ionos.co.uk/digitalguide/server/tools/xampp-tutorial-create-your-own-local-test-server/) one. Ideally though, you wouldn't want to host the API on the same device you use the website unless you keep the device on 24/7. A Raspberry Pi would be perfect in this situation. 
+First, download the latest release from the [Releases](https://github.com/Xtrendence/Cryptofolio/releases) section. For the API and website, to ensure you don't get any unfinished code and that everything is compatible, download the "Source code (zip)" file from the Releases section rather than just downloading the source code containing the most recent commits. You'll then have to set up a server on your network using a guide such as [this](https://www.ionos.co.uk/digitalguide/server/tools/xampp-tutorial-create-your-own-local-test-server/) one.
 
 *If you'd rather host it online, you can use a service such as [this](https://www.000webhost.com/free-php-hosting) one in order to get free PHP hosting. Your holdings and such are stored in plaintext, so keep in mind that the hosting provider would be able to see your data. This option is a lot easier though, you'd essentially just have to upload the "api" and "website" folders with whatever storage interface the hosting service provides, and you'd be done.*
 
@@ -48,7 +48,7 @@ You can then copy the "website" folder into the DocumentRoot directory as well. 
 
 ### What is the Coin ID when adding an asset?
 
-#### V.1.3+
+#### V.2.0+
 
 You no longer need to use the CoinGecko ID of a cryptoasset to add it to your holdings. They can be added using the appropriate symbol/ticker (such as BTC for Bitcoin, ADA for Cardano, ETH for Ethereum, DOT for Polkadot and so on).
 
@@ -63,22 +63,35 @@ In order to add an asset to your list of holdings, you will need to find out wha
 - Your PIN code for sharing your portfolio is stored in plaintext.
 - CoinGecko's API is limited in terms of both functionality, and how often requests can be made. As such, be careful not to refresh **too** often. Any rate limits are temporary though, you won't get banned or anything permanently.
 
-![Image](https://i.imgur.com/eL5jRzj.png)
-![Image](https://i.imgur.com/vpkydcc.png)
-![Image](https://i.imgur.com/ldN5rsi.png)
-![Image](https://i.imgur.com/xydPF0S.png)
-![Image](https://i.imgur.com/wNDald4.png)
-![Image](https://i.imgur.com/q9b3qaw.png)
-![Image](https://i.imgur.com/m51b4u2.png)
-![Image](https://i.imgur.com/I2eXt2X.png)
-![Image](https://i.imgur.com/N2p2ZoA.png)
-![Image](https://i.imgur.com/dpi43Jf.png)
-![Image](https://i.imgur.com/OK7dFEm.png)
-![Image](https://i.imgur.com/82bjExf.png)
-![Image](https://i.imgur.com/XVMkQvd.png)
-![Image](https://i.imgur.com/D5RnVYQ.png)
-![Image](https://i.imgur.com/0WMpCl5.png)
-![Image](https://i.imgur.com/UaDP0er.png)
-![Image](https://i.imgur.com/IklJArx.png)
-![Image](https://i.imgur.com/SJ9hRkQ.png)
-![Image](https://i.imgur.com/Su5HiSM.png)
+![Screenshot](https://i.imgur.com/Jd2wig5.png)
+![Screenshot](https://i.imgur.com/ZgvHwYn.png)
+![Screenshot](https://i.imgur.com/LHcPpKL.png)
+![Screenshot](https://i.imgur.com/EyuWB04.png)
+![Screenshot](https://i.imgur.com/83cADwf.png)
+![Screenshot](https://i.imgur.com/H33R72y.png)
+![Screenshot](https://i.imgur.com/6rRf74x.png)
+![Screenshot](https://i.imgur.com/PI8X2Fs.png)
+![Screenshot](https://i.imgur.com/SKIoiJA.png)
+![Screenshot](https://i.imgur.com/tZXm6Fd.png)
+![Screenshot](https://i.imgur.com/9ySaXkM.png)
+![Screenshot](https://i.imgur.com/a6eQVWF.png)
+![Screenshot](https://i.imgur.com/SP8NfDV.png)
+![Screenshot](https://i.imgur.com/udPlM1D.png)
+![Screenshot](https://i.imgur.com/cTYZdwT.png)
+![Screenshot](https://i.imgur.com/J7uQBu4.png)
+![Screenshot](https://i.imgur.com/lvFoLdy.png)
+![Screenshot](https://i.imgur.com/qddyV5R.png)
+![Screenshot](https://i.imgur.com/WiZ22jv.png)
+![Screenshot](https://i.imgur.com/OFO9zG6.png)
+![Screenshot](https://i.imgur.com/vunbAIz.png)
+![Screenshot](https://i.imgur.com/3JbN8Gt.png)
+![Screenshot](https://i.imgur.com/aZdlJ3X.png)
+![Screenshot](https://i.imgur.com/tWpbWCP.png)
+![Screenshot](https://i.imgur.com/fLAvYmZ.png)
+![Screenshot](https://i.imgur.com/wMrUWpy.png)
+![Screenshot](https://i.imgur.com/KI2tgVi.png)
+![Screenshot](https://i.imgur.com/bSWI2wk.png)
+![Screenshot](https://i.imgur.com/ojVRJod.png)
+![Screenshot](https://i.imgur.com/7pxv2AG.png)
+![Screenshot](https://i.imgur.com/WXwarTn.png)
+![Screenshot](https://i.imgur.com/54nMKbM.png)

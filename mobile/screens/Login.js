@@ -19,7 +19,6 @@ export default function Login({ navigation, route }) {
 
 	const [url, setUrl] = React.useState();
 	const [password, setPassword] = React.useState();
-	const [secure, setSecure] = React.useState(false);
 	const [showCamera, setShowCamera] = React.useState(false);
 
 	useEffect(() => {
@@ -36,7 +35,7 @@ export default function Login({ navigation, route }) {
 			{ !showCamera && 
 				<View style={styles.formWrapper}>
 					<TextInput placeholder="API URL..." onChangeText={(value) => setUrl(value)} value={url} style={[styles.input, styles[`input${theme}`]]} placeholderTextColor={globalColors[theme].mainContrastLight} autoCapitalize="none" spellCheck={false}></TextInput>
-					<TextInput placeholder="Password..." secureTextEntry={secure} value={password} onChangeText={(value) => textChanged(value)} style={[styles.input, styles[`input${theme}`]]} placeholderTextColor={globalColors[theme].mainContrastLight} autoCapitalize="none"></TextInput>
+					<TextInput placeholder="Password..." secureTextEntry={!empty(password)} value={password} onChangeText={(value) => setPassword(value)} style={[styles.input, styles[`input${theme}`]]} placeholderTextColor={globalColors[theme].mainContrastLight} autoCapitalize="none"></TextInput>
 					<TouchableOpacity onPress={() => attemptLogin()}>
 						<LinearGradient colors={[globalColors[theme].accentFirst, globalColors[theme].accentSecond]} style={[styles.button, { width:100 }]} useAngle={true} angle={45}>
 							<Text style={styles.text}>Login</Text>
@@ -155,16 +154,6 @@ export default function Login({ navigation, route }) {
 		}).catch(error => {
 			console.log(error);
 		});
-	}
-
-	function textChanged(password) {
-		setPassword(password);
-
-		if(!empty(password)) {
-			setSecure(true);
-		} else {
-			setSecure(false);
-		}
 	}
 }
 

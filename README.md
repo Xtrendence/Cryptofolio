@@ -12,6 +12,10 @@ The [project board](https://github.com/Xtrendence/Cryptofolio/projects/1?fullscr
 
 The web interface is just HTML/CSS with vanilla JS, the mobile app was made with React Native, the desktop app is essentially a clone of the website and uses Electron. The RESTful API was coded in PHP.
 
+### Is there any sort of documentation?
+
+Yes, the API [is documented](https://github.com/Xtrendence/Cryptofolio/wiki/API-Documentation).
+
 ### Can I import my wallets or transact?
 
 No. Cryptofolio is solely able to keep track of the value of any cryptoassets you manually add. It does not communicate or integrate with any blockchain.

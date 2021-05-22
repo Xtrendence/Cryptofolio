@@ -1649,6 +1649,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 				settings.coinBackdrop = empty(localStorage.getItem("coinBackdrop")) ? "disabled" : localStorage.getItem("coinBackdrop");
 
+				settings.transactionsAffectHoldings = empty(localStorage.getItem("transactionsAffectHoldings")) ? "disabled" : localStorage.getItem("transactionsAffectHoldings");
+
 				settings.highlightPriceChange = empty(localStorage.getItem("highlightPriceChange")) ? "disabled" : localStorage.getItem("highlightPriceChange");
 
 				settings.defaultPage = empty(localStorage.getItem("defaultPage")) ? "market" : localStorage.getItem("defaultPage");
@@ -2680,6 +2682,10 @@ function abbreviateNumber(num, digits) {
 		}
 	}
 	return (num / si[i].value).toFixed(digits).replace(rx, "$1") + si[i].symbol;
+}
+
+function positiveToNegative(number) {
+	return -Math.abs(number);
 }
 
 function capitalizeFirstLetter(string) {

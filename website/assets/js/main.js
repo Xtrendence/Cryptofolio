@@ -1388,7 +1388,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 		}
 	}
 
-	function listHoldings() {
+	async function listHoldings() {
 		if((!divLoginWrapper.classList.contains("active") && divNavbarHoldings.classList.contains("active")) || url.searchParams.get("access") === "view") {
 			clearInterval(updateHoldingsListInterval);
 
@@ -1400,7 +1400,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 				}
 			}, 5000);
 
-			getHoldings().then(coins => {
+			getHoldings().then(async coins => {
 				try {
 					if(Object.keys(coins).length === 0) {
 						clearHoldingsList();
@@ -1408,6 +1408,18 @@ document.addEventListener("DOMContentLoaded", async () => {
 							divHoldingsList.getElementsByClassName("coin-wrapper loading")[0].innerHTML = '<span>No Holdings Found...</span>';
 						}
 					} else {
+						let transactionsBySymbol;
+						if(settings.transactionsAffectHoldings === "mixed") {
+							transactionsBySymbol = sortActivityBySymbol(await getActivity());
+
+							let ids = Object.keys(transactionsBySymbol);
+							ids.map(id => {
+								if(!(id in coins)) {
+									coins[id] = { amount:0, symbol:transactionsBySymbol[id].symbol };
+								}
+							});
+						}
+						
 						parseHoldings(coins).then(holdings => {
 							if(divHoldingsList.getElementsByClassName("coin-wrapper loading").length > 0) {
 								divHoldingsList.getElementsByClassName("coin-wrapper loading")[0].remove();
@@ -1493,6 +1505,17 @@ document.addEventListener("DOMContentLoaded", async () => {
 												divHoldingsMoreMenu.style.left = e.clientX - 2 - divHoldingsMoreMenu.clientWidth + "px";
 											}
 										});
+
+										if(settings.transactionsAffectHoldings === "mixed" && !empty(transactionsBySymbol)) {
+											if(holding in transactionsBySymbol) {
+												amount = parseFloat(amount) + transactionsBySymbol[holding].amount;
+												value = (coin.price * amount).toFixed(2);
+											}
+										}
+
+										if(amount < 0) {
+											amount = 0;
+										}
 
 										div.innerHTML = '<img draggable="false" src="' + icon + '"><span class="coin">' + symbol.toUpperCase() + '</span><span class="amount">' + separateThousands(amount) + '</span><span class="value">' + currencies[settings.currency] + separateThousands(value) + '</span><span class="day">' + day + '</span>';
 
@@ -2572,6 +2595,32 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 		array.reverse().map(item => {
 			sorted[item[0]] = events[item[0]];
+		});
+
+		return sorted;
+	}
+
+	function sortActivityBySymbol(events) {
+		let txIDs = Object.keys(events);
+
+		let sorted = {};
+
+		txIDs.map(txID => {
+			let transaction = events[txID];
+			let id = transaction.id;
+			let symbol = transaction.symbol;
+			let type = transaction.type;
+			let amount = parseFloat(transaction.amount);
+
+			if(!(id in sorted)) {
+				sorted[id] = { amount:0, symbol:symbol };
+			}
+			
+			if(type === "sell") {
+				sorted[id].amount = parseFloat(sorted[id].amount) - amount;
+			} else if(type === "buy") {
+				sorted[id].amount = parseFloat(sorted[id].amount) + amount;
+			}
 		});
 
 		return sorted;

@@ -1455,6 +1455,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 								let symbol = coin.symbol;
 								let value = coin.value.toFixed(2);
 
+								let enableMoreMenu = true;
+
 								if(window.innerWidth <= 600 && window.innerWidth > 440) {
 									value = abbreviateNumber(value, 2);
 								} else if(window.innerWidth <= 440) {
@@ -1463,10 +1465,15 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 								let day = coin.change.includes("-") ? coin.change + "%" : "+" + coin.change + "%";
 
-								if(settings.transactionsAffectHoldings === "mixed" && !empty(transactionsBySymbol)) {
-									if(holding in transactionsBySymbol) {
-										amount = parseFloat(amount) + transactionsBySymbol[holding].amount;
-										value = (coin.price * amount).toFixed(2);
+								if(!empty(transactionsBySymbol)) {
+									if(settings.transactionsAffectHoldings === "mixed") {
+										if(holding in transactionsBySymbol) {
+											amount = parseFloat(amount) + transactionsBySymbol[holding].amount;
+											value = (coin.price * amount).toFixed(2);
+											enableMoreMenu = false;
+										}
+									} else if(settings.transactionsAffectHoldings === "override") {
+										enableMoreMenu = false;
 									}
 								}
 
@@ -1508,34 +1515,36 @@ document.addEventListener("DOMContentLoaded", async () => {
 											div.classList.add("negative");
 										}
 
-										let more = document.createElement("div");
-										more.classList.add("more");
-										more.innerHTML = '<svg class="more-icon" width="1792" height="1792" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path class="more-path" d="M576 736v192q0 40-28 68t-68 28h-192q-40 0-68-28t-28-68v-192q0-40 28-68t68-28h192q40 0 68 28t28 68zm512 0v192q0 40-28 68t-68 28h-192q-40 0-68-28t-28-68v-192q0-40 28-68t68-28h192q40 0 68 28t28 68zm512 0v192q0 40-28 68t-68 28h-192q-40 0-68-28t-28-68v-192q0-40 28-68t68-28h192q40 0 68 28t28 68z"/></svg>';
-
-										more.addEventListener("click", (e) => {
-											divHoldingsMoreMenu.setAttribute("data-coin", holding);
-											divHoldingsMoreMenu.setAttribute("data-symbol", coin.symbol.toUpperCase());
-											divHoldingsMoreMenu.setAttribute("data-amount", amount);
-
-											divHoldingsMoreMenu.classList.remove("hidden");
-
-											divHoldingsMoreMenu.style.top = e.clientY - 2 + "px";
-											divHoldingsMoreMenu.style.left = e.clientX - 2 - 200 + "px";
-
-											if(window.innerWidth <= 1230 && window.innerWidth > 700) {
-												divHoldingsMoreMenu.style.left = e.clientX - 2 - 200 - divHoldingsMoreMenu.clientWidth + "px";
-											}
-											if(window.innerWidth <= 1120 && window.innerWidth > 700) {
-												divHoldingsMoreMenu.style.left = e.clientX - 2 - 100 - divHoldingsMoreMenu.clientWidth + "px";
-											}
-											else if(window.innerWidth <= 700) {
-												divHoldingsMoreMenu.style.left = e.clientX - 2 - divHoldingsMoreMenu.clientWidth + "px";
-											}
-										});
-
 										div.innerHTML = '<img draggable="false" src="' + icon + '"><span class="coin">' + symbol.toUpperCase() + '</span><span class="amount">' + separateThousands(amount) + '</span><span class="value">' + currencies[settings.currency] + separateThousands(value) + '</span><span class="day">' + day + '</span>';
 
-										div.appendChild(more);
+										if(enableMoreMenu) {
+											let more = document.createElement("div");
+											more.classList.add("more");
+											more.innerHTML = '<svg class="more-icon" width="1792" height="1792" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path class="more-path" d="M576 736v192q0 40-28 68t-68 28h-192q-40 0-68-28t-28-68v-192q0-40 28-68t68-28h192q40 0 68 28t28 68zm512 0v192q0 40-28 68t-68 28h-192q-40 0-68-28t-28-68v-192q0-40 28-68t68-28h192q40 0 68 28t28 68zm512 0v192q0 40-28 68t-68 28h-192q-40 0-68-28t-28-68v-192q0-40 28-68t68-28h192q40 0 68 28t28 68z"/></svg>';
+
+											more.addEventListener("click", (e) => {
+												divHoldingsMoreMenu.setAttribute("data-coin", holding);
+												divHoldingsMoreMenu.setAttribute("data-symbol", coin.symbol.toUpperCase());
+												divHoldingsMoreMenu.setAttribute("data-amount", amount);
+
+												divHoldingsMoreMenu.classList.remove("hidden");
+
+												divHoldingsMoreMenu.style.top = e.clientY - 2 + "px";
+												divHoldingsMoreMenu.style.left = e.clientX - 2 - 200 + "px";
+
+												if(window.innerWidth <= 1230 && window.innerWidth > 700) {
+													divHoldingsMoreMenu.style.left = e.clientX - 2 - 200 - divHoldingsMoreMenu.clientWidth + "px";
+												}
+												if(window.innerWidth <= 1120 && window.innerWidth > 700) {
+													divHoldingsMoreMenu.style.left = e.clientX - 2 - 100 - divHoldingsMoreMenu.clientWidth + "px";
+												}
+												else if(window.innerWidth <= 700) {
+													divHoldingsMoreMenu.style.left = e.clientX - 2 - divHoldingsMoreMenu.clientWidth + "px";
+												}
+											});
+											
+											div.appendChild(more);
+										}
 
 										divHoldingsList.appendChild(div);
 									}
@@ -2116,6 +2125,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 						clearActivityList();
 						listActivity();
 
+						if(settings.transactionsAffectHoldings !== "disabled") {
+							clearHoldingsList();
+						}
+
 						Notify.success({
 							title:"Event Deleted",
 							description:response.message
@@ -2172,6 +2185,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 								clearActivityList();
 								listActivity();
+
+								if(settings.transactionsAffectHoldings !== "disabled") {
+									clearHoldingsList();
+								}
 
 								Notify.success({
 									title:"Event Updated",
@@ -2359,6 +2376,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 						}
 					
 						listActivity();
+
+						if(settings.transactionsAffectHoldings !== "disabled") {
+							clearHoldingsList();
+						}
 					}).catch(e => {
 						Notify.error({
 							title:"Error",

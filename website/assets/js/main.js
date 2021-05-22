@@ -1451,6 +1451,17 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 								let day = coin.change.includes("-") ? coin.change + "%" : "+" + coin.change + "%";
 
+								if(settings.transactionsAffectHoldings === "mixed" && !empty(transactionsBySymbol)) {
+									if(holding in transactionsBySymbol) {
+										amount = parseFloat(amount) + transactionsBySymbol[holding].amount;
+										value = (coin.price * amount).toFixed(2);
+									}
+								}
+
+								if(amount < 0) {
+									amount = 0;
+								}
+
 								let div;
 
 								try {
@@ -1505,17 +1516,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 												divHoldingsMoreMenu.style.left = e.clientX - 2 - divHoldingsMoreMenu.clientWidth + "px";
 											}
 										});
-
-										if(settings.transactionsAffectHoldings === "mixed" && !empty(transactionsBySymbol)) {
-											if(holding in transactionsBySymbol) {
-												amount = parseFloat(amount) + transactionsBySymbol[holding].amount;
-												value = (coin.price * amount).toFixed(2);
-											}
-										}
-
-										if(amount < 0) {
-											amount = 0;
-										}
 
 										div.innerHTML = '<img draggable="false" src="' + icon + '"><span class="coin">' + symbol.toUpperCase() + '</span><span class="amount">' + separateThousands(amount) + '</span><span class="value">' + currencies[settings.currency] + separateThousands(value) + '</span><span class="day">' + day + '</span>';
 

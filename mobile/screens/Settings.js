@@ -214,7 +214,8 @@ export default function Settings({ navigation, route }) {
 					if("error" in response) {
 						setAccountMessage(response.error);
 					} else {
-						logout();
+						await AsyncStorage.removeItem("token");
+						navigation.navigate("Login");
 					}
 				}).catch(error => {
 					console.log(error);

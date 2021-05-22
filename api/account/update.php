@@ -17,13 +17,13 @@
 		
 			$current["password"] = password_hash($newPassword, PASSWORD_DEFAULT);
 
-			$helper->generateToken("web");
-			$helper->generateToken("app");
-			$helper->generateToken("desktop");
-
 			$update = file_put_contents($helper->accountFile, json_encode($current));
 
 			if($update) {
+				$helper->generateToken("web");
+				$helper->generateToken("app");
+				$helper->generateToken("desktop");
+
 				echo json_encode(array("message" => "Account password has been changed."));
 			} else {
 				echo json_encode(array("error" => "Password couldn't be changed."));

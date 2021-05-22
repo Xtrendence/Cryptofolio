@@ -653,6 +653,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 		if(!empty(currentPassword) && !empty(newPassword) && !empty(repeatPassword)) {
 			if(newPassword === repeatPassword) {
+				inputCurrentPassword.value = "";
+				inputNewPassword.value = "";
+				inputRepeatPassword.value = "";
+
 				changePassword(currentPassword, newPassword).then((response) => {
 					if("error" in response) {
 						Notify.error({
@@ -664,7 +668,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 							title:"Password Changed",
 							description:response.message
 						});
-						logout();
+						checkSession();
 					}
 				}).catch(e => {
 					console.log(e);

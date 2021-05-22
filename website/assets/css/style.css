@@ -261,6 +261,9 @@ input[type=number] {
 	border-radius:var(--border-radius);
 	box-shadow:var(--shadow-smooth);
 }
+.popup-wrapper .bottom span.message.break {
+	word-break:break-all;
+}
 .popup-wrapper .bottom .popup-canvas-wrapper {
 	width:calc(100% - 40px - 10px);
 	padding:10px 5px 10px 5px;
@@ -268,6 +271,9 @@ input[type=number] {
 	border-radius:var(--border-radius);
 	background:rgb(0,0,0);
 	box-shadow:var(--shadow-smooth);
+}
+.popup-wrapper .bottom .popup-canvas-wrapper.donation {
+	background:rgb(255,255,255);
 }
 
 .login-wrapper {
@@ -1272,4 +1278,15 @@ html.dark .highlight .coin-wrapper.negative {
 	color:var(--main-contrast);
 	font-size:16px;
 	box-shadow:var(--shadow-smooth);
+}
+.settings .section .description {
+	margin-bottom:20px;
+	padding:10px;
+	border-radius:var(--border-radius);
+	line-height:25px;
+	font-size:16px;
+	color:var(--main-contrast);
+	background:var(--main-third);
+	box-shadow:var(--shadow-smooth);
+	display:inline-block;
 }

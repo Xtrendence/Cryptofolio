@@ -8,6 +8,46 @@ Cryptofolio is an open-source, and self-hosted solution for tracking your crypto
 
 The [project board](https://github.com/Xtrendence/Cryptofolio/projects/1?fullscreen=true) will be updated with any features that are currently in development.
 
+### Do you accept donations?
+
+If you'd like to donate, then please feel free to do so, it'd be much appreciated. However, I don't want you to feel obliged to do so, and there are no perks for it. If you decide to donate, please contact me afterwards so I can actually thank you, and I'd love to hear about any ideas you may have for Cryptofolio. If they're within the scope of the project, I'll probably implement them.
+
+Click on the collapsible items in the list below to view the corresponding donation address.
+
+<details>
+	<summary><b>ADA</b></summary>
+	addr1qyh9ejp2z7drzy8vzpyfeuvzuej5t5tnmjyfpfjn0vt722zqupdg44rqfw9fd8jruaez30fg9fxl34vdnncc33zqwhlqn37lz4
+</details>
+<details>
+	<summary><b>XMR</b></summary>
+	49wDQf83p5tHibw9ay6fBvcv48GJynyjVE2V8EX8Vrtt89rPyECRm5zbBqng3udqrYHTjsZStSpnMCa8JRw7cfyGJwMPxDM
+</details>
+<details>
+	<summary><b>ETH</b></summary>
+	0x40E1452025d7bFFDfa05d64C2d20Fb87c2b9C0be
+</details>
+<details>
+	<summary><b>BCH</b></summary>
+	qrvyd467djuxtw5knjt3d50mqzspcf6phydmyl8ka0
+</details>
+<details>
+	<summary><b>BTC</b></summary>
+	bc1qdy5544m2pwpyr6rhzcqwmerczw7e2ytjjc2wvj
+</details>
+<details>
+	<summary><b>LTC</b></summary>
+	ltc1qq0ptdjsuvhw6gz9m4huwmhq40gpyljwn5hncxz
+</details>
+<details>
+	<summary><b>DOT</b></summary>
+	12nGqTQsgEHwkAuHGNXpvzcfgtQkTeo3WCZgwrXLsiqs3KyA
+</details>
+<details>
+	<summary><b>NANO</b></summary>
+	nano_3ed4ip7cjkzkrzh9crgcdipwkp3h49cudxxz4t8x7pkb8rad7bckqfhzyadg
+</details>
+<br>
+
 ### What's the tech stack?
 
 The web interface is just HTML/CSS with vanilla JS, the mobile app was made with React Native, the desktop app is essentially a clone of the website and uses Electron. The RESTful API was coded in PHP.

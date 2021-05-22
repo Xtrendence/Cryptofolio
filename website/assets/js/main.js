@@ -121,6 +121,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 	let buttonShowQRCode = document.getElementById("show-qr-code-button");
 
+	let buttonDonations = document.getElementsByClassName("donation-button");
+
 	detectMobile() ? body.id = "mobile" : body.id = "desktop";
 
 	adjustToScreen();
@@ -810,6 +812,53 @@ document.addEventListener("DOMContentLoaded", async () => {
 			}
 		});
 	});
+
+	for(let i = 0; i < buttonDonations.length; i++) {
+		buttonDonations[i].addEventListener("click", () => {
+			let symbol = buttonDonations[i].getAttribute("data-symbol");
+			donationPopup(symbol);
+		});
+	}
+
+	function donationPopup(symbol) {
+		let addresses = {
+			ADA: "addr1qyh9ejp2z7drzy8vzpyfeuvzuej5t5tnmjyfpfjn0vt722zqupdg44rqfw9fd8jruaez30fg9fxl34vdnncc33zqwhlqn37lz4",
+			XMR: "49wDQf83p5tHibw9ay6fBvcv48GJynyjVE2V8EX8Vrtt89rPyECRm5zbBqng3udqrYHTjsZStSpnMCa8JRw7cfyGJwMPxDM",
+			ETH: "0x40E1452025d7bFFDfa05d64C2d20Fb87c2b9C0be",
+			BCH: "qrvyd467djuxtw5knjt3d50mqzspcf6phydmyl8ka0",
+			BTC: "bc1qdy5544m2pwpyr6rhzcqwmerczw7e2ytjjc2wvj",
+			LTC: "ltc1qq0ptdjsuvhw6gz9m4huwmhq40gpyljwn5hncxz",
+			NANO: "nano_3ed4ip7cjkzkrzh9crgcdipwkp3h49cudxxz4t8x7pkb8rad7bckqfhzyadg",
+			DOT: "12nGqTQsgEHwkAuHGNXpvzcfgtQkTeo3WCZgwrXLsiqs3KyA"
+		};
+
+		let html = '<span class="message">Donate ' + symbol + '</span><div class="popup-canvas-wrapper donation"></div><span class="message break">' + addresses[symbol] + '</span><button class="reject" id="popup-dismiss">Dismiss</button>';
+				
+		popup("Donation Address", html, 400, 520);
+
+		let style = { 
+			width:310,
+			height:310,
+			data:addresses[symbol],
+			margin:0,
+			qrOptions: {
+				typeNumber:0,
+				mode:"Byte",
+				errorCorrectionLevel:"Q"
+			},
+			backgroundOptions: {
+				color:"rgba(0,0,0,0)"
+			}
+		};
+
+		let qrCode = new QRCodeStyling(style);
+
+		qrCode.append(document.getElementsByClassName("popup-canvas-wrapper")[0]);
+
+		document.getElementById("popup-dismiss").addEventListener("click", () => {
+			hidePopup();
+		});
+	}
 
 	function login(password) {
 		try {

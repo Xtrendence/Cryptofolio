@@ -119,9 +119,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 	let buttonChangePassword = document.getElementById("change-password-button");
 
-	let buttonChangePIN = document.getElementById("change-pin-button");
-	let buttonCopyURL = document.getElementById("copy-url-button");
-
 	let buttonImportHoldings = document.getElementById("import-holdings-button");
 	let buttonExportHoldings = document.getElementById("export-holdings-button");
 
@@ -129,6 +126,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 	let buttonExportActivity = document.getElementById("export-activity-button");
 
 	let buttonShowQRCode = document.getElementById("show-qr-code-button");
+
+	let buttonDonations = document.getElementsByClassName("donation-button");
 
 	adjustToScreen();
 
@@ -619,6 +618,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 			let key = buttonSettingsChoices[i].parentElement.getAttribute("data-key");
 			let value = buttonSettingsChoices[i].getAttribute("data-value");
 			await Storage.setItem(key, value);
+			processSettingChange(key);
 			getLocalSettings();
 		});
 	}
@@ -810,6 +810,53 @@ document.addEventListener("DOMContentLoaded", async () => {
 		});
 	});
 	
+	for(let i = 0; i < buttonDonations.length; i++) {
+		buttonDonations[i].addEventListener("click", () => {
+			let symbol = buttonDonations[i].getAttribute("data-symbol");
+			donationPopup(symbol);
+		});
+	}
+
+	function donationPopup(symbol) {
+		let addresses = {
+			ADA: "addr1qyh9ejp2z7drzy8vzpyfeuvzuej5t5tnmjyfpfjn0vt722zqupdg44rqfw9fd8jruaez30fg9fxl34vdnncc33zqwhlqn37lz4",
+			XMR: "49wDQf83p5tHibw9ay6fBvcv48GJynyjVE2V8EX8Vrtt89rPyECRm5zbBqng3udqrYHTjsZStSpnMCa8JRw7cfyGJwMPxDM",
+			ETH: "0x40E1452025d7bFFDfa05d64C2d20Fb87c2b9C0be",
+			BCH: "qrvyd467djuxtw5knjt3d50mqzspcf6phydmyl8ka0",
+			BTC: "bc1qdy5544m2pwpyr6rhzcqwmerczw7e2ytjjc2wvj",
+			LTC: "ltc1qq0ptdjsuvhw6gz9m4huwmhq40gpyljwn5hncxz",
+			NANO: "nano_3ed4ip7cjkzkrzh9crgcdipwkp3h49cudxxz4t8x7pkb8rad7bckqfhzyadg",
+			DOT: "12nGqTQsgEHwkAuHGNXpvzcfgtQkTeo3WCZgwrXLsiqs3KyA"
+		};
+
+		let html = '<span class="message">Donate ' + symbol + '</span><div class="popup-canvas-wrapper donation"></div><span class="message break">' + addresses[symbol] + '</span><button class="reject" id="popup-dismiss">Dismiss</button>';
+				
+		popup("Donation Address", html, 400, 520);
+
+		let style = { 
+			width:310,
+			height:310,
+			data:addresses[symbol],
+			margin:0,
+			qrOptions: {
+				typeNumber:0,
+				mode:"Byte",
+				errorCorrectionLevel:"Q"
+			},
+			backgroundOptions: {
+				color:"rgba(0,0,0,0)"
+			}
+		};
+
+		let qrCode = new QRCodeStyling(style);
+
+		qrCode.append(document.getElementsByClassName("popup-canvas-wrapper")[0]);
+
+		document.getElementById("popup-dismiss").addEventListener("click", () => {
+			hidePopup();
+		});
+	}
+
 	function login(password) {
 		try {
 			let xhr = new XMLHttpRequest();
@@ -915,7 +962,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 		}
 	}
 
-	function checkSession() {
+	async function checkSession() {
 		if(!empty(api)) {
 			inputLoginAPI.value = api;
 		}
@@ -950,7 +997,20 @@ document.addEventListener("DOMContentLoaded", async () => {
 						inputLoginPassword.focus();
 					}
 				}
-			}).catch(e => {
+			}).catch(async e => {
+				await Storage.removeItem("api");
+				await Storage.removeItem("token");
+
+				if(divLoadingOverlay.classList.contains("active")) {
+					divLoadingOverlay.classList.remove("active");
+				}
+
+				if(!divLoginWrapper.classList.contains("active")) {
+					divLoginWrapper.classList.add("active");
+					divTitlebarShadow.classList.add("hidden");
+					inputLoginPassword.focus();
+				}
+
 				console.log(e);
 			});
 		}
@@ -1412,7 +1472,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 				}
 			}, 5000);
 
-			getHoldings().then(coins => {
+			getHoldings().then(async coins => {
 				try {
 					if(Object.keys(coins).length === 0) {
 						clearHoldingsList();
@@ -1420,6 +1480,29 @@ document.addEventListener("DOMContentLoaded", async () => {
 							divHoldingsList.getElementsByClassName("coin-wrapper loading")[0].innerHTML = '<span>No Holdings Found...</span>';
 						}
 					} else {
+						let transactionsBySymbol;
+						if(settings.transactionsAffectHoldings === "mixed") {
+							transactionsBySymbol = sortActivityBySymbol(await getActivity());
+
+							let ids = Object.keys(transactionsBySymbol);
+							ids.map(id => {
+								if(!(id in coins)) {
+									coins[id] = { amount:0, symbol:transactionsBySymbol[id].symbol };
+								}
+							});
+						} else if(settings.transactionsAffectHoldings === "override") {
+							transactionsBySymbol = sortActivityBySymbol(await getActivity());
+
+							coins = {};
+
+							let ids = Object.keys(transactionsBySymbol);
+							ids.map(id => {
+								if(transactionsBySymbol[id].amount > 0) {
+									coins[id] = { amount:transactionsBySymbol[id].amount, symbol:transactionsBySymbol[id].symbol };
+								}
+							});
+						}
+
 						parseHoldings(coins).then(holdings => {
 							if(divHoldingsList.getElementsByClassName("coin-wrapper loading").length > 0) {
 								divHoldingsList.getElementsByClassName("coin-wrapper loading")[0].remove();
@@ -1443,6 +1526,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 								let symbol = coin.symbol;
 								let value = coin.value.toFixed(2);
 
+								let enableMoreMenu = true;
+
 								if(window.innerWidth <= 600 && window.innerWidth > 440) {
 									value = abbreviateNumber(value, 2);
 								} else if(window.innerWidth <= 440) {
@@ -1451,6 +1536,26 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 								let day = coin.change.includes("-") ? coin.change + "%" : "+" + coin.change + "%";
 
+								if(!empty(transactionsBySymbol)) {
+									if(settings.transactionsAffectHoldings === "mixed") {
+										if(holding in transactionsBySymbol) {
+											amount = parseFloat(amount) + transactionsBySymbol[holding].amount;
+											value = (coin.price * amount).toFixed(2);
+											enableMoreMenu = false;
+										}
+									} else if(settings.transactionsAffectHoldings === "override") {
+										enableMoreMenu = false;
+									}
+								}
+
+								if(amount < 0) {
+									amount = 0;
+								}
+
+								if(value < 0) {
+									value = 0;
+								}
+								
 								let div;
 
 								try {
@@ -1481,34 +1586,36 @@ document.addEventListener("DOMContentLoaded", async () => {
 											div.classList.add("negative");
 										}
 
-										let more = document.createElement("div");
-										more.classList.add("more");
-										more.innerHTML = '<svg class="more-icon" width="1792" height="1792" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path class="more-path" d="M576 736v192q0 40-28 68t-68 28h-192q-40 0-68-28t-28-68v-192q0-40 28-68t68-28h192q40 0 68 28t28 68zm512 0v192q0 40-28 68t-68 28h-192q-40 0-68-28t-28-68v-192q0-40 28-68t68-28h192q40 0 68 28t28 68zm512 0v192q0 40-28 68t-68 28h-192q-40 0-68-28t-28-68v-192q0-40 28-68t68-28h192q40 0 68 28t28 68z"/></svg>';
-
-										more.addEventListener("click", (e) => {
-											divHoldingsMoreMenu.setAttribute("data-coin", holding);
-											divHoldingsMoreMenu.setAttribute("data-symbol", coin.symbol.toUpperCase());
-											divHoldingsMoreMenu.setAttribute("data-amount", amount);
-
-											divHoldingsMoreMenu.classList.remove("hidden");
-
-											divHoldingsMoreMenu.style.top = e.clientY - 2 - 36 + "px";
-											divHoldingsMoreMenu.style.left = e.clientX - 2 - 200 + "px";
-
-											if(window.innerWidth <= 1230 && window.innerWidth > 700) {
-												divHoldingsMoreMenu.style.left = e.clientX - 2 - 200 - divHoldingsMoreMenu.clientWidth + "px";
-											}
-											if(window.innerWidth <= 1120 && window.innerWidth > 700) {
-												divHoldingsMoreMenu.style.left = e.clientX - 2 - 100 - divHoldingsMoreMenu.clientWidth + "px";
-											}
-											else if(window.innerWidth <= 700) {
-												divHoldingsMoreMenu.style.left = e.clientX - 2 - divHoldingsMoreMenu.clientWidth + "px";
-											}
-										});
-
 										div.innerHTML = '<img draggable="false" src="' + icon + '"><span class="coin">' + symbol.toUpperCase() + '</span><span class="amount">' + separateThousands(amount) + '</span><span class="value">' + currencies[settings.currency] + separateThousands(value) + '</span><span class="day">' + day + '</span>';
 
-										div.appendChild(more);
+										if(enableMoreMenu) {
+											let more = document.createElement("div");
+											more.classList.add("more");
+											more.innerHTML = '<svg class="more-icon" width="1792" height="1792" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path class="more-path" d="M576 736v192q0 40-28 68t-68 28h-192q-40 0-68-28t-28-68v-192q0-40 28-68t68-28h192q40 0 68 28t28 68zm512 0v192q0 40-28 68t-68 28h-192q-40 0-68-28t-28-68v-192q0-40 28-68t68-28h192q40 0 68 28t28 68zm512 0v192q0 40-28 68t-68 28h-192q-40 0-68-28t-28-68v-192q0-40 28-68t68-28h192q40 0 68 28t28 68z"/></svg>';
+
+											more.addEventListener("click", (e) => {
+												divHoldingsMoreMenu.setAttribute("data-coin", holding);
+												divHoldingsMoreMenu.setAttribute("data-symbol", coin.symbol.toUpperCase());
+												divHoldingsMoreMenu.setAttribute("data-amount", amount);
+
+												divHoldingsMoreMenu.classList.remove("hidden");
+
+												divHoldingsMoreMenu.style.top = e.clientY - 2 - 36 + "px";
+												divHoldingsMoreMenu.style.left = e.clientX - 2 - 200 + "px";
+
+												if(window.innerWidth <= 1230 && window.innerWidth > 700) {
+													divHoldingsMoreMenu.style.left = e.clientX - 2 - 200 - divHoldingsMoreMenu.clientWidth + "px";
+												}
+												if(window.innerWidth <= 1120 && window.innerWidth > 700) {
+													divHoldingsMoreMenu.style.left = e.clientX - 2 - 100 - divHoldingsMoreMenu.clientWidth + "px";
+												}
+												else if(window.innerWidth <= 700) {
+													divHoldingsMoreMenu.style.left = e.clientX - 2 - divHoldingsMoreMenu.clientWidth + "px";
+												}
+											});
+
+											div.appendChild(more);
+										}
 
 										divHoldingsList.appendChild(div);
 									}
@@ -1648,6 +1755,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 		}
 	}
 
+	function processSettingChange(setting) {
+		switch(setting) {
+			case "transactionsAffectHoldings":
+				clearHoldingsList();
+				break;
+		}
+	}
+
 	function getLocalSettings() {
 		return new Promise((resolve, reject) => {
 			checkSession();
@@ -1660,6 +1775,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 				settings.theme = empty(await Storage.getItem("theme")) ? "light" : await Storage.getItem("theme");
 
 				settings.coinBackdrop = empty(await Storage.getItem("coinBackdrop")) ? "disabled" : await Storage.getItem("coinBackdrop");
+
+				settings.transactionsAffectHoldings = empty(await Storage.getItem("transactionsAffectHoldings")) ? "disabled" : await Storage.getItem("transactionsAffectHoldings");
 
 				settings.highlightPriceChange = empty(await Storage.getItem("highlightPriceChange")) ? "disabled" : await Storage.getItem("highlightPriceChange");
 
@@ -2075,6 +2192,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 						clearActivityList();
 						listActivity();
 
+						if(settings.transactionsAffectHoldings !== "disabled") {
+							clearHoldingsList();
+						}
+
 						Notify.success({
 							title:"Event Deleted",
 							description:response.message
@@ -2131,6 +2252,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 								clearActivityList();
 								listActivity();
+
+								if(settings.transactionsAffectHoldings !== "disabled") {
+									clearHoldingsList();
+								}
 
 								Notify.success({
 									title:"Event Updated",
@@ -2318,6 +2443,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 						}
 					
 						listActivity();
+
+						if(settings.transactionsAffectHoldings !== "disabled") {
+							clearHoldingsList();
+						}
 					}).catch(e => {
 						Notify.error({
 							title:"Error",
@@ -2583,6 +2712,32 @@ document.addEventListener("DOMContentLoaded", async () => {
 		return sorted;
 	}
 
+	function sortActivityBySymbol(events) {
+		let txIDs = Object.keys(events);
+
+		let sorted = {};
+
+		txIDs.map(txID => {
+			let transaction = events[txID];
+			let id = transaction.id;
+			let symbol = transaction.symbol;
+			let type = transaction.type;
+			let amount = parseFloat(transaction.amount);
+
+			if(!(id in sorted)) {
+				sorted[id] = { amount:0, symbol:symbol };
+			}
+			
+			if(type === "sell") {
+				sorted[id].amount = parseFloat(sorted[id].amount) - amount;
+			} else if(type === "buy") {
+				sorted[id].amount = parseFloat(sorted[id].amount) + amount;
+			}
+		});
+
+		return sorted;
+	}
+
 	function upload() {
 		return new Promise((resolve, reject) => {
 			let input = document.createElement("input");
@@ -2688,6 +2843,10 @@ function abbreviateNumber(num, digits) {
 		}
 	}
 	return (num / si[i].value).toFixed(digits).replace(rx, "$1") + si[i].symbol;
+}
+
+function positiveToNegative(number) {
+	return -Math.abs(number);
 }
 
 function capitalizeFirstLetter(string) {

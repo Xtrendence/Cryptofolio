@@ -601,6 +601,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 			let key = buttonSettingsChoices[i].parentElement.getAttribute("data-key");
 			let value = buttonSettingsChoices[i].getAttribute("data-value");
 			localStorage.setItem(key, value);
+			processSettingChange(key);
 			await getLocalSettings();
 		});
 	}
@@ -1418,6 +1419,17 @@ document.addEventListener("DOMContentLoaded", async () => {
 									coins[id] = { amount:0, symbol:transactionsBySymbol[id].symbol };
 								}
 							});
+						} else if(settings.transactionsAffectHoldings === "override") {
+							transactionsBySymbol = sortActivityBySymbol(await getActivity());
+
+							coins = {};
+
+							let ids = Object.keys(transactionsBySymbol);
+							ids.map(id => {
+								if(transactionsBySymbol[id].amount > 0) {
+									coins[id] = { amount:transactionsBySymbol[id].amount, symbol:transactionsBySymbol[id].symbol };
+								}
+							});
 						}
 						
 						parseHoldings(coins).then(holdings => {
@@ -1460,6 +1472,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 								if(amount < 0) {
 									amount = 0;
+								}
+
+								if(value < 0) {
+									value = 0;
 								}
 
 								let div;
@@ -1656,6 +1672,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 			});
 
 			updateActivityListInterval = setInterval(listActivity, updateInterval);
+		}
+	}
+
+	function processSettingChange(setting) {
+		switch(setting) {
+			case "transactionsAffectHoldings":
+				clearHoldingsList();
+				break;
 		}
 	}
 

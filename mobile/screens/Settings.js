@@ -18,6 +18,8 @@ export default function Settings({ navigation, route }) {
 
 	const [currency, setCurrency] = React.useState();
 
+	const [transactionsAffectHoldings, setTransactionsAffectHoldings] = React.useState();
+
 	const [defaultPage, setDefaultPage] = React.useState();
 
 	const [accountMessage, setAccountMessage] = React.useState();
@@ -75,6 +77,20 @@ export default function Settings({ navigation, route }) {
 					</TouchableOpacity>
 					<TouchableOpacity style={[styles.inlineButton, styles[`inlineButton${theme}`], (currency === "eur") ? styles.inlineButtonActive : null]} onPress={() => { changeCurrency("eur")}}>
 						<Text style={[styles.buttonText, styles[`buttonText${theme}`], (currency === "eur") ? styles.buttonTextActive : null]}>EUR</Text>
+					</TouchableOpacity>
+				</View>
+			</View>
+			<View style={[styles.section, styles[`section${theme}`]]}>
+				<Text style={[styles.header, styles[`header${theme}`]]}>Transactions Affect Holdings</Text>
+				<View style={styles.container}>
+					<TouchableOpacity style={[styles.inlineButton, styles[`inlineButton${theme}`], (transactionsAffectHoldings === "disabled") ? styles.inlineButtonActive : null]} onPress={() => { changeTransactionsAffectHoldings("disabled")}}>
+						<Text style={[styles.buttonText, styles[`buttonText${theme}`], (transactionsAffectHoldings === "disabled") ? styles.buttonTextActive : null]}>Disabled</Text>
+					</TouchableOpacity>
+					<TouchableOpacity style={[styles.inlineButton, styles[`inlineButton${theme}`], (transactionsAffectHoldings === "mixed") ? styles.inlineButtonActive : null]} onPress={() => { changeTransactionsAffectHoldings("mixed")}}>
+						<Text style={[styles.buttonText, styles[`buttonText${theme}`], (transactionsAffectHoldings === "mixed") ? styles.buttonTextActive : null]}>Mixed</Text>
+					</TouchableOpacity>
+					<TouchableOpacity style={[styles.inlineButton, styles[`inlineButton${theme}`], (transactionsAffectHoldings === "override") ? styles.inlineButtonActive : null]} onPress={() => { changeTransactionsAffectHoldings("override")}}>
+						<Text style={[styles.buttonText, styles[`buttonText${theme}`], (transactionsAffectHoldings === "override") ? styles.buttonTextActive : null]}>Override</Text>
 					</TouchableOpacity>
 				</View>
 			</View>
@@ -276,12 +292,29 @@ export default function Settings({ navigation, route }) {
 		}
 	}
 
+	async function changeTransactionsAffectHoldings(transactionsAffectHoldings) {
+		let validOptions = ["disabled", "mixed", "override"];
+		if(empty(transactionsAffectHoldings) || !validOptions.includes(transactionsAffectHoldings)) {
+			setTransactionsAffectHoldings("disabled");
+			await AsyncStorage.setItem("transactionsAffectHoldings", "disabled");
+		} else {
+			setTransactionsAffectHoldings(transactionsAffectHoldings);
+			await AsyncStorage.setItem("transactionsAffectHoldings", transactionsAffectHoldings);
+		}
+	}
+
 	async function getSettings() {
 		let currency = await AsyncStorage.getItem("currency");
 		if(empty(currency)) {
 			currency = "usd";
 		}
 		setCurrency(currency);
+
+		let transactionsAffectHoldings = await AsyncStorage.getItem("transactionsAffectHoldings");
+		if(empty(transactionsAffectHoldings)) {
+			transactionsAffectHoldings = "disabled";
+		}
+		setTransactionsAffectHoldings(transactionsAffectHoldings);
 
 		let validPages = ["Dashboard", "Market", "Holdings", "Activity", "Settings"];
 		let page = await AsyncStorage.getItem("defaultPage");

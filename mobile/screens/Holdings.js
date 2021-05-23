@@ -20,8 +20,11 @@ export default function Holdings({ navigation }) {
 	const loadingText = "Loading...";
 
 	const [pageKey, setPageKey] = React.useState(epoch());
+	const [holdingsKey, setHoldingsKey] = React.useState(epoch());
 
 	const [refreshing, setRefreshing] = React.useState(false);
+
+	const [transactionsAffectHoldingsState, setTransactionsAffectHoldingsState] = React.useState("disabled");
 
 	const [modal, setModal] = React.useState(false);
 	const [modalMessage, setModalMessage] = React.useState();
@@ -37,11 +40,11 @@ export default function Holdings({ navigation }) {
 	const [holdingsData, setHoldingsData] = React.useState([<Text key="loading" style={[styles.loadingText, styles.headerText, styles[`headerText${theme}`]]}>Loading...</Text>]);
 
 	useEffect(() => {
-		setInterval(() => {
-			if(navigation.isFocused()) {
-				getHoldings();
-			}
-		}, 10000);
+		// setInterval(() => {
+		// 	if(navigation.isFocused()) {
+		// 		getHoldings();
+		// 	}
+		// }, 10000);
 
 		navigation.addListener("focus", () => {
 			if(navigation.isFocused()) {
@@ -57,6 +60,10 @@ export default function Holdings({ navigation }) {
 
 		getHoldings();
 	}, [theme]);
+
+	useEffect(() => {
+		setHoldingsKey(epoch());
+	}, [transactionsAffectHoldingsState]);
 
 	const onRefresh = React.useCallback(() => {
 		setRefreshing(true);
@@ -104,7 +111,7 @@ export default function Holdings({ navigation }) {
 			<LinearGradient style={[styles.card, { marginBottom:20 }]} colors={globalColors[theme].greenerGradient} useAngle={true} angle={45}>
 				<Text style={[styles.cardText, styles[`cardText${theme}`]]}>{holdingsValue}</Text>
 			</LinearGradient>
-			<ScrollView ref={holdingsRef} style={[styles.tableWrapper, styles[`tableWrapper${theme}`]]} contentContainerStyle={{ paddingTop:10, paddingBottom:10 }} nestedScrollEnabled={true}>
+			<ScrollView ref={holdingsRef} style={[styles.tableWrapper, styles[`tableWrapper${theme}`]]} contentContainerStyle={{ paddingTop:10, paddingBottom:10 }} nestedScrollEnabled={true} key={holdingsKey}>
 				{ !empty(holdingsData) &&
 					holdingsData.map(row => {
 						return row;
@@ -129,6 +136,16 @@ export default function Holdings({ navigation }) {
 		setCoinList();
 		setModalMessage();
 		setModal(false);
+	}
+
+	function openModal(transactionsAffectHoldings, action, id, symbol, amount) {
+		if(transactionsAffectHoldings === "disabled") {
+			setAction(action);
+			setCoinID(id);
+			setCoinSymbol(symbol);
+			setCoinAmount(amount);
+			setModal(true);
+		}
 	}
 
 	async function createHolding(id, amount) {
@@ -277,6 +294,15 @@ export default function Holdings({ navigation }) {
 		if(empty(currency)) {
 			currency = "usd";
 		}
+
+		let transactionsAffectHoldings = await AsyncStorage.getItem("transactionsAffectHoldings");
+		if(empty(transactionsAffectHoldings)) {
+			transactionsAffectHoldings = "disabled";
+		}
+
+		if(transactionsAffectHoldingsState !== transactionsAffectHoldings) {
+			setTransactionsAffectHoldingsState(transactionsAffectHoldings);
+		}
 		
 		let theme = empty(await AsyncStorage.getItem("theme")) ? "Light" : await AsyncStorage.getItem("theme");
 
@@ -301,6 +327,30 @@ export default function Holdings({ navigation }) {
 					setHoldingsValue("-");
 				}
 			} else {
+				let transactionsBySymbol;
+
+				if(transactionsAffectHoldings === "mixed") {
+					transactionsBySymbol = await getActivityHoldings();
+
+					let ids = Object.keys(transactionsBySymbol);
+					ids.map(id => {
+						if(!(id in coins)) {
+							coins[id] = { amount:0, symbol:transactionsBySymbol[id].symbol };
+						}
+					});
+				} else if(transactionsAffectHoldings === "override") {
+					transactionsBySymbol = await getActivityHoldings();
+
+					coins = {};
+
+					let ids = Object.keys(transactionsBySymbol);
+					ids.map(id => {
+						if(transactionsBySymbol[id].amount > 0) {
+							coins[id] = { amount:transactionsBySymbol[id].amount, symbol:transactionsBySymbol[id].symbol };
+						}
+					});
+				}
+
 				parseHoldings(coins).then(holdings => {
 					let data = [];
 
@@ -325,8 +375,30 @@ export default function Holdings({ navigation }) {
 						let symbol = coin.symbol;
 						let value = separateThousands(abbreviateNumber(coin.value.toFixed(2), 2));
 
+						let enableModal = true;
+
+						if(!empty(transactionsBySymbol)) {
+							if(transactionsAffectHoldings === "mixed") {
+								if(holding in transactionsBySymbol) {
+									amount = parseFloat(amount) + transactionsBySymbol[holding].amount;
+									value = (coin.price * amount).toFixed(2);
+									enableModal = false;
+								}
+							} else if(transactionsAffectHoldings === "override") {
+								enableModal = false;
+							}
+						}
+
+						if(amount < 0) {
+							amount = 0;
+						}
+
+						if(value < 0) {
+							value = 0;
+						}
+
 						data.push(
-							<TouchableOpacity onPress={() => { setAction("update"); setCoinID(capitalizeFirstLetter(holding)); setCoinSymbol(symbol.toUpperCase()); setCoinAmount(amount.toString()); setModal(true); }} key={epoch() + holding}>
+							<TouchableOpacity onPress={() => { openModal(transactionsAffectHoldings, "update", capitalizeFirstLetter(holding), symbol.toUpperCase(), amount.toString())}} key={epoch() + holding}>
 								<View style={[styles.row, rank % 2 ? {...styles.rowOdd, ...styles[`rowOdd${theme}`]} : null]}>
 									<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellRank]} ellipsizeMode="tail">{rank}</Text>
 									<Image style={styles.cellImage} source={{uri:icon}}/>
@@ -427,6 +499,55 @@ export default function Holdings({ navigation }) {
 			} catch(error) {
 				reject(error);
 			}
+		});
+	}
+
+	async function getActivityHoldings() {
+		console.log("Holdings - Getting Activity - " + epoch());
+
+		return new Promise(async (resolve, reject) => {
+			let api = await AsyncStorage.getItem("api");
+			let token = await AsyncStorage.getItem("token");
+
+			let endpoint = api + "activity/read.php?platform=app&token=" + token;
+
+			fetch(endpoint, {
+				method: "GET",
+				headers: {
+					Accept: "application/json", "Content-Type": "application/json"
+				}
+			})
+			.then((response) => {
+				return response.json();
+			})
+			.then(async (events) => {
+				let txIDs = Object.keys(events);
+
+				let sorted = {};
+
+				txIDs.map(txID => {
+					let transaction = events[txID];
+					let id = transaction.id;
+					let symbol = transaction.symbol;
+					let type = transaction.type;
+					let amount = parseFloat(transaction.amount);
+
+					if(!(id in sorted)) {
+						sorted[id] = { amount:0, symbol:symbol };
+					}
+			
+					if(type === "sell") {
+						sorted[id].amount = parseFloat(sorted[id].amount) - amount;
+					} else if(type === "buy") {
+						sorted[id].amount = parseFloat(sorted[id].amount) + amount;
+					}
+				});
+
+				resolve(sorted);
+			}).catch(error => {
+				console.log(arguments.callee.name + " - " + error);
+				reject(error);
+			});
 		});
 	}
 }

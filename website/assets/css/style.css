@@ -496,6 +496,7 @@ input[type=number] {
 
 .coin-chart-wrapper {
 	width:calc(100% - 40px);
+	max-width:1100px;
 	display:block;
 	margin:0 auto 20px auto;
 }

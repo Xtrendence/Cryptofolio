@@ -1821,9 +1821,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 	async function generateChart(element, title, labels, tooltips, data, args) {
 		let canvas = document.createElement("canvas");
-		let context = canvas.getContext("2d");
-
+		canvas.id = "chart-canvas";
 		canvas.classList.add("chart-canvas");
+
+		let context = canvas.getContext("2d");
 
 		let gradientStroke = context.createLinearGradient(1000, 0, 300, 0);
 		gradientStroke.addColorStop(0, "#feac5e");
@@ -1833,6 +1834,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 		let datesBuy = [];
 		let datesSell = [];
 
+		let datesBuyFormatted = [];
+		let datesSellFormatted = [];
+
+		let amountsBuy = [];
+		let amountsSell = [];
+
 		if(settings.showTransactionsOnCharts === "enabled") {
 			let activity = await getActivity();
 			Object.keys(activity).map(txID => {
@@ -1841,8 +1848,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 					try {
 						if(event.type.toLowerCase() === "buy") {
 							datesBuy.push(new Date(Date.parse(event.date)));
+							datesBuyFormatted.push(formatDateHuman(new Date(Date.parse(event.date))));
+							amountsBuy.push(event.amount);
 						} else if(event.type.toLowerCase() === "sell") {
 							datesSell.push(new Date(Date.parse(event.date)));
+							datesSellFormatted.push(formatDateHuman(new Date(Date.parse(event.date))));
+							amountsSell.push(event.amount);
 						}
 					} catch(e) {
 						console.log(e);
@@ -1859,10 +1870,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 				scaleID: "x-axis-0",
 				value: date,
 				borderColor: "#67b26f",
-				borderWidth: 2,
-				label: {
-					enabled: false,
-				}
+				borderWidth: 2.5
 			}
 		});
 
@@ -1874,10 +1882,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 				scaleID: "x-axis-0",
 				value: date,
 				borderColor: "#e94057",
-				borderWidth: 2,
-				label: {
-					enabled: false,
-				}
+				borderWidth: 2.5
 			}
 		});
 
@@ -1891,12 +1896,17 @@ document.addEventListener("DOMContentLoaded", async () => {
 					borderColor: gradientStroke,
 					data: data,
 					pointRadius: 1,
+					pointHoverRadius: 6,
 				}],
 			},
 			options: {
 				responsive: true,
 				legend: {
 					display: true
+				},
+				hover: {
+					mode: "index",
+					intersect: false,
 				},
 				scales: {
 					xAxes: [{
@@ -1927,15 +1937,26 @@ document.addEventListener("DOMContentLoaded", async () => {
 				},
 				tooltips: {
 					displayColors: false,
+					intersect: false,
 					callbacks: {
 						title: function() {
 							return "";
 						},
 						label: function(item) {
 							let price = data[item.index];
+
 							if(price > 1) {
 								price = separateThousands(price.toFixed(2));
 							}
+
+							if(datesBuyFormatted.includes(tooltips[item.index])) {
+								let amount = amountsBuy[datesBuyFormatted.indexOf(tooltips[item.index])];
+								return [tooltips[item.index], "Bought " + amount + " @ $" + price];
+							} else if(datesSellFormatted.includes(tooltips[item.index])) {
+								let amount = amountsSell[datesSellFormatted.indexOf(tooltips[item.index])];
+								return [tooltips[item.index], "Sold " + amount + " @ $" + price];
+							}
+
 							return [tooltips[item.index], "$" + price];
 						}
 					}
@@ -1949,6 +1970,16 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 		element.innerHTML = "";
 		element.appendChild(canvas);
+	}
+
+	function getChartInstance() {
+		return new Promise((resolve) => {
+			Chart.helpers.each(Chart.instances, function(instance) {
+				if(instance.canvas.id === "chart-canvas") {
+					resolve(instance);
+				}
+			});
+		});
 	}
 
 	function processSettingChange(setting) {

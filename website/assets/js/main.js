@@ -1854,6 +1854,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 							maxTicksLimit: 12,
 							fontColor: settings.theme === "dark" ? "rgba(255,255,255,0.9)" : "rgb(75,75,75)"
 						},
+						type: "time",
+						time: {
+							unit: "month"
+						}
 					}],
 					yAxes: [{
 						gridLines: {
@@ -2742,7 +2746,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 			let month = new Date(time).toLocaleString("default", { month: "long" });
 
-			parsed.labels.push(month);
+			parsed.labels.push(new Date(time));
 			parsed.tooltips.push(formatDateHuman(new Date(time)));
 			parsed.prices.push(price);
 		});

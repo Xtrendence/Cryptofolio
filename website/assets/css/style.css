@@ -459,6 +459,14 @@ input[type=number] {
 	text-align:center;
 }
 
+.coin-wrapper {
+	cursor:pointer;
+	transition:background 0.25s;
+}
+.coin-wrapper:hover {
+	background:var(--main-second);
+}
+
 html.light .highlight .coin-wrapper.positive {
 	background:rgba(0,255,150,0.1);
 }

@@ -1000,7 +1000,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 		}
 	}
 
-	function popup(title, html, width, height) {
+	function popup(title, html, width, height, delay) {
 		divPopupOverlay.classList.add("active");
 		divPopupWrapper.style.width = width;
 		divPopupWrapper.style.height = height;
@@ -1009,18 +1009,51 @@ document.addEventListener("DOMContentLoaded", async () => {
 		divPopupWrapper.classList.add("active");
 		spanPopupTitle.textContent = title;
 		divPopupBottom.innerHTML = html;
+
+		if(empty(delay)) {
+			delay = 100;
+		}
+
+		setTimeout(() => {
+			divPopupOverlay.style.opacity = 1;
+			divPopupWrapper.style.opacity = 1;
+		}, delay);
 	}
 
 	function hidePopup() {
-		divPopupOverlay.classList.remove("active");
-		divPopupWrapper.classList.remove("active");
-		spanPopupTitle.textContent = "Popup Title";
-		divPopupBottom.remove();
+		divPopupOverlay.style.opacity = 0;
+		divPopupWrapper.style.opacity = 0;
 
-		let div = document.createElement("div");
-		div.classList.add("bottom");
-		divPopupWrapper.appendChild(div);
-		divPopupBottom = divPopupWrapper.getElementsByClassName("bottom")[0];
+		setTimeout(() => {
+			divPopupOverlay.classList.remove("active");
+			divPopupWrapper.classList.remove("active");
+			spanPopupTitle.textContent = "Popup Title";
+			divPopupBottom.remove();
+
+			let div = document.createElement("div");
+			div.classList.add("bottom");
+			divPopupWrapper.appendChild(div);
+			divPopupBottom = divPopupWrapper.getElementsByClassName("bottom")[0];
+		}, 250);
+	}
+
+	function showLoading(limit) {
+		hideLoading();
+
+		let element = document.createElement("div");
+		element.classList.add("loading-screen");
+		element.innerHTML = '<div class="loading-icon"><div></div><div></div></div>';
+		document.body.appendChild(element);
+
+		setTimeout(() => {
+			element.remove();
+		}, limit);
+	}
+
+	function hideLoading() {
+		for(let i = 0; i < document.getElementsByClassName("loading-screen").length; i++) {
+			document.getElementsByClassName("loading-screen")[i].remove();
+		}
 	}
 
 	function switchTheme(theme) {
@@ -1404,19 +1437,25 @@ document.addEventListener("DOMContentLoaded", async () => {
 							div.innerHTML = '<span class="rank">' + rank + '</span><img draggable="false" src="' + icon + '" title="' + name + '"><span class="coin" title="' + name + '">' + symbol.toUpperCase() + '</span><span class="price">' + currencies[settings.currency] + price + '</span><span class="market-cap">' + currencies[settings.currency] + separateThousands(marketCap) + '</span><span class="day">' + priceChangeDay + '%</span>';
 
 							div.addEventListener("click", () => {
+								showLoading(6000);
+
 								getCoinInfo(coin.id).then(info => {
 									getCoinMarketData(coin.id, settings.currency, previousYear(new Date()), new Date()).then(data => {
 										data = parseMarketData(data, new Date().getTime(), coin.current_price);
 
 										let html = '<div class="coin-popup-wrapper"><div class="coin-chart-wrapper"></div><span class="message">' + info.description.en + '</span><button class="reject" id="popup-dismiss">Back</button></div>';
 
-										popup(symbol.toUpperCase() + " / " + settings.currency.toUpperCase() + " - " + info.name, html, "calc(100% - 40px)", "calc(100% - 40px)");
+										popup(symbol.toUpperCase() + " / " + settings.currency.toUpperCase() + " - " + info.name, html, "calc(100% - 40px)", "calc(100% - 40px)", 1500);
 										
 										generateChart(document.getElementsByClassName("coin-chart-wrapper")[0], "Price", data.labels, data.tooltips, data.prices);
 
 										document.getElementById("popup-dismiss").addEventListener("click", () => {
 											hidePopup();
 										});
+
+										setTimeout(() => {
+											hideLoading();
+										}, 1400);
 									}).catch(e => {
 										console.log(e);
 									});

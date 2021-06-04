@@ -69,6 +69,8 @@ input[type=number] {
 }
 .popup-overlay {
 	z-index:97;
+	opacity:0;
+	transition:opacity 0.25s;
 	background:rgba(0,0,0,0.95);
 }
 .loading-overlay.active, .popup-overlay.active {
@@ -96,6 +98,8 @@ input[type=number] {
 	background:var(--main-first);
 	z-index:98;
 	overflow:hidden;
+	transition:opacity 0.25s;
+	opacity:0;
 	border-radius:var(--border-radius);
 	box-shadow:var(--shadow-smooth);
 	display:none;
@@ -459,11 +463,11 @@ input[type=number] {
 	text-align:center;
 }
 
-.coin-wrapper {
+.market-list .coin-wrapper {
 	cursor:pointer;
 	transition:background 0.25s;
 }
-.coin-wrapper:hover {
+.market-list .coin-wrapper:hover {
 	background:var(--main-second);
 }
 
@@ -1310,4 +1314,48 @@ html.dark .highlight .coin-wrapper.negative {
 	background:var(--main-third);
 	box-shadow:var(--shadow-smooth);
 	display:inline-block;
+}
+
+.loading-screen {
+	position:absolute;
+	top:0;
+	left:0;
+	width:100%;
+	height:100%;
+	z-index:999;
+	background:rgba(0,0,0,0.9);
+}
+.loading-icon {
+	display:inline-block;
+	position:absolute;
+	top:calc(50% - 80px / 2);
+	left:calc(50% - 80px / 2);
+	width:80px;
+	height:80px;
+}
+.loading-icon div {
+	position:absolute;
+	border:4px solid #fff;
+	opacity:1;
+	border-radius:50%;
+	animation:loading-icon 1s cubic-bezier(0, 0.2, 0.8, 1) infinite;
+}
+.loading-icon div:nth-child(2) {
+	animation-delay:-0.5s;
+}
+@keyframes loading-icon {
+	0% {
+		top:36px;
+		left:36px;
+		width:0;
+		height:0;
+		opacity:1;
+	}
+	100% {
+		top:0px;
+		left:0px;
+		width:72px;
+		height:72px;
+		opacity:0;
+	}
 }

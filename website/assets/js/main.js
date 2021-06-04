@@ -1830,6 +1830,39 @@ document.addEventListener("DOMContentLoaded", async () => {
 		gradientStroke.addColorStop(0.5, "#c779d0");
 		gradientStroke.addColorStop(1, "#4bc0c8");
 
+		let datesBuy = [new Date(1619104492 * 1000)];
+		let datesSell = [new Date(1615004492 * 1000)];
+
+		let annotationsBuy = datesBuy.map(function(date, index) {
+			return {
+				type: "line",
+				id: "line-buy-" + index,
+				mode: "vertical",
+				scaleID: "x-axis-0",
+				value: date,
+				borderColor: "#67b26f",
+				borderWidth: 2,
+				label: {
+					enabled: false,
+				}
+			}
+		});
+
+		let annotationsSell = datesSell.map(function(date, index) {
+			return {
+				type: "line",
+				id: "line-sell-" + index,
+				mode: "vertical",
+				scaleID: "x-axis-0",
+				value: date,
+				borderColor: "#e94057",
+				borderWidth: 2,
+				label: {
+					enabled: false,
+				}
+			}
+		});
+
 		new Chart(canvas, {
 			type: "line",
 			data: {
@@ -1889,6 +1922,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 						}
 					}
 				},
+				annotation: {
+					drawTime: "beforeDatasetsDraw",
+					annotations: [...annotationsBuy, ...annotationsSell]
+				}
 			}
 		});
 

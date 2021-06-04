@@ -870,6 +870,38 @@ document.addEventListener("DOMContentLoaded", async () => {
 		});
 	}
 
+	function chartPopup(coinID, symbol, currentPrice) {
+		showLoading(6000);
+
+		getCoinInfo(coinID).then(info => {
+			getCoinMarketData(coinID, settings.currency, previousYear(new Date()), new Date()).then(data => {
+				data = parseMarketData(data, new Date().getTime(), currentPrice);
+
+				if(empty(info.description.en)) {
+					info.description.en = "No description found for " + symbol.toUpperCase() + ".";
+				}
+
+				let html = '<div class="coin-popup-wrapper"><div class="coin-chart-wrapper"></div><span class="message">' + info.description.en + '</span><button class="reject" id="popup-dismiss">Back</button></div>';
+
+				popup(symbol.toUpperCase() + " / " + settings.currency.toUpperCase() + " - " + info.name, html, "calc(100% - 40px)", "calc(100% - 40px)", { delay:1500, closeIcon:true });
+										
+				generateChart(document.getElementsByClassName("coin-chart-wrapper")[0], "Price", data.labels, data.tooltips, data.prices);
+
+				document.getElementById("popup-dismiss").addEventListener("click", () => {
+					hidePopup();
+				});
+
+				setTimeout(() => {
+					hideLoading();
+				}, 1400);
+			}).catch(e => {
+				console.log(e);
+			});
+		}).catch(e => {
+			console.log(e);
+		});
+	}
+
 	function login(password) {
 		try {
 			let xhr = new XMLHttpRequest();
@@ -1450,35 +1482,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 							div.innerHTML = '<span class="rank">' + rank + '</span><img draggable="false" src="' + icon + '" title="' + name + '"><span class="coin" title="' + name + '">' + symbol.toUpperCase() + '</span><span class="price">' + currencies[settings.currency] + price + '</span><span class="market-cap">' + currencies[settings.currency] + separateThousands(marketCap) + '</span><span class="day">' + priceChangeDay + '%</span>';
 
 							div.addEventListener("click", () => {
-								showLoading(6000);
-
-								getCoinInfo(coin.id).then(info => {
-									getCoinMarketData(coin.id, settings.currency, previousYear(new Date()), new Date()).then(data => {
-										data = parseMarketData(data, new Date().getTime(), coin.current_price);
-
-										if(empty(info.description.en)) {
-											info.description.en = "No description found for " + symbol.toUpperCase() + ".";
-										}
-
-										let html = '<div class="coin-popup-wrapper"><div class="coin-chart-wrapper"></div><span class="message">' + info.description.en + '</span><button class="reject" id="popup-dismiss">Back</button></div>';
-
-										popup(symbol.toUpperCase() + " / " + settings.currency.toUpperCase() + " - " + info.name, html, "calc(100% - 40px)", "calc(100% - 40px)", { delay:1500, closeIcon:true });
-										
-										generateChart(document.getElementsByClassName("coin-chart-wrapper")[0], "Price", data.labels, data.tooltips, data.prices);
-
-										document.getElementById("popup-dismiss").addEventListener("click", () => {
-											hidePopup();
-										});
-
-										setTimeout(() => {
-											hideLoading();
-										}, 1400);
-									}).catch(e => {
-										console.log(e);
-									});
-								}).catch(e => {
-									console.log(e);
-								});
+								chartPopup(coin.id, symbol, coin.current_price);
 							});
 
 							divMarketList.appendChild(div);
@@ -1835,7 +1839,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 					backgroundColor: "rgba(0,0,0,0)",
 					borderColor: gradientStroke,
 					data: data,
-					pointRadius: 1
+					pointRadius: 1,
 				}],
 			},
 			options: {
@@ -1845,9 +1849,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 				},
 				scales: {
 					xAxes: [{
+						beginAtZero: true,
 						gridLines: {
+							zeroLineColor: settings.theme === "dark" ? "rgba(255,255,255,0.075)" : "rgba(0,0,0,0.1)",
 							color: settings.theme === "dark" ? "rgba(255,255,255,0.075)" : "rgba(0,0,0,0.1)",
-							borderDash: [8, 4]
 						},
 						ticks: {
 							autoSkip: true,
@@ -1860,9 +1865,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 						}
 					}],
 					yAxes: [{
+						beginAtZero: true,
 						gridLines: {
 							color: settings.theme === "dark" ? "rgba(255,255,255,0.075)" : "rgba(0,0,0,0.1)",
-							borderDash: [8, 4]
 						},
 						ticks: {
 							fontColor: settings.theme === "dark" ? "rgba(255,255,255,0.9)" : "rgb(75,75,75)"
@@ -1883,7 +1888,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 							return [tooltips[item.index], "$" + price];
 						}
 					}
-				}
+				},
 			}
 		});
 
@@ -2743,8 +2748,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 		Object.keys(prices).map(key => {
 			let time = prices[key][0];
 			let price = parseFloat(prices[key][1]);
-
-			let month = new Date(time).toLocaleString("default", { month: "long" });
 
 			parsed.labels.push(new Date(time));
 			parsed.tooltips.push(formatDateHuman(new Date(time)));

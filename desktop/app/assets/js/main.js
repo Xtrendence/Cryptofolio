@@ -57,6 +57,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 	let spanPopupTitle = divPopupWrapper.getElementsByClassName("title")[0];
 	
+	let buttonPopupClose = divPopupWrapper.getElementsByClassName("close-button")[0];
+
 	let divPageDashboard = document.getElementById("page-dashboard");
 	let divPageMarket = document.getElementById("page-market");
 	let divPageHoldings = document.getElementById("page-holdings");
@@ -257,6 +259,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 		hidePopup();
 	});
 
+	buttonPopupClose.addEventListener("click", () => {
+		hidePopup();
+	});
+
 	buttonMoreEdit.addEventListener("click", () => {
 		let id = divHoldingsMoreMenu.getAttribute("data-coin");
 		let symbol = divHoldingsMoreMenu.getAttribute("data-symbol");
@@ -264,7 +270,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 		let html = '<input id="popup-coin" placeholder="Coin Symbol... (e.g. BTC)" value="' + symbol + '" readonly><input id="popup-amount" placeholder="Amount... (e.g. 2.5)" value="' + currentAmount + '" type="number"><button class="reject" id="popup-cancel">Cancel</button><button class="resolve" id="popup-confirm">Confirm</button>';
 
-		popup("Editing Asset", html, 300, 240);
+		popup("Editing Asset", html, "300px", "240px");
 
 		document.getElementById("popup-cancel").addEventListener("click", () => {
 			hidePopup();
@@ -309,7 +315,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 		let html = '<button class="reject" id="popup-cancel">Cancel</button><button class="resolve warning" id="popup-confirm">Delete</button>';
 
-		popup("Deleting Asset", html, 240, 120);
+		popup("Deleting Asset", html, "240px", "120px");
 
 		document.getElementById("popup-cancel").addEventListener("click", () => {
 			hidePopup();
@@ -376,7 +382,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 		
 		let popupHeight = 240;
 
-		popup("Adding Asset", html, 300, popupHeight);
+		popup("Adding Asset", html, "300px", popupHeight + "px");
 
 		document.getElementById("popup-cancel").addEventListener("click", () => {
 			hidePopup();
@@ -748,7 +754,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 	buttonShowQRCode.addEventListener("click", () => {
 		let html = '<span class="message">Generating a QR code would log you out of any mobile device you\'re currently logged in on.</span><input id="popup-password" placeholder="Password..." type="password"><button class="reject" id="popup-cancel">Cancel</button><button class="resolve" id="popup-confirm">Confirm</button>';
 
-		popup("Confirmation", html, 340, 310);
+		popup("Confirmation", html, "340px", "310px");
 
 		document.getElementById("popup-cancel").addEventListener("click", () => {
 			hidePopup();
@@ -778,7 +784,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 									let html = '<span class="message">Please scan the QR code with the Cryptofolio mobile app from the login screen.</span><div class="popup-canvas-wrapper"></div><button class="reject" id="popup-dismiss">Dismiss</button>';
 				
-									popup("QR Login Code", html, 400, 540);
+									popup("QR Login Code", html, "400px", "540px");
 
 									let qrStyle = JSON.parse(qrCodeStyle);
 									qrStyle.width = 340;
@@ -835,7 +841,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 		let html = '<span class="message">Donate ' + symbol + '</span><div class="popup-canvas-wrapper donation"></div><span class="message break">' + addresses[symbol] + '</span><button class="reject" id="popup-dismiss">Dismiss</button>';
 				
-		popup("Donation Address", html, 400, 520);
+		popup("Donation Address", html, "400px", "520px");
 
 		let style = { 
 			width:310,
@@ -858,6 +864,46 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 		document.getElementById("popup-dismiss").addEventListener("click", () => {
 			hidePopup();
+		});
+	}
+
+	function chartPopup(coinID, symbol, currentPrice) {
+		showLoading(6000);
+
+		getCoinInfo(coinID).then(info => {
+			getCoinMarketData(coinID, settings.currency, previousYear(new Date()), new Date()).then(data => {
+				data = parseMarketData(data, new Date().getTime(), currentPrice);
+
+				if(empty(info.description.en)) {
+					info.description.en = "No description found for " + symbol.toUpperCase() + ".";
+				}
+
+				let html = '<div class="coin-popup-wrapper"><div class="coin-chart-wrapper"></div><div class="stats-wrapper noselect"><span id="coin-popup-ath">All-Time High: ...</span></div><span class="message">' + info.description.en + '</span><button class="reject" id="popup-dismiss">Back</button></div>';
+
+				popup(symbol.toUpperCase() + " / " + settings.currency.toUpperCase() + " - " + info.name, html, "calc(100% - 40px)", "calc(100% - 40px)", { delay:1500, closeIcon:true });
+										
+				generateChart(document.getElementsByClassName("coin-chart-wrapper")[0], "Price", data.labels, data.tooltips, data.prices, { symbol:symbol });
+
+				let ath = parseFloat(info.market_data.ath[settings.currency]);
+
+				if(ath > 1) {
+					ath = separateThousands(ath.toFixed(2));
+				}
+
+				document.getElementById("coin-popup-ath").textContent = "All-Time High: " + currencies[settings.currency] + ath + " (" + formatDateHuman(new Date(Date.parse(info.market_data.ath_date[settings.currency]))).replaceAll(" ", "") + ")";
+
+				document.getElementById("popup-dismiss").addEventListener("click", () => {
+					hidePopup();
+				});
+
+				setTimeout(() => {
+					hideLoading();
+				}, 1400);
+			}).catch(e => {
+				console.log(e);
+			});
+		}).catch(e => {
+			console.log(e);
 		});
 	}
 
@@ -1020,27 +1066,67 @@ document.addEventListener("DOMContentLoaded", async () => {
 		}
 	}
 
-	function popup(title, html, width, height) {
+	function popup(title, html, width, height, options) {
 		divPopupOverlay.classList.add("active");
-		divPopupWrapper.style.width = width + "px";
-		divPopupWrapper.style.height = height + "px";
-		divPopupWrapper.style.left = "calc(50% - " + width + "px / 2)";
-		divPopupWrapper.style.top = "calc(50% - " + height + "px / 2)";
+		divPopupWrapper.style.width = width;
+		divPopupWrapper.style.height = height;
+		divPopupWrapper.style.left = "calc(50% - " + width + " / 2)";
+		divPopupWrapper.style.top = "calc(50% - " + height + " / 2)";
 		divPopupWrapper.classList.add("active");
 		spanPopupTitle.textContent = title;
+		buttonPopupClose.classList.add("hidden");
 		divPopupBottom.innerHTML = html;
+
+		let delay = options?.delay;
+
+		if(empty(delay)) {
+			delay = 100;
+		}
+
+		setTimeout(() => {
+			divPopupOverlay.style.opacity = 1;
+			divPopupWrapper.style.opacity = 1;
+		}, delay);
+
+		if(options?.closeIcon) {
+			buttonPopupClose.classList.remove("hidden");
+		}
 	}
 
 	function hidePopup() {
-		divPopupOverlay.classList.remove("active");
-		divPopupWrapper.classList.remove("active");
-		spanPopupTitle.textContent = "Popup Title";
-		divPopupBottom.remove();
+		divPopupOverlay.style.opacity = 0;
+		divPopupWrapper.style.opacity = 0;
 
-		let div = document.createElement("div");
-		div.classList.add("bottom");
-		divPopupWrapper.appendChild(div);
-		divPopupBottom = divPopupWrapper.getElementsByClassName("bottom")[0];
+		setTimeout(() => {
+			divPopupOverlay.classList.remove("active");
+			divPopupWrapper.classList.remove("active");
+			spanPopupTitle.textContent = "Popup Title";
+			divPopupBottom.remove();
+
+			let div = document.createElement("div");
+			div.classList.add("bottom");
+			divPopupWrapper.appendChild(div);
+			divPopupBottom = divPopupWrapper.getElementsByClassName("bottom")[0];
+		}, 250);
+	}
+
+	function showLoading(limit) {
+		hideLoading();
+
+		let element = document.createElement("div");
+		element.classList.add("loading-screen");
+		element.innerHTML = '<div class="loading-icon"><div></div><div></div></div>';
+		document.body.appendChild(element);
+
+		setTimeout(() => {
+			element.remove();
+		}, limit);
+	}
+
+	function hideLoading() {
+		for(let i = 0; i < document.getElementsByClassName("loading-screen").length; i++) {
+			document.getElementsByClassName("loading-screen")[i].remove();
+		}
 	}
 
 	async function switchTheme(theme) {
@@ -1425,6 +1511,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 							div.innerHTML = '<span class="rank">' + rank + '</span><img draggable="false" src="' + icon + '" title="' + name + '"><span class="coin" title="' + name + '">' + symbol.toUpperCase() + '</span><span class="price">' + currencies[settings.currency] + price + '</span><span class="market-cap">' + currencies[settings.currency] + separateThousands(marketCap) + '</span><span class="day">' + priceChangeDay + '%</span>';
 
+							div.addEventListener("click", () => {
+								chartPopup(coin.id, symbol, coin.current_price);
+							});
+
 							divMarketList.appendChild(div);
 						}
 
@@ -1759,6 +1849,169 @@ document.addEventListener("DOMContentLoaded", async () => {
 		}
 	}
 
+	async function generateChart(element, title, labels, tooltips, data, args) {
+		let canvas = document.createElement("canvas");
+		canvas.id = "chart-canvas";
+		canvas.classList.add("chart-canvas");
+
+		let context = canvas.getContext("2d");
+
+		let gradientStroke = context.createLinearGradient(1000, 0, 300, 0);
+		gradientStroke.addColorStop(0, "#feac5e");
+		gradientStroke.addColorStop(0.5, "#c779d0");
+		gradientStroke.addColorStop(1, "#4bc0c8");
+
+		let datesBuy = [];
+		let datesSell = [];
+
+		let datesBuyFormatted = [];
+		let datesSellFormatted = [];
+
+		let amountsBuy = [];
+		let amountsSell = [];
+
+		if(settings.showTransactionsOnCharts === "enabled") {
+			let activity = await getActivity();
+			Object.keys(activity).map(txID => {
+				let event = activity[txID];
+				if(event.symbol.toUpperCase() === args?.symbol.toUpperCase()) {
+					try {
+						if(event.type.toLowerCase() === "buy") {
+							datesBuy.push(new Date(Date.parse(event.date)));
+							datesBuyFormatted.push(formatDateHuman(new Date(Date.parse(event.date))));
+							amountsBuy.push(event.amount);
+						} else if(event.type.toLowerCase() === "sell") {
+							datesSell.push(new Date(Date.parse(event.date)));
+							datesSellFormatted.push(formatDateHuman(new Date(Date.parse(event.date))));
+							amountsSell.push(event.amount);
+						}
+					} catch(e) {
+						console.log(e);
+					}
+				}
+			});
+		}
+
+		let annotationsBuy = datesBuy.map(function(date, index) {
+			return {
+				type: "line",
+				id: "line-buy-" + index,
+				mode: "vertical",
+				scaleID: "x-axis-0",
+				value: date,
+				borderColor: "#67b26f",
+				borderWidth: 2.5
+			}
+		});
+
+		let annotationsSell = datesSell.map(function(date, index) {
+			return {
+				type: "line",
+				id: "line-sell-" + index,
+				mode: "vertical",
+				scaleID: "x-axis-0",
+				value: date,
+				borderColor: "#e94057",
+				borderWidth: 2.5
+			}
+		});
+
+		new Chart(canvas, {
+			type: "line",
+			data: {
+				labels: labels,
+				datasets:[{
+					label: title,
+					backgroundColor: "rgba(0,0,0,0)",
+					borderColor: gradientStroke,
+					data: data,
+					pointRadius: 1,
+					pointHoverRadius: 6,
+				}],
+			},
+			options: {
+				responsive: true,
+				legend: {
+					display: true
+				},
+				hover: {
+					mode: "index",
+					intersect: false,
+				},
+				scales: {
+					xAxes: [{
+						beginAtZero: true,
+						gridLines: {
+							zeroLineColor: settings.theme === "dark" ? "rgba(255,255,255,0.075)" : "rgba(0,0,0,0.1)",
+							color: settings.theme === "dark" ? "rgba(255,255,255,0.075)" : "rgba(0,0,0,0.1)",
+						},
+						ticks: {
+							autoSkip: true,
+							maxTicksLimit: 12,
+							fontColor: settings.theme === "dark" ? "rgba(255,255,255,0.9)" : "rgb(75,75,75)"
+						},
+						type: "time",
+						time: {
+							unit: "month"
+						}
+					}],
+					yAxes: [{
+						beginAtZero: true,
+						gridLines: {
+							color: settings.theme === "dark" ? "rgba(255,255,255,0.075)" : "rgba(0,0,0,0.1)",
+						},
+						ticks: {
+							fontColor: settings.theme === "dark" ? "rgba(255,255,255,0.9)" : "rgb(75,75,75)"
+						}
+					}]
+				},
+				tooltips: {
+					displayColors: false,
+					intersect: false,
+					callbacks: {
+						title: function() {
+							return "";
+						},
+						label: function(item) {
+							let price = data[item.index];
+
+							if(price > 1) {
+								price = separateThousands(price.toFixed(2));
+							}
+
+							if(datesBuyFormatted.includes(tooltips[item.index])) {
+								let amount = amountsBuy[datesBuyFormatted.indexOf(tooltips[item.index])];
+								return [tooltips[item.index], "Bought " + amount + " @ " + currencies[settings.currency] + price];
+							} else if(datesSellFormatted.includes(tooltips[item.index])) {
+								let amount = amountsSell[datesSellFormatted.indexOf(tooltips[item.index])];
+								return [tooltips[item.index], "Sold " + amount + " @ " + currencies[settings.currency] + price];
+							}
+
+							return [tooltips[item.index], currencies[settings.currency] + price];
+						}
+					}
+				},
+				annotation: {
+					drawTime: "beforeDatasetsDraw",
+					annotations: [...annotationsBuy, ...annotationsSell]
+				}
+			}
+		});
+
+		element.innerHTML = "";
+		element.appendChild(canvas);
+	}
+
+	function getChartInstance() {
+		return new Promise((resolve) => {
+			Chart.helpers.each(Chart.instances, function(instance) {
+				if(instance.canvas.id === "chart-canvas") {
+					resolve(instance);
+				}
+			});
+		});
+	}
+	
 	function processSettingChange(setting) {
 		switch(setting) {
 			case "transactionsAffectHoldings":
@@ -1781,6 +2034,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 				settings.coinBackdrop = empty(await Storage.getItem("coinBackdrop")) ? "disabled" : await Storage.getItem("coinBackdrop");
 
 				settings.transactionsAffectHoldings = empty(await Storage.getItem("transactionsAffectHoldings")) ? "disabled" : await Storage.getItem("transactionsAffectHoldings");
+				
+				settings.showTransactionsOnCharts = empty(await Storage.getItem("showTransactionsOnCharts")) ? "disabled" : await Storage.getItem("showTransactionsOnCharts");
 
 				settings.highlightPriceChange = empty(await Storage.getItem("highlightPriceChange")) ? "disabled" : await Storage.getItem("highlightPriceChange");
 
@@ -2123,7 +2378,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 		let popupHeight = 360;
 	
-		popup((action === "create") ? "Recording Event" : "Editing Event", html, 300, popupHeight);
+		popup((action === "create") ? "Recording Event" : "Editing Event", html, "300px", popupHeight + "px");
 
 		let popupSymbol = document.getElementById("popup-symbol");
 		let popupDate = document.getElementById("popup-date");
@@ -2547,6 +2802,75 @@ document.addEventListener("DOMContentLoaded", async () => {
 		});
 	}
 	
+	function getCoinInfo(id) {
+		return new Promise((resolve, reject) => {
+			try {
+				let xhr = new XMLHttpRequest();
+
+				xhr.addEventListener("readystatechange", () => {
+					if(xhr.readyState === XMLHttpRequest.DONE) {
+						if(validJSON(xhr.responseText)) {
+							resolve(JSON.parse(xhr.responseText));
+						} else {
+							reject("Invalid JSON.");
+						}
+					}
+				});
+
+				xhr.open("GET", "https://api.coingecko.com/api/v3/coins/" + id + "?localization=false&market_data=true", true);
+				xhr.send();
+			} catch(e) {
+				reject(e);
+			}
+		});
+	}
+
+	function getCoinMarketData(id, currency, from, to) {
+		return new Promise((resolve, reject) => {
+			try {
+				let xhr = new XMLHttpRequest();
+
+				xhr.addEventListener("readystatechange", () => {
+					if(xhr.readyState === XMLHttpRequest.DONE) {
+						if(validJSON(xhr.responseText)) {
+							resolve(JSON.parse(xhr.responseText));
+						} else {
+							reject("Invalid JSON.");
+						}
+					}
+				});
+
+				xhr.open("GET", "https://api.coingecko.com/api/v3/coins/" + id + "/market_chart/range?vs_currency=" + currency + "&from=" + new Date(Date.parse(from)).getTime() / 1000 + "&to=" + new Date(Date.parse(to)).getTime() / 1000, true);
+				xhr.send();
+			} catch(e) {
+				reject(e);
+			}
+		});
+	}
+
+	function parseMarketData(data, currentTime, currentPrice) {
+		let prices = data.prices;
+
+		prices.push([currentTime, currentPrice]);
+
+		let parsed = {
+			labels: [],
+			tooltips: [],
+			prices: []
+		};
+
+		Object.keys(prices).map(key => {
+			let time = prices[key][0];
+			let price = parseFloat(prices[key][1]);
+
+			parsed.labels.push(new Date(time));
+			parsed.tooltips.push(formatDateHuman(new Date(time)));
+			parsed.prices.push(price);
+		});
+
+		return parsed;
+	}
+
 	function getMarket(page, amount) {
 		return new Promise((resolve, reject) => {
 			try {
@@ -2799,6 +3123,28 @@ function formatDate(date) {
 	let month = date.getMonth() + 1;
 	let year = date.getFullYear();
 	return year + " / " + month + " / " + day;
+}
+
+function formatDateHuman(date) {
+	let day = date.getDate();
+	let month = date.getMonth() + 1;
+	let year = date.getFullYear();
+	return day + " / " + month + " / " + year;
+}
+
+function previousYear(date) {
+	let day = date.getDate();
+	let month = date.getMonth() + 1;
+	let year = date.getFullYear() - 1;
+	return new Date(Date.parse(year + "-" + month + "-" + day));
+}
+
+function previousMonth(date) {
+	return new Date(date.getTime() - 2592000 * 1000);
+}
+
+function previousWeek(date) {
+	return new Date(date.getTime() - (60 * 60 * 24 * 6 * 1000));
 }
 
 function empty(value) {

@@ -6,6 +6,7 @@ html.light {
 	--main-first:rgb(255,255,255);
 	--main-second:rgb(245,245,245);
 	--main-third:rgb(235,235,235);
+	--main-third-transparent:rgba(235,235,235,0.9);
 	--main-fourth:rgb(225,225,225);
 	--main-fifth:rgb(215,215,215);
 	--main-contrast:rgb(50,50,50);

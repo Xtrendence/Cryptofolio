@@ -6,6 +6,7 @@ html.dark {
 	--main-first:rgb(20,20,20);
 	--main-second:rgb(30,30,30);
 	--main-third:rgb(40,40,40);
+	--main-third-transparent:rgba(40,40,40,0.9);
 	--main-fourth:rgb(50,50,50);
 	--main-fifth:rgb(60,60,60);
 	--main-contrast:rgb(255,255,255);

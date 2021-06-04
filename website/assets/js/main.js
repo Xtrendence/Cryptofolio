@@ -1405,15 +1405,18 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 							div.addEventListener("click", () => {
 								getCoinInfo(coin.id).then(info => {
-									console.log("Info", info);
 									getCoinMarketData(coin.id, settings.currency, previousYear(new Date()), new Date()).then(data => {
 										data = parseMarketData(data, new Date().getTime(), coin.current_price);
 
-										let html = '<div class="coin-chart-wrapper"></div>';
+										let html = '<div class="coin-popup-wrapper"><div class="coin-chart-wrapper"></div><button class="reject" id="popup-dismiss">Back</button></div>';
 
-										popup(symbol.toUpperCase() + " - Details", html, "calc(100% - 40px)", "calc(100% - 40px)");
+										popup(symbol.toUpperCase() + " / " + settings.currency.toUpperCase() + " - " + info.name, html, "calc(100% - 40px)", "calc(100% - 40px)");
 										
-										generateChart(document.getElementsByClassName("coin-chart-wrapper")[0], "Price", data.labels, data.prices);
+										generateChart(document.getElementsByClassName("coin-chart-wrapper")[0], "Price", data.labels, data.tooltips, data.prices);
+
+										document.getElementById("popup-dismiss").addEventListener("click", () => {
+											hidePopup();
+										});
 									}).catch(e => {
 										console.log(e);
 									});
@@ -1756,7 +1759,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 		}
 	}
 
-	function generateChart(element, title, labels, data) {
+	function generateChart(element, title, labels, tooltips, data) {
 		let canvas = document.createElement("canvas");
 		let context = canvas.getContext("2d");
 
@@ -1805,6 +1808,21 @@ document.addEventListener("DOMContentLoaded", async () => {
 							fontColor: settings.theme === "dark" ? "rgba(255,255,255,0.9)" : "rgb(75,75,75)"
 						}
 					}]
+				},
+				tooltips: {
+					displayColors: false,
+					callbacks: {
+						title: function() {
+							return "";
+						},
+						label: function(item) {
+							let price = data[item.index];
+							if(price > 1) {
+								price = separateThousands(price.toFixed(2));
+							}
+							return [tooltips[item.index], "$" + price];
+						}
+					}
 				}
 			}
 		});
@@ -2658,6 +2676,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 		let parsed = {
 			labels: [],
+			tooltips: [],
 			prices: []
 		};
 
@@ -2668,6 +2687,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 			let month = new Date(time).toLocaleString("default", { month: "long" });
 
 			parsed.labels.push(month);
+			parsed.tooltips.push(formatDateHuman(new Date(time)));
 			parsed.prices.push(price);
 		});
 
@@ -2926,6 +2946,13 @@ function formatDate(date) {
 	let month = date.getMonth() + 1;
 	let year = date.getFullYear();
 	return year + " / " + month + " / " + day;
+}
+
+function formatDateHuman(date) {
+	let day = date.getDate();
+	let month = date.getMonth() + 1;
+	let year = date.getFullYear();
+	return day + " / " + month + " / " + year;
 }
 
 function previousYear(date) {

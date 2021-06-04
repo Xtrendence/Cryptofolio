@@ -467,6 +467,15 @@ input[type=number] {
 	background:var(--main-second);
 }
 
+.coin-chart-wrapper {
+	width:calc(100% - 40px);
+	display:block;
+	margin:0 auto 20px auto;
+}
+.popup-wrapper .coin-popup-wrapper .reject {
+	width:200px;
+}
+
 html.light .highlight .coin-wrapper.positive {
 	background:rgba(0,255,150,0.1);
 }

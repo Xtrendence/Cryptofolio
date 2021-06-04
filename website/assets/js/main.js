@@ -885,7 +885,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 				popup(symbol.toUpperCase() + " / " + settings.currency.toUpperCase() + " - " + info.name, html, "calc(100% - 40px)", "calc(100% - 40px)", { delay:1500, closeIcon:true });
 										
-				generateChart(document.getElementsByClassName("coin-chart-wrapper")[0], "Price", data.labels, data.tooltips, data.prices);
+				generateChart(document.getElementsByClassName("coin-chart-wrapper")[0], "Price", data.labels, data.tooltips, data.prices, { symbol:symbol });
 
 				document.getElementById("popup-dismiss").addEventListener("click", () => {
 					hidePopup();
@@ -1819,7 +1819,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 		}
 	}
 
-	function generateChart(element, title, labels, tooltips, data) {
+	async function generateChart(element, title, labels, tooltips, data, args) {
 		let canvas = document.createElement("canvas");
 		let context = canvas.getContext("2d");
 
@@ -1830,8 +1830,26 @@ document.addEventListener("DOMContentLoaded", async () => {
 		gradientStroke.addColorStop(0.5, "#c779d0");
 		gradientStroke.addColorStop(1, "#4bc0c8");
 
-		let datesBuy = [new Date(1619104492 * 1000)];
-		let datesSell = [new Date(1615004492 * 1000)];
+		let datesBuy = [];
+		let datesSell = [];
+
+		if(settings.showTransactionsOnCharts === "enabled") {
+			let activity = await getActivity();
+			Object.keys(activity).map(txID => {
+				let event = activity[txID];
+				if(event.symbol.toUpperCase() === args?.symbol.toUpperCase()) {
+					try {
+						if(event.type.toLowerCase() === "buy") {
+							datesBuy.push(new Date(Date.parse(event.date)));
+						} else if(event.type.toLowerCase() === "sell") {
+							datesSell.push(new Date(Date.parse(event.date)));
+						}
+					} catch(e) {
+						console.log(e);
+					}
+				}
+			});
+		}
 
 		let annotationsBuy = datesBuy.map(function(date, index) {
 			return {
@@ -1955,6 +1973,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 				settings.coinBackdrop = empty(localStorage.getItem("coinBackdrop")) ? "disabled" : localStorage.getItem("coinBackdrop");
 
 				settings.transactionsAffectHoldings = empty(localStorage.getItem("transactionsAffectHoldings")) ? "disabled" : localStorage.getItem("transactionsAffectHoldings");
+
+				settings.showTransactionsOnCharts = empty(localStorage.getItem("showTransactionsOnCharts")) ? "disabled" : localStorage.getItem("showTransactionsOnCharts");
 
 				settings.highlightPriceChange = empty(localStorage.getItem("highlightPriceChange")) ? "disabled" : localStorage.getItem("highlightPriceChange");
 
@@ -2301,7 +2321,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 		let popupHeight = 360;
 	
-		popup((action === "create") ? "Recording Event" : "Editing Event", html, 300, popupHeight);
+		popup((action === "create") ? "Recording Event" : "Editing Event", html, "300px", popupHeight + "px");
 
 		let popupSymbol = document.getElementById("popup-symbol");
 		let popupDate = document.getElementById("popup-date");

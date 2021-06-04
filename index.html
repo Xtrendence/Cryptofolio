@@ -95,9 +95,19 @@
 				line-height:60px;
 				left:70px;
 			}
-			.text-wrapper {
+			.download-count-wrapper {
 				position:absolute;
 				top:280px;
+				right:20px;
+				font-size:18px;
+				color:rgb(255,255,255);
+				background:rgb(40,40,40);
+				padding:10px;
+				border-radius:20px;
+			}
+			.text-wrapper {
+				position:absolute;
+				top:340px;
 				right:20px;
 				background:rgb(40,40,40);
 				width:calc(100% - 640px - 40px - 20px);
@@ -143,7 +153,7 @@
 				.page-wrapper {
 					overflow:hidden auto;
 				}
-				.banner-wrapper, .image-wrapper, .download-wrapper, .text-wrapper {
+				.banner-wrapper, .image-wrapper, .download-wrapper, .download-count-wrapper, .text-wrapper {
 					display:block;
 					position:relative;
 					margin:20px auto 0 auto;
@@ -160,6 +170,10 @@
 				}
 				.download-wrapper {
 					width:420px;
+				}
+				.download-count-wrapper {
+					width:180px;
+					text-align:center;
 				}
 				.text-wrapper {
 					margin-bottom:20px;
@@ -178,6 +192,88 @@
 				}
 			}
 		</style>
+		<script>
+			document.addEventListener("DOMContentLoaded", () => {
+				let spanDownloadCount = document.getElementById("download-count");
+
+				getDockerHubPullCount().then(pullCount => {
+					getGitHubDownloadCount().then(data => {
+						let downloadCount = 0;
+						let tagKeys = Object.keys(data);
+						tagKeys.map(tagKey => {
+							let tag = data[tagKey];
+							let assetKeys = Object.keys(tag.assets);
+							assetKeys.map(assetKey => {
+								let asset = tag.assets[assetKey];
+								let count = parseInt(asset.download_count);
+								downloadCount += count;
+							});
+						});
+						spanDownloadCount.textContent = "Downloads: " + separateThousands(pullCount + downloadCount);
+					}).catch(e => {
+						console.log(e);
+					});
+				}).catch(e => {
+					console.log(e);
+				});
+
+				function getDockerHubPullCount() {
+					return new Promise((resolve, reject) => {
+						let xhr = new XMLHttpRequest();
+
+						xhr.addEventListener("readystatechange", () => {
+							if(xhr.readyState === XMLHttpRequest.DONE) {
+								try {
+									let count = parseInt(xhr.responseText);
+									resolve(count);
+								} catch(e) {
+									reject(e);
+								}
+							};
+						});
+
+						xhr.open("GET", "https://www.xtrendence.dev/scripts/cryptofolio-stats.php", true);
+						xhr.send();
+					});
+				}
+				
+				function getGitHubDownloadCount() {
+					return new Promise((resolve, reject) => {
+						let xhr = new XMLHttpRequest();
+
+						xhr.addEventListener("readystatechange", () => {
+							if(xhr.readyState === XMLHttpRequest.DONE) {
+								if(validJSON(xhr.responseText)) {
+									resolve(JSON.parse(xhr.responseText));
+								} else {
+									reject("Invalid JSON.");
+								}
+							};
+						});
+
+						xhr.open("GET", "https://api.github.com/repos/xtrendence/Cryptofolio/releases", true);
+						xhr.send();
+					});
+				}
+
+				function separateThousands(number) {
+					let parts = number.toString().split(".");
+					parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+					return parts.join(".");
+				}
+
+				function validJSON(json) {
+					try {
+						let object = JSON.parse(json);
+						if(object && typeof object === "object") {
+							return true;
+						}
+					}
+					catch(e) { }
+					return false;
+				}
+			});
+		</script>
 	</head>
 	<body>
 		<div class="page-wrapper noselect">
@@ -217,6 +313,9 @@
 						<svg class="download-icon" width="1792" height="1792" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1344 1344q0-26-19-45t-45-19-45 19-19 45 19 45 45 19 45-19 19-45zm256 0q0-26-19-45t-45-19-45 19-19 45 19 45 45 19 45-19 19-45zm128-224v320q0 40-28 68t-68 28h-1472q-40 0-68-28t-28-68v-320q0-40 28-68t68-28h465l135 136q58 56 136 56t136-56l136-136h464q40 0 68 28t28 68zm-325-569q17 41-14 70l-448 448q-18 19-45 19t-45-19l-448-448q-31-29-14-70 17-39 59-39h256v-448q0-26 19-45t45-19h256q26 0 45 19t19 45v448h256q42 0 59 39z"/></svg>
 					</div>
 				</a>
+			</div>
+			<div class="download-count-wrapper">
+				<span id="download-count">Downloads: -</span>
 			</div>
 			<div class="text-wrapper">
 				<span>Cryptofolio is an open-source, self-hosted, and cross-platform cryptocurrency portfolio application. Keep track of your assets, record transactions, and check the market with an entirely self-contained solution where your privacy is the top priority, and you control your data. Since Cryptofolio doesn't have a central server, and is entirely hosted on your device, your data never leaves said device.</span>

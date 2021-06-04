@@ -1408,7 +1408,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 									getCoinMarketData(coin.id, settings.currency, previousYear(new Date()), new Date()).then(data => {
 										data = parseMarketData(data, new Date().getTime(), coin.current_price);
 
-										let html = '<div class="coin-popup-wrapper"><div class="coin-chart-wrapper"></div><button class="reject" id="popup-dismiss">Back</button></div>';
+										let html = '<div class="coin-popup-wrapper"><div class="coin-chart-wrapper"></div><span class="message">' + info.description.en + '</span><button class="reject" id="popup-dismiss">Back</button></div>';
 
 										popup(symbol.toUpperCase() + " / " + settings.currency.toUpperCase() + " - " + info.name, html, "calc(100% - 40px)", "calc(100% - 40px)");
 										

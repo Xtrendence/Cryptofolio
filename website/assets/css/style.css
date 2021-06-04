@@ -472,6 +472,10 @@ input[type=number] {
 	display:block;
 	margin:0 auto 20px auto;
 }
+.popup-wrapper .coin-popup-wrapper a {
+	text-decoration:none;
+	color:var(--accent-second);
+}
 .popup-wrapper .coin-popup-wrapper .reject {
 	width:200px;
 }

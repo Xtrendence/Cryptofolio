@@ -504,6 +504,21 @@ input[type=number] {
 	text-decoration:none;
 	color:var(--accent-third);
 }
+.popup-wrapper .coin-popup-wrapper .stats-wrapper {
+	display:block;
+	margin:20px auto 20px auto;
+	width:calc(100% - 40px);
+	position:relative;
+	text-align:center;
+}
+.popup-wrapper .coin-popup-wrapper .stats-wrapper span {
+	font-size:16px;
+	color:var(--main-contrast);
+	border-radius:var(--border-radius);
+	padding:10px;
+	background:var(--main-third);
+	display:inline-block;
+}
 .popup-wrapper .coin-popup-wrapper .reject {
 	width:200px;
 	margin:0 0 20px 0;

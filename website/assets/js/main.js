@@ -881,11 +881,19 @@ document.addEventListener("DOMContentLoaded", async () => {
 					info.description.en = "No description found for " + symbol.toUpperCase() + ".";
 				}
 
-				let html = '<div class="coin-popup-wrapper"><div class="coin-chart-wrapper"></div><span class="message">' + info.description.en + '</span><button class="reject" id="popup-dismiss">Back</button></div>';
+				let html = '<div class="coin-popup-wrapper"><div class="coin-chart-wrapper"></div><div class="stats-wrapper noselect"><span id="coin-popup-ath">All-Time High: ...</span></div><span class="message">' + info.description.en + '</span><button class="reject" id="popup-dismiss">Back</button></div>';
 
 				popup(symbol.toUpperCase() + " / " + settings.currency.toUpperCase() + " - " + info.name, html, "calc(100% - 40px)", "calc(100% - 40px)", { delay:1500, closeIcon:true });
 										
 				generateChart(document.getElementsByClassName("coin-chart-wrapper")[0], "Price", data.labels, data.tooltips, data.prices, { symbol:symbol });
+
+				let ath = parseFloat(info.market_data.ath[settings.currency]);
+
+				if(ath > 1) {
+					ath = separateThousands(ath.toFixed(2));
+				}
+
+				document.getElementById("coin-popup-ath").textContent = "All-Time High: " + currencies[settings.currency] + ath + " (" + formatDateHuman(new Date(Date.parse(info.market_data.ath_date[settings.currency]))).replaceAll(" ", "") + ")";
 
 				document.getElementById("popup-dismiss").addEventListener("click", () => {
 					hidePopup();
@@ -1951,13 +1959,13 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 							if(datesBuyFormatted.includes(tooltips[item.index])) {
 								let amount = amountsBuy[datesBuyFormatted.indexOf(tooltips[item.index])];
-								return [tooltips[item.index], "Bought " + amount + " @ $" + price];
+								return [tooltips[item.index], "Bought " + amount + " @ " + currencies[settings.currency] + price];
 							} else if(datesSellFormatted.includes(tooltips[item.index])) {
 								let amount = amountsSell[datesSellFormatted.indexOf(tooltips[item.index])];
-								return [tooltips[item.index], "Sold " + amount + " @ $" + price];
+								return [tooltips[item.index], "Sold " + amount + " @ " + currencies[settings.currency] + price];
 							}
 
-							return [tooltips[item.index], "$" + price];
+							return [tooltips[item.index], currencies[settings.currency] + price];
 						}
 					}
 				},
@@ -2791,7 +2799,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 					}
 				});
 
-				xhr.open("GET", "https://api.coingecko.com/api/v3/coins/" + id + "?localization=false&market_data=false", true);
+				xhr.open("GET", "https://api.coingecko.com/api/v3/coins/" + id + "?localization=false&market_data=true", true);
 				xhr.send();
 			} catch(e) {
 				reject(e);

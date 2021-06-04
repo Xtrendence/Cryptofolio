@@ -1017,7 +1017,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 		buttonPopupClose.classList.add("hidden");
 		divPopupBottom.innerHTML = html;
 
-		let delay = options.delay;
+		let delay = options?.delay;
 
 		if(empty(delay)) {
 			delay = 100;
@@ -1028,7 +1028,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 			divPopupWrapper.style.opacity = 1;
 		}, delay);
 
-		if(options.closeIcon) {
+		if(options?.closeIcon) {
 			buttonPopupClose.classList.remove("hidden");
 		}
 	}
@@ -1456,6 +1456,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 									getCoinMarketData(coin.id, settings.currency, previousYear(new Date()), new Date()).then(data => {
 										data = parseMarketData(data, new Date().getTime(), coin.current_price);
 
+										if(empty(info.description.en)) {
+											info.description.en = "No description found for " + symbol.toUpperCase() + ".";
+										}
+
 										let html = '<div class="coin-popup-wrapper"><div class="coin-chart-wrapper"></div><span class="message">' + info.description.en + '</span><button class="reject" id="popup-dismiss">Back</button></div>';
 
 										popup(symbol.toUpperCase() + " / " + settings.currency.toUpperCase() + " - " + info.name, html, "calc(100% - 40px)", "calc(100% - 40px)", { delay:1500, closeIcon:true });
@@ -1842,7 +1846,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 				scales: {
 					xAxes: [{
 						gridLines: {
-							color: settings.theme === "dark" ? "rgba(255,255,255,0.075)" : "rgba(0,0,0,0.2)",
+							color: settings.theme === "dark" ? "rgba(255,255,255,0.075)" : "rgba(0,0,0,0.1)",
 							borderDash: [8, 4]
 						},
 						ticks: {
@@ -1853,7 +1857,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 					}],
 					yAxes: [{
 						gridLines: {
-							color: settings.theme === "dark" ? "rgba(255,255,255,0.075)" : "rgba(0,0,0,0.2)",
+							color: settings.theme === "dark" ? "rgba(255,255,255,0.075)" : "rgba(0,0,0,0.1)",
 							borderDash: [8, 4]
 						},
 						ticks: {

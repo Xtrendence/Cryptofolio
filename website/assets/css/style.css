@@ -113,9 +113,10 @@ input[type=number] {
 	width:100%;
 }
 .popup-wrapper .top {
+	z-index:4;
 	top:0;
 	height:40px;
-	background:var(--main-third);
+	background:var(--main-third-transparent);
 	box-shadow:var(--shadow-smooth);
 }
 .popup-wrapper .top span {
@@ -148,8 +149,8 @@ input[type=number] {
 	padding:4px;
 }
 .popup-wrapper .bottom {
-	top:40px;
-	padding-top:20px;
+	top:0;
+	padding-top:60px;
 	height:calc(100% - 40px);
 	overflow:hidden auto;
 	-webkit-overflow-scrolling:touch;
@@ -500,10 +501,11 @@ input[type=number] {
 }
 .popup-wrapper .coin-popup-wrapper a {
 	text-decoration:none;
-	color:var(--accent-second);
+	color:var(--accent-third);
 }
 .popup-wrapper .coin-popup-wrapper .reject {
 	width:200px;
+	margin:0 0 20px 0;
 }
 
 html.light .highlight .coin-wrapper.positive {

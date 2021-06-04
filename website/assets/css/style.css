@@ -125,6 +125,28 @@ input[type=number] {
 	line-height:40px;
 	padding-left:10px;
 }
+.popup-wrapper .top .close-button {
+	position:absolute;
+	width:28px;
+	height:28px;
+	padding:0;
+	top:6px;
+	right:6px;
+	cursor:pointer;
+	border-radius:50%;
+	background:var(--main-first);
+	transition:transform 0.25s;
+}
+.popup-wrapper .top .close-button:hover {
+	transform:scale(0.8);
+}
+.popup-wrapper .top .close-button svg {
+	margin:-1px 0 0 -1px;
+	width:20px;
+	height:20px;
+	fill:var(--main-contrast);
+	padding:4px;
+}
 .popup-wrapper .bottom {
 	top:40px;
 	padding-top:20px;

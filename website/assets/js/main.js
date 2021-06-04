@@ -44,6 +44,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 	let divPopupBottom = divPopupWrapper.getElementsByClassName("bottom")[0];
 
 	let spanPopupTitle = divPopupWrapper.getElementsByClassName("title")[0];
+
+	let buttonPopupClose = divPopupWrapper.getElementsByClassName("close-button")[0];
 	
 	let divPageDashboard = document.getElementById("page-dashboard");
 	let divPageMarket = document.getElementById("page-market");
@@ -239,6 +241,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 	});
 
 	divPopupOverlay.addEventListener("click", () => {
+		hidePopup();
+	});
+
+	buttonPopupClose.addEventListener("click", () => {
 		hidePopup();
 	});
 
@@ -1000,7 +1006,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 		}
 	}
 
-	function popup(title, html, width, height, delay) {
+	function popup(title, html, width, height, options) {
 		divPopupOverlay.classList.add("active");
 		divPopupWrapper.style.width = width;
 		divPopupWrapper.style.height = height;
@@ -1008,7 +1014,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 		divPopupWrapper.style.top = "calc(50% - " + height + " / 2)";
 		divPopupWrapper.classList.add("active");
 		spanPopupTitle.textContent = title;
+		buttonPopupClose.classList.add("hidden");
 		divPopupBottom.innerHTML = html;
+
+		let delay = options.delay;
 
 		if(empty(delay)) {
 			delay = 100;
@@ -1018,6 +1027,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 			divPopupOverlay.style.opacity = 1;
 			divPopupWrapper.style.opacity = 1;
 		}, delay);
+
+		if(options.closeIcon) {
+			buttonPopupClose.classList.remove("hidden");
+		}
 	}
 
 	function hidePopup() {
@@ -1445,7 +1458,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 										let html = '<div class="coin-popup-wrapper"><div class="coin-chart-wrapper"></div><span class="message">' + info.description.en + '</span><button class="reject" id="popup-dismiss">Back</button></div>';
 
-										popup(symbol.toUpperCase() + " / " + settings.currency.toUpperCase() + " - " + info.name, html, "calc(100% - 40px)", "calc(100% - 40px)", 1500);
+										popup(symbol.toUpperCase() + " / " + settings.currency.toUpperCase() + " - " + info.name, html, "calc(100% - 40px)", "calc(100% - 40px)", { delay:1500, closeIcon:true });
 										
 										generateChart(document.getElementsByClassName("coin-chart-wrapper")[0], "Price", data.labels, data.tooltips, data.prices);
 

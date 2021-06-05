@@ -1,6 +1,6 @@
 # ![Image](https://i.imgur.com/AlbPsuf.png)
 
-## ![Downloads](https://www.xtrendence.dev/scripts/cryptofolio-stats.php?svg=true)
+![Downloads](https://www.xtrendence.dev/scripts/cryptofolio-stats.php?svg=true&animated=true)
 
 ### What is Cryptofolio?
 

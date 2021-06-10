@@ -58,7 +58,7 @@ export default function BottomBar({ screen, navigation }) {
 		</View>
 	);
 
-	function checkActive() {
+	async function checkActive() {
 		switch(screen.active) {
 			case "Dashboard":
 				animateLeft(0);
@@ -83,7 +83,7 @@ export default function BottomBar({ screen, navigation }) {
 		}
 	}
 
-	function animateLeft(to) {
+	async function animateLeft(to) {
 		let from = parseInt(left.replace("%", ""));
 		let animate = setInterval(() => {
 			if(from === to) {

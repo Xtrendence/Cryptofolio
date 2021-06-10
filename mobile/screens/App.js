@@ -62,7 +62,7 @@ export default function App() {
 		</ThemeProvider>
 	);
 
-	function checkState() {
+	async function checkState() {
 		let currentRouteName = navigationRef.current.getCurrentRoute().name;
 
 		setActive(currentRouteName);

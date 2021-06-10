@@ -40,9 +40,11 @@ export default function Dashboard({ navigation }) {
 
 		navigation.addListener("focus", () => {
 			if(navigation.isFocused()) {
-				getMarket();
-				getGlobal();
-				getHoldings();
+				setTimeout(() => {
+					getMarket();
+					getGlobal();
+					getHoldings();
+				}, 500);
 			}
 		});
 	}, []);

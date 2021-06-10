@@ -48,7 +48,9 @@ export default function Holdings({ navigation }) {
 
 		navigation.addListener("focus", () => {
 			if(navigation.isFocused()) {
-				getHoldings();
+				setTimeout(() => {
+					getHoldings();
+				}, 500);
 			}
 		});
 	}, []);

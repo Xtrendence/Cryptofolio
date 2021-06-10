@@ -50,7 +50,9 @@ export default function Activity({ navigation }) {
 
 		navigation.addListener("focus", () => {
 			if(navigation.isFocused()) {
-				getActivity();
+				setTimeout(() => {
+					getActivity();
+				}, 500);
 			}
 		});
 	}, []);

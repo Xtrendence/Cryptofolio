@@ -38,8 +38,10 @@ export default function Market({ navigation }) {
 
 		navigation.addListener("focus", () => {
 			if(navigation.isFocused()) {
-				getMarket();
-				getGlobal();
+				setTimeout(() => {
+					getMarket();
+					getGlobal();
+				}, 500);
 			}
 		});
 	}, []);

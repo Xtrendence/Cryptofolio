@@ -187,6 +187,11 @@ export default function Activity({ navigation }) {
 			let key = "symbol";
 			let value = symbol.trim().toLowerCase();
 
+			if(action === "update") {
+				key = "id";
+				value = id.trim().toLowerCase();
+			}
+
 			getCoinID(key, value).then(async response => {
 				if("id" in response) {
 					if(action === "create") {

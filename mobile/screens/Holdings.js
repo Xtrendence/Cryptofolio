@@ -174,7 +174,7 @@ export default function Holdings({ navigation }) {
 
 						data.push(
 							<TouchableOpacity key={epoch() + id} onPress={() => { processHolding(id, amount) }}>
-								<View style={[styles.row, key % 2 ? {...styles.rowOdd, ...styles[`rowOdd${theme}`]} : null]}>
+								<View style={[styles.row, key % 2 ? {...styles.rowOdd, ...styles[`rowOdd${theme}`]} : null, styles.modalRow]}>
 									<Text style={[styles.cellText, styles[`cellText${theme}`]]} ellipsizeMode="tail">{symbol.toUpperCase()}</Text>
 									<Text style={[styles.cellText, styles[`cellText${theme}`], { marginLeft:20 }]} ellipsizeMode="tail">{capitalizeFirstLetter(id)}</Text>
 								</View>
@@ -587,7 +587,7 @@ const styles = StyleSheet.create({
 	modalMessageWrapper: {
 		backgroundColor:globalColors["Light"].accentFirst,
 		borderRadius:globalStyles.borderRadius,
-		width:screenWidth - 200,
+		width:screenWidth - 140,
 		padding:10,
 		marginTop:20,
 	},
@@ -598,7 +598,7 @@ const styles = StyleSheet.create({
 		lineHeight:25,
 	},
 	coinList: {
-		maxHeight:106,
+		maxHeight:130,
 		marginBottom:20,
 		borderRadius:globalStyles.borderRadius,
 		shadowColor:globalStyles.shadowColor,
@@ -610,6 +610,9 @@ const styles = StyleSheet.create({
 	},
 	coinListDark: {
 		backgroundColor:globalColors["Dark"].mainFirst
+	},
+	modalRow: {
+		height:50,
 	},
 	input: {
 		backgroundColor:globalColors["Light"].mainFirst,
@@ -623,19 +626,19 @@ const styles = StyleSheet.create({
 		paddingLeft:10,
 		paddingRight:10,
 		marginBottom:20,
-		width:screenWidth - 200,
+		width:screenWidth - 140,
 	},
 	inputDark: {
 		backgroundColor:globalColors["Dark"].mainFirst,
 		color:globalColors["Dark"].mainContrast
 	},
 	buttonWrapper: {
-		width:screenWidth - 200,
+		width:screenWidth - 140,
 		flexDirection:"row"
 	},
 	button: {
 		height:40,
-		width:((screenWidth - 200) / 2) - 10,
+		width:((screenWidth - 140) / 2) - 10,
 		shadowColor:globalStyles.shadowColor,
 		shadowOffset:globalStyles.shadowOffset,
 		shadowOpacity:globalStyles.shadowOpacity,

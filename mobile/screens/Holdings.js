@@ -91,7 +91,7 @@ export default function Holdings({ navigation }) {
 							<TouchableOpacity style={[styles.button, styles[`button${theme}`]]} onPress={() => { hideModal()}}>
 								<Text style={styles.text}>Cancel</Text>
 							</TouchableOpacity>
-							<TouchableOpacity style={[styles.button, styles.buttonConfirm, styles[`buttonConfirm${theme}`]]} onPress={() => { createHolding(coinSymbol, coinAmount)}}>
+							<TouchableOpacity style={[styles.button, styles.buttonConfirm, styles[`buttonConfirm${theme}`]]} onPress={() => { action === "create" ? createHolding(coinSymbol, coinAmount) : createHolding(coinID, coinAmount)}}>
 								<Text style={styles.text}>Confirm</Text>
 							</TouchableOpacity>
 						</View>

@@ -365,20 +365,21 @@ export default function Activity({ navigation }) {
 
 					let activity = events[txID];
 	
+					let id = activity.id;
 					let symbol = activity.symbol.toUpperCase();
 					let date = activity.date;
 					let amount = activity.amount;
-					let fee = activity.fee;
+					let fee = activity.fee?.toString();
 					let notes = activity.notes;
 					let type = capitalizeFirstLetter(activity.type);
 					let exchange = activity.exchange;
 					let pair = activity.pair;
-					let price = activity.price;
+					let price = activity.price?.toString();
 					let from = activity.from;
 					let to = activity.to;
 
 					data.push(
-						<TouchableOpacity onPress={() => { setEventID(txID); setCoinSymbol(symbol); setEventDate(date); setEventType(type.toLowerCase()); setCoinAmount(amount); setEventFee(fee); setEventNotes(notes); setEventExchange(exchange); setCoinPair(pair); setCoinPrice(price); setEventFrom(from); setEventTo(to); setAction("update"); setModal(true)}} key={epoch() + txID}>
+						<TouchableOpacity onPress={() => { setEventID(txID); setCoinID(id); setCoinSymbol(symbol); setEventDate(date); setEventType(type.toLowerCase()); setCoinAmount(amount); setEventFee(fee); setEventNotes(notes); setEventExchange(exchange); setCoinPair(pair); setCoinPrice(price); setEventFrom(from); setEventTo(to); setAction("update"); setModal(true)}} key={epoch() + txID}>
 							<View style={[styles.row, index % 2 ? null : {...styles.rowEven, ...styles[`rowEven${theme}`]}]}>
 								<View style={[styles.column, styles.columnLeft]}>
 									<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellDate]} ellipsizeMode="tail">{date}</Text>

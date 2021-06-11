@@ -1781,6 +1781,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 									div = document.getElementById(id);
 
 									div.setAttribute("data-tx", txID);
+									div.setAttribute("data-id", activity.id);
 									div.setAttribute("data-symbol", symbol);
 									div.setAttribute("data-date", date);
 									div.setAttribute("data-amount", amount);
@@ -1807,6 +1808,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 									div.id = id;
 
 									div.setAttribute("data-tx", txID);
+									div.setAttribute("data-id", activity.id);
 									div.setAttribute("data-symbol", symbol);
 									div.setAttribute("data-date", date);
 									div.setAttribute("data-amount", amount);
@@ -2371,6 +2373,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 		html += '<input id="popup-to" class="hidden" placeholder="To... (e.g. Cold Wallet)">';
 
 		if(action !== "create") {
+			html += '<input id="popup-id" class="hidden" placeholder="ID... (e.g. Bitcoin)">';
 			html += '<button class="delete" id="popup-delete">Delete Event</button>';
 		}
 		
@@ -2380,6 +2383,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 	
 		popup((action === "create") ? "Recording Event" : "Editing Event", html, "300px", popupHeight + "px");
 
+		let popupID;
 		let popupSymbol = document.getElementById("popup-symbol");
 		let popupDate = document.getElementById("popup-date");
 		let popupAmount = document.getElementById("popup-amount");
@@ -2390,6 +2394,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 		let popupPrice = document.getElementById("popup-price");
 		let popupFrom = document.getElementById("popup-from");
 		let popupTo = document.getElementById("popup-to");
+
+		if(action !== "create") {
+			popupID = document.getElementById("popup-id");
+		}
 
 		let choices = document.getElementById("popup-choice").getElementsByClassName("choice");
 		for(let i = 0; i < choices.length; i++) {
@@ -2424,6 +2432,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 		if(action !== "create") {
 			let event = document.getElementById("activity-event-" + params.txID);
+			popupID.value = event.getAttribute("data-id");
 			popupSymbol.value = event.getAttribute("data-symbol");
 			popupDate.value = event.getAttribute("data-date");
 			popupAmount.value = event.getAttribute("data-amount");
@@ -2489,9 +2498,15 @@ document.addEventListener("DOMContentLoaded", async () => {
 					description:"The amount, fee, and price fields must be numbers."
 				});
 			} else {
-				symbol = symbol.trim().toLowerCase();
+				let key = "symbol";
+				let value = symbol.trim().toLowerCase();
 
-				getCoinID("symbol", symbol).then(response => {
+				if(action === "update") {
+					key = "id";
+					value = popupID.value.trim().toLowerCase();
+				}
+
+				getCoinID(key, value).then(response => {
 					Notify.alert({
 						title:"Checking...",
 						description:"Checking whether or not that coin exists."

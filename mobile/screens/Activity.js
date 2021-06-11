@@ -351,7 +351,7 @@ export default function Activity({ navigation }) {
 		.then(async (events) => {
 			if(Object.keys(events).length === 0) {
 				if(navigation.isFocused()) {
-					setActivityData([<Text key="empty" style={[styles.loadingText, styles.headerText, styles[`headerText${theme}`], { marginLeft:20 }]}>No Activity Found.</Text>]);
+					setActivityData([<Text key="empty" style={[styles.loadingText, styles.headerText, styles[`headerText${theme}`], { marginLeft:20 }]}>No Activity Found...</Text>]);
 				}
 			} else {
 				events = sortActivity(events);

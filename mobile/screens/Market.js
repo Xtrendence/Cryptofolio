@@ -131,6 +131,7 @@ export default function Market({ navigation }) {
 
 				let icon = coin.image;
 
+				let id = coin.id;
 				let symbol = coin.symbol.toUpperCase();
 
 				data.push(

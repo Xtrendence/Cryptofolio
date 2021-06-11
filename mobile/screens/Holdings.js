@@ -325,7 +325,7 @@ export default function Holdings({ navigation }) {
 		.then(async (coins) => {
 			if(Object.keys(coins).length === 0) {
 				if(navigation.isFocused()) {
-					setHoldingsData([<Text key="empty" style={[styles.headerText, styles[`headerText${theme}`], { marginLeft:20 }]}>No Holdings Found.</Text>]);
+					setHoldingsData([<Text key="empty" style={[styles.headerText, styles[`headerText${theme}`], { marginLeft:20 }]}>No Holdings Found...</Text>]);
 					setHoldingsValue("-");
 				}
 			} else {

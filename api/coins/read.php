@@ -9,6 +9,8 @@
 
 		$token = !empty($_GET["token"]) ? $_GET["token"] : die();
 		if($helper->verifySession($token)) {
+			$helper->fetchCoins();
+			
 			$coins = json_decode(file_get_contents($helper->coinsFile), true);
 
 			if((!empty($_GET["symbol"]) && !empty($_GET["id"])) || (empty($_GET["symbol"]) && empty($_GET["id"]))) {

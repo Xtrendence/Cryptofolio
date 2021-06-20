@@ -56,6 +56,7 @@ input[type=number] {
 }
 
 .titlebar {
+	transition:none;
 	position:absolute;
 	width:100%;
 	height:36px;
@@ -66,15 +67,17 @@ input[type=number] {
 	z-index:900;
 }
 .titlebar-shadow {
+	transition:none;
 	position:absolute;
 	top:0;
 	right:0;
 	box-shadow:var(--shadow-smooth);
-	width:calc(100% - 200px);
+	width:calc(100% - 201px);
 	height:100%;
 	z-index:901;
 }
 .window-buttons {
+	transition:none;
 	font-size:0;
 	height:100%;
 	position:absolute;
@@ -83,6 +86,10 @@ input[type=number] {
 	z-index:902;
 	background:var(--main-first);
 	width:220px;
+}
+.titlebar.loading, .titlebar.loading .titlebar-shadow, .window-buttons.loading {
+	background:rgb(20,20,20);
+	box-shadow:none;
 }
 .window-buttons button {
 	display:inline-block;

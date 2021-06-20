@@ -31,7 +31,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 	
 	let body = document.body;
 
+	let divTitlebar = document.getElementsByClassName("titlebar")[0];
 	let divTitlebarShadow = document.getElementsByClassName("titlebar-shadow")[0];
+	let divWindowButtons = document.getElementsByClassName("window-buttons")[0];
 
 	let buttonClose = document.getElementsByClassName("close-button")[0];
 	let buttonMinimize = document.getElementsByClassName("minimize-button")[0];
@@ -136,6 +138,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 	let url = new URL(window.location.href);
 	if(url.searchParams.get("access") === "view") {
 		divLoadingOverlay.classList.add("active");
+		divTitlebar.classList.add("loading");
+		divWindowButtons.classList.add("loading");
 
 		body.classList.add("view-mode");
 		document.head.innerHTML += '<link rel="stylesheet" href="./assets/css/view.css">';
@@ -143,6 +147,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 		setTimeout(async () => {
 			if(divLoadingOverlay.classList.contains("active")) {
 				divLoadingOverlay.classList.remove("active");
+				divTitlebar.classList.remove("loading");
+				divWindowButtons.classList.remove("loading");
 			}
 
 			switchPage("holdings");
@@ -165,7 +171,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 		if(!empty(api)) {
 			getLocalSettings().then(() => {
+				listDashboard();
 				listMarket();
+				listHoldings();
+				listActivity();
 			}).catch(e => {
 				console.log(e);
 			});
@@ -934,8 +943,20 @@ document.addEventListener("DOMContentLoaded", async () => {
 									description:response.message
 								});
 
-								listMarket();
-								listHoldings();
+								setTimeout(async () => {
+									empty(await Storage.getItem("defaultPage")) ? switchPage("market") : switchPage(await Storage.getItem("defaultPage"));
+
+									getLocalSettings().then(() => {
+										listDashboard();
+										listMarket();
+										listHoldings();
+										listActivity();
+									}).catch(e => {
+										console.log(e);
+									});
+									
+									divLoginWrapper.classList.remove("active");
+								}, 250);
 
 								divLoginWrapper.classList.remove("active");
 								divTitlebarShadow.classList.remove("hidden");
@@ -1020,6 +1041,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 		if(empty(sessionToken)) {
 			if(divLoadingOverlay.classList.contains("active")) {
 				divLoadingOverlay.classList.remove("active");
+				divTitlebar.classList.remove("loading");
+				divWindowButtons.classList.remove("loading");
 			}
 
 			if(!divLoginWrapper.classList.contains("active")) {
@@ -1032,6 +1055,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 				setTimeout(() => {
 					if(divLoadingOverlay.classList.contains("active")) {
 						divLoadingOverlay.classList.remove("active");
+						divTitlebar.classList.remove("loading");
+						divWindowButtons.classList.remove("loading");
 					}
 				}, 250);
 
@@ -1053,6 +1078,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 				if(divLoadingOverlay.classList.contains("active")) {
 					divLoadingOverlay.classList.remove("active");
+					divTitlebar.classList.remove("loading");
+					divWindowButtons.classList.remove("loading");
 				}
 
 				if(!divLoginWrapper.classList.contains("active")) {
@@ -1133,6 +1160,16 @@ document.addEventListener("DOMContentLoaded", async () => {
 		if(document.getElementById("custom-css")) {
 			document.getElementById("custom-css").remove();
 		}
+
+		divTitlebar.style.transition = "background 0.25s";
+		divTitlebarShadow.style.transition = "background 0.25s";
+		divWindowButtons.style.transition = "background 0.25s";
+
+		setTimeout(() => {
+			divTitlebar.removeAttribute("style");
+			divTitlebarShadow.removeAttribute("style");
+			divWindowButtons.removeAttribute("style");
+		}, 250);
 
 		if(theme === "dark") {
 			await Storage.setItem("theme", "dark");

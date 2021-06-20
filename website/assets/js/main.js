@@ -160,7 +160,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 		empty(localStorage.getItem("defaultPage")) ? switchPage("market") : switchPage(localStorage.getItem("defaultPage"));
 
 		getLocalSettings().then(() => {
+			listDashboard();
 			listMarket();
+			listHoldings();
+			listActivity();
 		}).catch(e => {
 			console.log(e);
 		});
@@ -935,10 +938,20 @@ document.addEventListener("DOMContentLoaded", async () => {
 									description:response.message
 								});
 
-								listMarket();
-								listHoldings();
+								setTimeout(() => {
+									empty(localStorage.getItem("defaultPage")) ? switchPage("market") : switchPage(localStorage.getItem("defaultPage"));
 
-								divLoginWrapper.classList.remove("active");
+									getLocalSettings().then(() => {
+										listDashboard();
+										listMarket();
+										listHoldings();
+										listActivity();
+									}).catch(e => {
+										console.log(e);
+									});
+									
+									divLoginWrapper.classList.remove("active");
+								}, 250);
 
 								inputLoginPassword.value = "";
 								inputLoginPassword.blur();

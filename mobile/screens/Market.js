@@ -212,7 +212,7 @@ export default function Market({ navigation }) {
 					ath = separateThousands(ath.toFixed(2));
 				}
 
-				setModalATH("All-Time High: " + currencies[currency] + ath);
+				setModalATH("All-Time High: " + currencies[currency] + ath + " (" + formatDateHuman(new Date(Date.parse(info.market_data.ath_date[currency]))).replaceAll(" ", "") + ")");
 
 				setModalMessage();
 				setModalDescription("<div>" + info.description.en.replaceAll("\n", "<br>") + "</div>");

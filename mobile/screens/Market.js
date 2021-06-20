@@ -8,6 +8,7 @@ import { LineChart } from 'react-native-chart-kit';
 import { globalColors, globalStyles } from "../styles/global";
 import { ThemeContext } from "../utils/theme";
 import { empty, separateThousands, abbreviateNumber, epoch, wait, currencies } from "../utils/utils";
+import GradientChart from "../components/GradientChart";
 
 const screenWidth = Dimensions.get("screen").width;
 const screenHeight = Dimensions.get("screen").height;
@@ -73,54 +74,59 @@ export default function Market({ navigation }) {
 			<Modal animationType="fade" visible={modal} onRequestClose={() => { hideModal()}} transparent={false}>
 				<View style={[styles.modalWrapper, styles[`modalWrapper${theme}`]]}>
 					<View stlye={[styles.modal, styles[`modal${theme}`]]}>
-						<View style={styles.chartWrapper}>
-							{ !empty(chartData) && !empty(chartLabels) &&
-								<LineChart
-									data={{
-										labels: chartLabels,
-										datasets: [
-											{
-												data: chartData
+						<View style={[styles.chartWrapper, styles[`modal${theme}`]]}>
+							<ScrollView horizontal={true} contentOffset={{ x: 10000, y: 0 }} style={{ height:300 }}>
+								{ !empty(chartData) && !empty(chartLabels) &&
+									<GradientChart
+										data={{
+											labels: chartLabels,
+											datasets: [
+												{
+													data: chartData
+												}
+											]
+										}}
+										width={1400}
+										height={300}
+										segments={chartSegments}
+										withHorizontalLines={true}
+										withVerticalLines={false}
+										withVerticalLabels={true}
+										transparent={true}
+										withShadow={false}
+										chartConfig={{
+											backgroundColor: "rgba(0,0,0,0)",
+											backgroundGradientFrom: "rgba(0,0,0,0)",
+											backgroundGradientTo: "rgba(0,0,0,0)",
+											decimalPlaces: 0,
+											color: () => "url(#gradient)",
+											labelColor: () => globalColors[theme].mainContrast,
+											style: {
+												borderRadius: 0
+											},
+											propsForDots: {
+												r: "0",
+												strokeWidth: "2",
+												stroke: globalColors[theme].mainFifth
+											},
+											propsForVerticalLabels: {
+												fontFamily: globalStyles.fontFamily,
+												fontSize: 12,
+												rotation: 0,
+												fontWeight: "bold",
+											},
+											propsForBackgroundLines: {
+												strokeWidth: 2,
+												stroke: globalColors[theme].mainThirdTransparent
 											}
-										]
-									}}
-									width={screenWidth - 40 - 40}
-									height={250}
-									segments={chartSegments}
-									withHorizontalLines={true}
-									withVerticalLines={false}
-									chartConfig={{
-										backgroundColor: globalColors[theme].mainFirst,
-										backgroundGradientFrom: globalColors[theme].mainFirst,
-										backgroundGradientTo: globalColors[theme].mainFirst,
-										decimalPlaces: 0,
-										color: () => "rgb(95,103,129)",
-										labelColor: () => "rgb(95,103,129)",
-										style: {
-											borderRadius: 0
-										},
-										propsForDots: {
-											r: "4",
-											strokeWidth: "2",
-											stroke: globalColors[theme].mainFifth
-										},
-										propsForVerticalLabels: {
-											fontFamily: globalStyles.fontFamily,
-											fontSize: 10,
-											rotation: -45,
-										},
-										propsForBackgroundLines: {
-											strokeWidth: 2,
-											stroke: "rgba(95,103,129,0.4)"
-										}
-									}}
-									bezier
-									style={{
-										backgroundColor: "rgba(255,255,255,0)",
-										borderRadius: globalStyles.borderRadius,
-									}}
-								/>
-							}
+										}}
+										bezier
+										style={{
+											backgroundColor: "rgba(255,255,255,0)",
+										}}
+									/>
+								}
+							</ScrollView>
 						</View>
 						<View style={styles.buttonWrapper}>
 							<TouchableOpacity style={[styles.button, styles[`button${theme}`]]} onPress={() => { hideModal()}}>
@@ -148,16 +154,79 @@ export default function Market({ navigation }) {
 	);
 
 	function hideModal() {
+		setChartData();
+		setChartLabels();
 		setModal(false);
 	}
 
-	async function openModal(id, symbol) {
+	async function openModal(id, symbol, currentPrice) {
 		let currency = await AsyncStorage.getItem("currency");
 		if(empty(currency)) {
 			currency = "usd";
 		}
 
 		setModal(true);
+
+		getCoinInfo(id).then(info => {
+			getCoinMarketData(id, currency, previousYear(new Date()), new Date()).then(data => {
+				data = parseMarketData(data, new Date().getTime(), currentPrice);
+
+				if(empty(info.description.en)) {
+					info.description.en = "No description found for " + symbol.toUpperCase() + ".";
+				}
+
+				let months = data.months;
+				let prices = data.prices;
+
+				setChartLabels(months);
+				setChartData(prices);
+				setChartSegments(4);
+			}).catch(error => {
+				console.log(error);
+			});
+		}).catch(error => {
+			console.log(error);
+		});
+	}
+
+	function parseMarketData(data, currentTime, currentPrice) {
+		let months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+		let prices = data.prices;
+
+		prices.push([currentTime, currentPrice]);
+
+		let parsed = {
+			labels: [],
+			tooltips: [],
+			prices: [],
+			months: []
+		};
+
+		Object.keys(prices).map(key => {
+			let time = prices[key][0];
+			let price = parseFloat(prices[key][1]);
+
+			parsed.labels.push(new Date(time));
+			parsed.tooltips.push(formatDateHuman(new Date(time)));
+			parsed.prices.push(price);
+
+			let date = new Date(time);
+			let month = date.getMonth();
+			let monthName = months[month];
+
+			let lastMonth = parsed.months.slice(key - 31, key);
+			if(key - 31 < 0) {
+				lastMonth = parsed.months.slice(0, key);
+			}
+
+			if(!lastMonth.includes(monthName)) {
+				parsed.months.push(monthName);
+			} else {
+				parsed.months.push("");
+			}
+		});
+
+		return parsed;
 	}
 
 	async function getMarket() {
@@ -214,7 +283,7 @@ export default function Market({ navigation }) {
 				let symbol = coin.symbol.toUpperCase();
 
 				data.push(
-					<TouchableOpacity key={epoch() + key} onPress={() => { openModal(id, symbol)}}>
+					<TouchableOpacity key={epoch() + key} onPress={() => { openModal(id, symbol, coin.current_price)}}>
 						<View style={[styles.row, rank % 2 ? {...styles.rowOdd, ...styles[`rowOdd${theme}`]} : null]}>
 							<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellRank]} ellipsizeMode="tail">{rank}</Text>
 							<Image style={styles.cellImage} source={{uri:icon}}/>
@@ -272,6 +341,89 @@ export default function Market({ navigation }) {
 			console.log(error);
 		});
 	}
+
+	function getCoinInfo(id) {
+		return new Promise((resolve, reject) => {
+			console.log("Market - Getting Coin Info - " + epoch());
+
+			let endpoint = "https://api.coingecko.com/api/v3/coins/" + id + "?localization=false&market_data=true";
+
+			fetch(endpoint, {
+				method: "GET",
+				headers: {
+					Accept: "application/json", "Content-Type": "application/json"
+				}
+			})
+			.then((response) => {
+				return response.json();
+			})
+			.then(async (info) => {
+				resolve(info);
+			})
+			.catch(error => {
+				reject(error);
+			});
+		});
+	}
+
+	function getCoinMarketData(id, currency, from, to) {
+		return new Promise((resolve, reject) => {
+			console.log("Market - Getting Coin Market Data - " + epoch());
+
+			let endpoint = "https://api.coingecko.com/api/v3/coins/" + id + "/market_chart/range?vs_currency=" + currency + "&from=" + new Date(Date.parse(from)).getTime() / 1000 + "&to=" + new Date(Date.parse(to)).getTime() / 1000;
+
+			fetch(endpoint, {
+				method: "GET",
+				headers: {
+					Accept: "application/json", "Content-Type": "application/json"
+				}
+			})
+			.then((response) => {
+				return response.json();
+			})
+			.then(async (info) => {
+				resolve(info);
+			})
+			.catch(error => {
+				reject(error);
+			});
+		});
+	}
+
+	function formatHour(date) {
+		let hours = ("00" + date.getHours()).slice(-2);
+		let minutes = ("00" + date.getMinutes()).slice(-2);
+		return hours + ":" + minutes;
+	}
+
+	function formatDate(date) {
+		let day = date.getDate();
+		let month = date.getMonth() + 1;
+		let year = date.getFullYear();
+		return year + " / " + month + " / " + day;
+	}
+
+	function formatDateHuman(date) {
+		let day = date.getDate();
+		let month = date.getMonth() + 1;
+		let year = date.getFullYear();
+		return day + " / " + month + " / " + year;
+	}
+
+	function previousYear(date) {
+		let day = date.getDate();
+		let month = date.getMonth() + 1;
+		let year = date.getFullYear() - 1;
+		return new Date(Date.parse(year + "-" + month + "-" + day));
+	}
+
+	function previousMonth(date) {
+		return new Date(date.getTime() - 2592000 * 1000);
+	}
+
+	function previousWeek(date) {
+		return new Date(date.getTime() - (60 * 60 * 24 * 6 * 1000));
+	}
 }
 
 const styles = StyleSheet.create({
@@ -286,7 +438,7 @@ const styles = StyleSheet.create({
 		width:"100%",
 		height:"100%",
 		flex:1,
-		justifyContent:"center",
+		justifyContent:"flex-start",
 		alignItems:"center",
 		backgroundColor:globalColors["Light"].mainThird
 	},
@@ -300,6 +452,15 @@ const styles = StyleSheet.create({
 		backgroundColor:globalColors["Light"].mainFirst
 	},
 	modalDark: {
+		backgroundColor:globalColors["Dark"].mainFirst
+	},
+	chartWrapper: {
+		height:320,
+		paddingTop:30,
+		width:"100%",
+		backgroundColor:globalColors["Light"].mainThird
+	},
+	chartWrapperDark: {
 		backgroundColor:globalColors["Dark"].mainFirst
 	},
 	buttonWrapper: {

@@ -76,7 +76,7 @@ export default function Market({ navigation }) {
 				<View style={[styles.modalWrapper, styles[`modalWrapper${theme}`]]}>
 					<View stlye={[styles.modal, styles[`modal${theme}`]]}>
 						<View style={[styles.chartWrapper, styles[`modal${theme}`]]}>
-							<ScrollView horizontal={true} contentOffset={{ x: 10000, y: 0 }} style={{ height:300 }}>
+							<ScrollView horizontal={true} style={{ height:300 }}>
 								{ !empty(chartData) && !empty(chartLabels) ? 
 									<GradientChart
 										data={{

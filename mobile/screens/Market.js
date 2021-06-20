@@ -5,9 +5,10 @@ import Icon from "react-native-vector-icons/FontAwesome5";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import LinearGradient from "react-native-linear-gradient";
 import { LineChart } from 'react-native-chart-kit';
+import HTML from "react-native-render-html";
 import { globalColors, globalStyles } from "../styles/global";
 import { ThemeContext } from "../utils/theme";
-import { empty, separateThousands, abbreviateNumber, epoch, wait, currencies } from "../utils/utils";
+import { empty, separateThousands, abbreviateNumber, epoch, wait, currencies, replaceAll } from "../utils/utils";
 import GradientChart from "../components/GradientChart";
 
 const screenWidth = Dimensions.get("screen").width;
@@ -23,7 +24,9 @@ export default function Market({ navigation }) {
 	const [pageKey, setPageKey] = React.useState(epoch());
 
 	const [modal, setModal] = React.useState(false);
+	const [modalATH, setModalATH] = React.useState("All-Time High: ...");
 	const [modalMessage, setModalMessage] = React.useState("Loading Chart...");
+	const [modalDescription, setModalDescription] = React.useState("<div>Loading Description...</div>");
 	const [chartLabels, setChartLabels] = React.useState();
 	const [chartData, setChartData] = React.useState();
 	const [chartSegments, setChartSegments] = React.useState(1);
@@ -73,78 +76,86 @@ export default function Market({ navigation }) {
 	return (
 		<ScrollView style={[styles.page, styles[`page${theme}`]]} key={pageKey} contentContainerStyle={{ padding:20 }} nestedScrollEnabled={true} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[globalColors[theme].accentFirst]} progressBackgroundColor={globalColors[theme].mainFirst}/>}>
 			<Modal animationType="fade" visible={modal} onRequestClose={() => { hideModal()}} transparent={false}>
-				<View style={[styles.modalWrapper, styles[`modalWrapper${theme}`]]}>
-					<View stlye={[styles.modal, styles[`modal${theme}`]]}>
-						<View style={[styles.chartWrapper, styles[`modal${theme}`]]}>
-							<ScrollView horizontal={true} style={{ height:300 }}>
-								{ !empty(chartData) && !empty(chartLabels) ? 
-									<GradientChart
-										data={{
-											labels: chartLabels,
-											datasets: [
-												{
-													data: chartData
+				<ScrollView style={[styles.modalScroll, styles[`modalScroll${theme}`]]} contentContainerStyle={{paddingBottom:20}}>
+					<View style={[styles.modalWrapper, styles[`modalWrapper${theme}`]]}>
+						<View stlye={[styles.modal, styles[`modal${theme}`]]}>
+							<View style={[styles.chartWrapper, styles[`modal${theme}`]]}>
+								<ScrollView horizontal={true} style={{ height:300 }}>
+									{ !empty(chartData) && !empty(chartLabels) ? 
+										<GradientChart
+											data={{
+												labels: chartLabels,
+												datasets: [
+													{
+														data: chartData
+													}
+												]
+											}}
+											width={1400}
+											height={300}
+											segments={chartSegments}
+											withHorizontalLines={true}
+											withVerticalLines={false}
+											withVerticalLabels={true}
+											yAxisLabel="$"
+											yAxisInterval={500}
+											formatYLabel={(label) => abbreviateNumber(parseFloat(label), 2)}
+											withShadow={false}
+											chartConfig={{
+												backgroundColor: "rgba(0,0,0,0)",
+												backgroundGradientFrom: "rgba(0,0,0,0)",
+												backgroundGradientTo: "rgba(0,0,0,0)",
+												decimalPlaces: 2,
+												color: () => "url(#gradient)",
+												labelColor: () => globalColors[theme].mainContrast,
+												style: {
+													borderRadius: 0
+												},
+												propsForDots: {
+													r: "0",
+													strokeWidth: "2",
+													stroke: globalColors[theme].mainFifth
+												},
+												propsForVerticalLabels: {
+													fontFamily: globalStyles.fontFamily,
+													fontSize: 12,
+													rotation: 0,
+													fontWeight: "bold",
+												},
+												propsForBackgroundLines: {
+													strokeWidth: 2,
+													stroke: globalColors[theme].mainThirdTransparent
 												}
-											]
-										}}
-										width={1400}
-										height={300}
-										segments={chartSegments}
-										withHorizontalLines={true}
-										withVerticalLines={false}
-										withVerticalLabels={true}
-										yAxisLabel="$"
-										yAxisInterval={500}
-										formatYLabel={(label) => abbreviateNumber(parseFloat(label), 2)}
-										withShadow={false}
-										chartConfig={{
-											backgroundColor: "rgba(0,0,0,0)",
-											backgroundGradientFrom: "rgba(0,0,0,0)",
-											backgroundGradientTo: "rgba(0,0,0,0)",
-											decimalPlaces: 2,
-											color: () => "url(#gradient)",
-											labelColor: () => globalColors[theme].mainContrast,
-											style: {
-												borderRadius: 0
-											},
-											propsForDots: {
-												r: "0",
-												strokeWidth: "2",
-												stroke: globalColors[theme].mainFifth
-											},
-											propsForVerticalLabels: {
-												fontFamily: globalStyles.fontFamily,
-												fontSize: 12,
-												rotation: 0,
-												fontWeight: "bold",
-											},
-											propsForBackgroundLines: {
-												strokeWidth: 2,
-												stroke: globalColors[theme].mainThirdTransparent
-											}
-										}}
-										bezier
-										style={{
-											backgroundColor: "rgba(255,255,255,0)",
-										}}
-									/>
-								: 
-									<View style={{ height:320, width:screenWidth }}></View>
-								}
-							</ScrollView>
-						</View>
-						{ !empty(modalMessage) &&
-							<View style={styles.modalMessageWrapper}>
-								<Text style={styles.modalMessage}>{modalMessage}</Text>
+											}}
+											bezier
+											style={{
+												backgroundColor: "rgba(255,255,255,0)",
+											}}
+										/>
+									: 
+										<View style={{ height:320, width:screenWidth }}></View>
+									}
+								</ScrollView>
 							</View>
-						}
-						<View style={styles.buttonWrapper}>
-							<TouchableOpacity style={[styles.button, styles[`button${theme}`]]} onPress={() => { hideModal()}}>
-								<Text style={styles.text}>Close</Text>
-							</TouchableOpacity>
+							{ !empty(modalMessage) &&
+								<View style={styles.modalMessageWrapper}>
+									<Text style={styles.modalMessage}>{modalMessage}</Text>
+								</View>
+							}
+							<View style={[styles.modalDescriptionWrapper, styles[`modalDescriptionWrapper${theme}`]]}>
+								<Text style={[styles.modalDescription, styles[`modalDescription${theme}`]]}>{modalATH}</Text>
+							</View>
+							<View style={[styles.modalDescriptionWrapper, styles[`modalDescriptionWrapper${theme}`]]}>
+								<HTML style={[styles.modalDescription, styles[`modalDescription${theme}`]]} source={{html:modalDescription}} tagsStyles={{ a: { color:globalColors[theme].accentThird, fontSize:16, fontFamily:globalStyles.fontFamily }, div: { color:globalColors[theme].mainContrast, fontSize:16, fontFamily:globalStyles.fontFamily }}}/>
+							</View>
+							<View style={styles.buttonWrapper}>
+								<TouchableOpacity style={[styles.button, styles[`button${theme}`]]} onPress={() => { hideModal()}}>
+									<Text style={styles.text}>Close</Text>
+								</TouchableOpacity>
+							</View>
 						</View>
 					</View>
-				</View>
+				</ScrollView>
 			</Modal>
 			<LinearGradient style={[styles.card, { marginBottom:20, marginTop:0 }]} colors={globalColors[theme].colorfulGradient} useAngle={true} angle={45}>
 				<Text style={[styles.cardText, styles[`cardText${theme}`]]}>{marketCap} {marketChange}</Text>
@@ -166,6 +177,8 @@ export default function Market({ navigation }) {
 	function hideModal() {
 		setChartData();
 		setChartLabels();
+		setModalATH("All-Time High: ...");
+		setModalDescription("<div>Loading Description...</div>");
 		setModal(false);
 	}
 
@@ -193,7 +206,16 @@ export default function Market({ navigation }) {
 				setChartData(prices);
 				setChartSegments(4);
 
+				let ath = parseFloat(info.market_data.ath[currency]);
+
+				if(ath > 1) {
+					ath = separateThousands(ath.toFixed(2));
+				}
+
+				setModalATH("All-Time High: " + currencies[currency] + ath);
+
 				setModalMessage();
+				setModalDescription("<div>" + info.description.en.replaceAll("\n", "<br>") + "</div>");
 			}).catch(error => {
 				console.log(error);
 			});
@@ -447,6 +469,12 @@ const styles = StyleSheet.create({
 	pageDark: {
 		backgroundColor:globalColors["Dark"].mainSecond
 	},
+	modalScroll: {
+		backgroundColor:globalColors["Light"].mainThird
+	},
+	modalScrollDark: {
+		backgroundColor:globalColors["Dark"].mainThird
+	},
 	modalWrapper: {
 		width:"100%",
 		height:"100%",
@@ -481,6 +509,27 @@ const styles = StyleSheet.create({
 		fontSize:16,
 		fontFamily:globalStyles.fontFamily,
 		lineHeight:25,
+	},
+	modalDescriptionWrapper: {
+		alignSelf:"center",
+		backgroundColor:globalColors["Light"].mainThird,
+		borderRadius:globalStyles.borderRadius,
+		width:screenWidth - 40,
+		alignItems:"center",
+		padding:10,
+		marginTop:20,
+	},
+	modalDescriptionWrapperDark: {
+		backgroundColor:globalColors["Dark"].mainFirst,
+	},
+	modalDescription: {
+		color:globalColors["Light"].mainContrast,
+		fontSize:16,
+		fontFamily:globalStyles.fontFamily,
+		lineHeight:25,
+	},
+	modalDescriptionDark: {
+		color:globalColors["Dark"].mainContrast
 	},
 	chartWrapper: {
 		height:320,

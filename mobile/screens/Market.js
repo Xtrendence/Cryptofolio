@@ -30,6 +30,7 @@ export default function Market({ navigation }) {
 	const [chartLabels, setChartLabels] = React.useState();
 	const [chartData, setChartData] = React.useState();
 	const [chartSegments, setChartSegments] = React.useState(1);
+	const [userCurrency, setUserCurrency] = React.useState("$");
 
 	const [refreshing, setRefreshing] = React.useState(false);
 
@@ -97,7 +98,7 @@ export default function Market({ navigation }) {
 											withHorizontalLines={true}
 											withVerticalLines={false}
 											withVerticalLabels={true}
-											yAxisLabel="$"
+											yAxisLabel={empty(userCurrency) ? "$" : userCurrency}
 											yAxisInterval={500}
 											formatYLabel={(label) => abbreviateNumber(parseFloat(label), 2)}
 											withShadow={false}
@@ -187,6 +188,8 @@ export default function Market({ navigation }) {
 		if(empty(currency)) {
 			currency = "usd";
 		}
+
+		setUserCurrency(currencies[currency]);
 
 		setModalMessage("Loading Chart...");
 		setModal(true);

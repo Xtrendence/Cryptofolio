@@ -23,6 +23,7 @@ export default function Market({ navigation }) {
 	const [pageKey, setPageKey] = React.useState(epoch());
 
 	const [modal, setModal] = React.useState(false);
+	const [modalMessage, setModalMessage] = React.useState("Loading Chart...");
 	const [chartLabels, setChartLabels] = React.useState();
 	const [chartData, setChartData] = React.useState();
 	const [chartSegments, setChartSegments] = React.useState(1);
@@ -76,7 +77,7 @@ export default function Market({ navigation }) {
 					<View stlye={[styles.modal, styles[`modal${theme}`]]}>
 						<View style={[styles.chartWrapper, styles[`modal${theme}`]]}>
 							<ScrollView horizontal={true} contentOffset={{ x: 10000, y: 0 }} style={{ height:300 }}>
-								{ !empty(chartData) && !empty(chartLabels) &&
+								{ !empty(chartData) && !empty(chartLabels) ? 
 									<GradientChart
 										data={{
 											labels: chartLabels,
@@ -125,9 +126,16 @@ export default function Market({ navigation }) {
 											backgroundColor: "rgba(255,255,255,0)",
 										}}
 									/>
+								: 
+									<View style={{ height:320, width:screenWidth }}></View>
 								}
 							</ScrollView>
 						</View>
+						{ !empty(modalMessage) &&
+							<View style={styles.modalMessageWrapper}>
+								<Text style={styles.modalMessage}>{modalMessage}</Text>
+							</View>
+						}
 						<View style={styles.buttonWrapper}>
 							<TouchableOpacity style={[styles.button, styles[`button${theme}`]]} onPress={() => { hideModal()}}>
 								<Text style={styles.text}>Close</Text>
@@ -165,6 +173,7 @@ export default function Market({ navigation }) {
 			currency = "usd";
 		}
 
+		setModalMessage("Loading Chart...");
 		setModal(true);
 
 		getCoinInfo(id).then(info => {
@@ -181,6 +190,8 @@ export default function Market({ navigation }) {
 				setChartLabels(months);
 				setChartData(prices);
 				setChartSegments(4);
+
+				setModalMessage();
 			}).catch(error => {
 				console.log(error);
 			});
@@ -454,6 +465,21 @@ const styles = StyleSheet.create({
 	modalDark: {
 		backgroundColor:globalColors["Dark"].mainFirst
 	},
+	modalMessageWrapper: {
+		alignSelf:"center",
+		backgroundColor:globalColors["Light"].accentFirst,
+		borderRadius:globalStyles.borderRadius,
+		width:200,
+		alignItems:"center",
+		padding:10,
+		marginTop:20,
+	},
+	modalMessage: {
+		color:globalColors["Light"].accentContrast,
+		fontSize:16,
+		fontFamily:globalStyles.fontFamily,
+		lineHeight:25,
+	},
 	chartWrapper: {
 		height:320,
 		paddingTop:30,
@@ -464,8 +490,9 @@ const styles = StyleSheet.create({
 		backgroundColor:globalColors["Dark"].mainFirst
 	},
 	buttonWrapper: {
-		width:screenWidth - 80,
+		width:screenWidth - 40,
 		marginTop:20,
+		alignSelf:"center",
 		flexDirection:"row",
 		justifyContent:"center",
 		alignItems:"center"

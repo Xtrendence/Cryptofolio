@@ -1,9 +1,10 @@
 import React, { useEffect } from "react";
-import { Text, StyleSheet, View, Image, Dimensions, ScrollView, RefreshControl, TouchableOpacity } from "react-native";
+import { Text, StyleSheet, View, Image, Dimensions, ScrollView, RefreshControl, TouchableOpacity, Modal } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import Icon from "react-native-vector-icons/FontAwesome5";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import LinearGradient from "react-native-linear-gradient";
+import { LineChart } from 'react-native-chart-kit';
 import { globalColors, globalStyles } from "../styles/global";
 import { ThemeContext } from "../utils/theme";
 import { empty, separateThousands, abbreviateNumber, epoch, wait, currencies } from "../utils/utils";
@@ -20,6 +21,11 @@ export default function Market({ navigation }) {
 
 	const [pageKey, setPageKey] = React.useState(epoch());
 
+	const [modal, setModal] = React.useState(false);
+	const [chartLabels, setChartLabels] = React.useState();
+	const [chartData, setChartData] = React.useState();
+	const [chartSegments, setChartSegments] = React.useState(1);
+
 	const [refreshing, setRefreshing] = React.useState(false);
 
 	const [marketCap, setMarketCap] = React.useState(loadingText);
@@ -29,12 +35,12 @@ export default function Market({ navigation }) {
 	const [marketData, setMarketData] = React.useState([<Text key="loading" style={[styles.loadingText, styles.headerText, styles[`headerText${theme}`]]}>Loading...</Text>]);
 
 	useEffect(() => {
-		setInterval(() => {
-			if(navigation.isFocused()) {
-				getMarket();
-				getGlobal();
-			}
-		}, 15000);
+		// setInterval(() => {
+		// 	if(navigation.isFocused()) {
+		// 		getMarket();
+		// 		getGlobal();
+		// 	}
+		// }, 15000);
 
 		navigation.addListener("focus", () => {
 			if(navigation.isFocused()) {
@@ -64,6 +70,66 @@ export default function Market({ navigation }) {
 
 	return (
 		<ScrollView style={[styles.page, styles[`page${theme}`]]} key={pageKey} contentContainerStyle={{ padding:20 }} nestedScrollEnabled={true} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[globalColors[theme].accentFirst]} progressBackgroundColor={globalColors[theme].mainFirst}/>}>
+			<Modal animationType="fade" visible={modal} onRequestClose={() => { hideModal()}} transparent={false}>
+				<View style={[styles.modalWrapper, styles[`modalWrapper${theme}`]]}>
+					<View stlye={[styles.modal, styles[`modal${theme}`]]}>
+						<View style={styles.chartWrapper}>
+							{ !empty(chartData) && !empty(chartLabels) &&
+								<LineChart
+									data={{
+										labels: chartLabels,
+										datasets: [
+											{
+												data: chartData
+											}
+										]
+									}}
+									width={screenWidth - 40 - 40}
+									height={250}
+									segments={chartSegments}
+									withHorizontalLines={true}
+									withVerticalLines={false}
+									chartConfig={{
+										backgroundColor: globalColors[theme].mainFirst,
+										backgroundGradientFrom: globalColors[theme].mainFirst,
+										backgroundGradientTo: globalColors[theme].mainFirst,
+										decimalPlaces: 0,
+										color: () => "rgb(95,103,129)",
+										labelColor: () => "rgb(95,103,129)",
+										style: {
+											borderRadius: 0
+										},
+										propsForDots: {
+											r: "4",
+											strokeWidth: "2",
+											stroke: globalColors[theme].mainFifth
+										},
+										propsForVerticalLabels: {
+											fontFamily: globalStyles.fontFamily,
+											fontSize: 10,
+											rotation: -45,
+										},
+										propsForBackgroundLines: {
+											strokeWidth: 2,
+											stroke: "rgba(95,103,129,0.4)"
+										}
+									}}
+									bezier
+									style={{
+										backgroundColor: "rgba(255,255,255,0)",
+										borderRadius: globalStyles.borderRadius,
+									}}
+								/>
+							}
+						</View>
+						<View style={styles.buttonWrapper}>
+							<TouchableOpacity style={[styles.button, styles[`button${theme}`]]} onPress={() => { hideModal()}}>
+								<Text style={styles.text}>Close</Text>
+							</TouchableOpacity>
+						</View>
+					</View>
+				</View>
+			</Modal>
 			<LinearGradient style={[styles.card, { marginBottom:20, marginTop:0 }]} colors={globalColors[theme].colorfulGradient} useAngle={true} angle={45}>
 				<Text style={[styles.cardText, styles[`cardText${theme}`]]}>{marketCap} {marketChange}</Text>
 			</LinearGradient>
@@ -80,6 +146,19 @@ export default function Market({ navigation }) {
 			<StatusBar style={theme === "Dark" ? "light" : "dark"}/>
 		</ScrollView>
 	);
+
+	function hideModal() {
+		setModal(false);
+	}
+
+	async function openModal(id, symbol) {
+		let currency = await AsyncStorage.getItem("currency");
+		if(empty(currency)) {
+			currency = "usd";
+		}
+
+		setModal(true);
+	}
 
 	async function getMarket() {
 		console.log("Market - Getting Market - " + epoch());
@@ -135,7 +214,7 @@ export default function Market({ navigation }) {
 				let symbol = coin.symbol.toUpperCase();
 
 				data.push(
-					<TouchableOpacity key={epoch() + key} onPress={() => {  }}>
+					<TouchableOpacity key={epoch() + key} onPress={() => { openModal(id, symbol)}}>
 						<View style={[styles.row, rank % 2 ? {...styles.rowOdd, ...styles[`rowOdd${theme}`]} : null]}>
 							<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellRank]} ellipsizeMode="tail">{rank}</Text>
 							<Image style={styles.cellImage} source={{uri:icon}}/>
@@ -202,6 +281,57 @@ const styles = StyleSheet.create({
 	},
 	pageDark: {
 		backgroundColor:globalColors["Dark"].mainSecond
+	},
+	modalWrapper: {
+		width:"100%",
+		height:"100%",
+		flex:1,
+		justifyContent:"center",
+		alignItems:"center",
+		backgroundColor:globalColors["Light"].mainThird
+	},
+	modalWrapperDark: {
+		backgroundColor:globalColors["Dark"].mainThird
+	},
+	modal: {
+		width:300,
+		height:300,
+		alignItems:"center",
+		backgroundColor:globalColors["Light"].mainFirst
+	},
+	modalDark: {
+		backgroundColor:globalColors["Dark"].mainFirst
+	},
+	buttonWrapper: {
+		width:screenWidth - 80,
+		marginTop:20,
+		flexDirection:"row",
+		justifyContent:"center",
+		alignItems:"center"
+	},
+	button: {
+		height:40,
+		width:120,
+		shadowColor:globalStyles.shadowColor,
+		shadowOffset:globalStyles.shadowOffset,
+		shadowOpacity:globalStyles.shadowOpacity,
+		shadowRadius:globalStyles.shadowRadius,
+		elevation:globalStyles.shadowElevation,
+		borderRadius:globalStyles.borderRadius,
+		alignItems:"center",
+		justifyContent:"center",
+		borderRadius:globalStyles.borderRadius,
+		backgroundColor:globalColors["Light"].mainContrast
+	},
+	buttonDark: {
+		backgroundColor:globalColors["Dark"].mainFirst
+	},
+	text: {
+		lineHeight:38,
+		fontFamily:globalStyles.fontFamily,
+		fontSize:18,
+		paddingBottom:2,
+		color:globalColors["Light"].accentContrast
 	},
 	tableWrapper: {
 		backgroundColor:globalColors["Light"].mainFirst,

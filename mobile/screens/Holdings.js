@@ -707,6 +707,7 @@ const styles = StyleSheet.create({
 	},
 	loadingText: {
 		marginLeft:20,
+		marginTop:5,
 	},
 	headerText: {
 		fontSize:18,

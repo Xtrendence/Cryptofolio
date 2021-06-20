@@ -41,12 +41,12 @@ export default function Market({ navigation }) {
 	const [marketData, setMarketData] = React.useState([<Text key="loading" style={[styles.loadingText, styles.headerText, styles[`headerText${theme}`]]}>Loading...</Text>]);
 
 	useEffect(() => {
-		// setInterval(() => {
-		// 	if(navigation.isFocused()) {
-		// 		getMarket();
-		// 		getGlobal();
-		// 	}
-		// }, 15000);
+		setInterval(() => {
+			if(navigation.isFocused()) {
+				getMarket();
+				getGlobal();
+			}
+		}, 15000);
 
 		navigation.addListener("focus", () => {
 			if(navigation.isFocused()) {
@@ -515,7 +515,7 @@ const styles = StyleSheet.create({
 	},
 	modalDescriptionWrapper: {
 		alignSelf:"center",
-		backgroundColor:globalColors["Light"].mainThird,
+		backgroundColor:globalColors["Light"].mainFirst,
 		borderRadius:globalStyles.borderRadius,
 		width:screenWidth - 40,
 		alignItems:"center",
@@ -538,7 +538,7 @@ const styles = StyleSheet.create({
 		height:320,
 		paddingTop:30,
 		width:"100%",
-		backgroundColor:globalColors["Light"].mainThird
+		backgroundColor:globalColors["Light"].mainFirst
 	},
 	chartWrapperDark: {
 		backgroundColor:globalColors["Dark"].mainFirst
@@ -603,7 +603,8 @@ const styles = StyleSheet.create({
 		backgroundColor:globalColors["Dark"].mainSecond,
 	},
 	loadingText: {
-		marginLeft:20
+		marginLeft:20,
+		marginTop:5,
 	},
 	headerText: {
 		fontSize:18,

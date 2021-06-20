@@ -618,7 +618,7 @@ const styles = StyleSheet.create({
 	},
 	loadingText: {
 		marginLeft:20,
-		marginTop:20
+		marginTop:15
 	},
 	headerText: {
 		fontSize:18,

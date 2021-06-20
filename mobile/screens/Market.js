@@ -93,13 +93,15 @@ export default function Market({ navigation }) {
 										withHorizontalLines={true}
 										withVerticalLines={false}
 										withVerticalLabels={true}
-										transparent={true}
+										yAxisLabel="$"
+										yAxisInterval={500}
+										formatYLabel={(label) => abbreviateNumber(parseFloat(label), 2)}
 										withShadow={false}
 										chartConfig={{
 											backgroundColor: "rgba(0,0,0,0)",
 											backgroundGradientFrom: "rgba(0,0,0,0)",
 											backgroundGradientTo: "rgba(0,0,0,0)",
-											decimalPlaces: 0,
+											decimalPlaces: 2,
 											color: () => "url(#gradient)",
 											labelColor: () => globalColors[theme].mainContrast,
 											style: {

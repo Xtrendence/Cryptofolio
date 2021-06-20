@@ -1,5 +1,5 @@
 import React from "react";
-import { View } from "react-native";
+import { View, Animated } from "react-native";
 import { LineChart } from 'react-native-chart-kit';
 import Svg, { Defs, Stop, G, Rect, LinearGradient } from "react-native-svg";
 

@@ -51,6 +51,7 @@ export default function Market({ navigation }) {
 		navigation.addListener("focus", () => {
 			if(navigation.isFocused()) {
 				setTimeout(() => {
+					setPageKey(epoch());
 					getMarket();
 					getGlobal();
 				}, 500);

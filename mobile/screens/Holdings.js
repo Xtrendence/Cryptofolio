@@ -49,6 +49,7 @@ export default function Holdings({ navigation }) {
 		navigation.addListener("focus", () => {
 			if(navigation.isFocused()) {
 				setTimeout(() => {
+					setPageKey(epoch());
 					getHoldings();
 				}, 500);
 			}

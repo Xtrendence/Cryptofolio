@@ -51,6 +51,7 @@ export default function Activity({ navigation }) {
 		navigation.addListener("focus", () => {
 			if(navigation.isFocused()) {
 				setTimeout(() => {
+					setPageKey(epoch());
 					getActivity();
 				}, 500);
 			}

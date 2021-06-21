@@ -41,6 +41,7 @@ export default function Dashboard({ navigation }) {
 		navigation.addListener("focus", () => {
 			if(navigation.isFocused()) {
 				setTimeout(() => {
+					setPageKey(epoch());
 					getMarket();
 					getGlobal();
 					getHoldings();

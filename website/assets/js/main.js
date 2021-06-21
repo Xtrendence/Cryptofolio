@@ -82,6 +82,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 	let divHoldingsList = document.getElementById("holdings-list");
 	let divActivityList = document.getElementById("activity-list");
 
+	let divHoldingsValueCard = document.getElementById("holdings-value-card");
 	let divHoldingsAddCard = document.getElementById("holdings-add-card");
 	let divHoldingsMoreMenu = document.getElementById("holdings-more-menu");
 
@@ -363,6 +364,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 	buttonNextPage.addEventListener("click", () => {
 		nextPage();
+	});
+
+	divHoldingsValueCard.addEventListener("click", () => {
+		if(settings.transactionsAffectHoldings === "override") {
+
+		}
 	});
 
 	divHoldingsAddCard.addEventListener("click", () => {
@@ -1107,12 +1114,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 		if(empty(text)) {
 			text = "";
 		}
-		
+
 		hideLoading();
 
 		let element = document.createElement("div");
 		element.classList.add("loading-screen");
-		element.innerHTML = '<div class="loading-icon"><div></div><div></div></div><span>' + text + '</span>';
+		element.innerHTML = '<div class="loading-icon"><div></div><div></div></div><span id="loading-text">' + text + '</span>';
 		document.body.appendChild(element);
 
 		setTimeout(() => {
@@ -1253,7 +1260,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 		spanHoldingsTotalValue.textContent = "...";
 	}
 
-	function listDashboard() {
+	async function listDashboard() {
 		if(!divLoginWrapper.classList.contains("active") && divNavbarDashboard.classList.contains("active")) {
 			clearInterval(updateDashboardListInterval);
 
@@ -1355,13 +1362,36 @@ document.addEventListener("DOMContentLoaded", async () => {
 				console.log(e);
 			});
 
-			getHoldings().then(coins => {
+			getHoldings().then(async coins => {
 				try {
-					if(Object.keys(coins).length === 0) {
+					if(Object.keys(coins).length === 0 && settings.transactionsAffectHoldings !== "override") {
 						if(divDashboardHoldingsList.getElementsByClassName("coin-wrapper loading").length > 0) {
 							divDashboardHoldingsList.getElementsByClassName("coin-wrapper loading")[0].innerHTML = '<span>No Holdings Found...</span>';
 						}
 					} else {
+						let transactionsBySymbol;
+						if(settings.transactionsAffectHoldings === "mixed") {
+							transactionsBySymbol = sortActivityBySymbol(await getActivity());
+
+							let ids = Object.keys(transactionsBySymbol);
+							ids.map(id => {
+								if(!(id in coins)) {
+									coins[id] = { amount:0, symbol:transactionsBySymbol[id].symbol };
+								}
+							});
+						} else if(settings.transactionsAffectHoldings === "override") {
+							transactionsBySymbol = sortActivityBySymbol(await getActivity());
+
+							coins = {};
+
+							let ids = Object.keys(transactionsBySymbol);
+							ids.map(id => {
+								if(transactionsBySymbol[id].amount > 0) {
+									coins[id] = { amount:transactionsBySymbol[id].amount, symbol:transactionsBySymbol[id].symbol };
+								}
+							});
+						}
+
 						parseHoldings(coins).then(holdings => {
 							if(divDashboardHoldingsList.getElementsByClassName("coin-wrapper loading").length > 0) {
 								divDashboardHoldingsList.getElementsByClassName("coin-wrapper loading")[0].remove();
@@ -1383,6 +1413,18 @@ document.addEventListener("DOMContentLoaded", async () => {
 								let icon = coin.image;
 								let amount = coin.amount;
 								let symbol = coin.symbol;
+
+								if(!empty(transactionsBySymbol)) {
+									if(settings.transactionsAffectHoldings === "mixed") {
+										if(holding in transactionsBySymbol) {
+											amount = parseFloat(amount) + transactionsBySymbol[holding].amount;
+										}
+									}
+								}
+
+								if(amount < 0) {
+									amount = 0;
+								}
 
 								let div;
 
@@ -1570,7 +1612,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 			getHoldings().then(async coins => {
 				try {
-					if(Object.keys(coins).length === 0) {
+					if(Object.keys(coins).length === 0 && settings.transactionsAffectHoldings !== "override") {
 						clearHoldingsList();
 						if(divHoldingsList.getElementsByClassName("coin-wrapper loading").length > 0) {
 							divHoldingsList.getElementsByClassName("coin-wrapper loading")[0].innerHTML = '<span>No Holdings Found...</span>';
@@ -2118,6 +2160,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 					divDashboardHoldingsList.classList.remove("highlight");
 					divMarketList.classList.remove("highlight");
 					divHoldingsList.classList.remove("highlight");
+				}
+
+				if(settings.transactionsAffectHoldings === "override") {
+					divHoldingsValueCard.classList.add("clickable");
+				} else {
+					divHoldingsValueCard.classList.remove("clickable");
 				}
 
 				inputSharingURL.value = window.location.href.replaceAll("index.html", "") + "index.html?access=view&pin=" + settings.pin;

@@ -1018,13 +1018,17 @@ html.dark .highlight .coin-wrapper.negative {
 	display:block;
 	position:relative;
 }
+.holdings-value-card.clickable {
+	cursor:pointer;
+	transition:transform 0.25s;
+}
 .holdings-add-card {
 	margin-top:20px;
 	cursor:pointer;
 	transition:transform 0.25s;
 	background:var(--calm-gradient);
 }
-#desktop .holdings-add-card:hover {
+#desktop .holdings-add-card:hover, #desktop .holdings-value-card.clickable:hover {
 	transform:scale(0.95);
 }
 .holdings-add-card svg {

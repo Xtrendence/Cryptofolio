@@ -184,6 +184,11 @@ export default function Market({ navigation }) {
 	}
 
 	async function openModal(id, symbol, currentPrice) {
+		setChartData();
+		setChartLabels();
+		setModalATH("All-Time High: ...");
+		setModalDescription("<div>Loading Description...</div>");
+		
 		let currency = await AsyncStorage.getItem("currency");
 		if(empty(currency)) {
 			currency = "usd";

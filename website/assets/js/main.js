@@ -371,14 +371,40 @@ document.addEventListener("DOMContentLoaded", async () => {
 			getActivity().then(events => {
 				let coins = [];
 
+				let chartData = {};
+
+				let counter = 0;
+				let start = previousYear(new Date()).getTime() / 1000;
+				for(let i = 0; i < 366; i++) {
+					let time = (start + counter) * 1000;
+					let date = formatDate(new Date(time)).replaceAll(" ", "");
+					chartData[date] = {};
+					counter += 86400;
+				}
+
 				let keys = Object.keys(events);
 
 				keys.map(key => {
-					let id = events[key].id;
-					if(!coins.includes(id)) {
-						coins.push(id);
+					let event = events[key];
+					let id = event.id;
+					let amount = parseFloat(event.amount);
+					let eventTime = parseInt(event.time) * 1000;
+					let eventDate = formatDate(new Date(eventTime)).replaceAll(" ", "");
+					let previousYearTime = previousYear(new Date());
+					if(eventTime > previousYearTime && event.type !== "transfer") {
+						if(!coins.includes(id)) {
+							coins.push(id);
+						}
+						
+						if(id in chartData[eventDate]) {
+							event.type === "buy" ? chartData[eventDate][id] += amount : chartData[eventDate][id] -= amount;
+						} else {
+							event.type === "buy" ? chartData[eventDate][id] = amount : chartData[eventDate][id] = -amount;
+						}
 					}
 				});
+
+				console.log(chartData);
 
 				let ids = coins.join(",");
 
@@ -404,7 +430,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 						}
 					});
 
-					hideLoading();
+					setTimeout(() => {
+						hideLoading();
+					}, 500);
 				}).catch(e => {
 					console.log(e);
 				});

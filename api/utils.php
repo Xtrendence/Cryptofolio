@@ -87,9 +87,9 @@
 				mkdir("../data/historical/");
 			}
 
-			$historicalFile = "../data/historical/" . $id;
+			$historicalFile = "../data/historical/" . $id . "-" . $currency;
 
-			if(!file_exists($historicalFile) || empty(file_get_contents($historicalFile)) || time() - 86400 > filemtime($historicalFile)) {
+			if(!$this->historicalDataExists($id, $currency)) {
 				$json = file_get_contents("https://api.coingecko.com/api/v3/coins/" . $id . "/market_chart/range?vs_currency=" . $currency . "&from=" . $from . "&to=" . $to);
 
 				file_put_contents($historicalFile, $json);
@@ -100,13 +100,13 @@
 			}
 		}
 
-		function historicalDataExists($id) {
-			$historicalFile = "../data/historical/" . $id;
+		function historicalDataExists($id, $currency) {
+			$historicalFile = "../data/historical/" . $id . "-" . $currency;
 
 			if(!file_exists($historicalFile) || empty(file_get_contents($historicalFile)) || time() - 86400 > filemtime($historicalFile)) {
 				return false;
 			}
-			
+
 			return true;
 		}
 

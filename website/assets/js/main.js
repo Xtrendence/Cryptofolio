@@ -368,7 +368,47 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 	divHoldingsValueCard.addEventListener("click", () => {
 		if(settings.transactionsAffectHoldings === "override") {
+			getActivity().then(events => {
+				let coins = [];
 
+				let keys = Object.keys(events);
+
+				keys.map(key => {
+					let id = events[key].id;
+					if(!coins.includes(id)) {
+						coins.push(id);
+					}
+				});
+
+				let ids = coins.join(",");
+
+				showLoading(coins.length * 2000, "This might take a while... Don't touch anything.");
+				
+				getCoinMarketData(ids, settings.currency, previousYear(new Date()), new Date()).then(data => {
+					let keys = Object.keys(data);
+
+					let formatted = {};
+
+					keys.map(coinID => {
+						if(!(coinID in formatted)) {
+							formatted[coinID] = {};
+						}
+
+						let prices = data[coinID].prices;
+
+						for(let i = 0; i < prices.length; i++) {
+							let time = prices[i][0];
+							let price = prices[i][1];
+							let date = formatDate(new Date(time)).replaceAll(" ", "");
+							formatted[coinID][date] = price;
+						}
+					});
+
+					hideLoading();
+				}).catch(e => {
+					console.log(e);
+				});
+			});
 		}
 	});
 
@@ -881,7 +921,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 	}
 
 	function chartPopup(coinID, symbol, currentPrice) {
-		showLoading(6000);
+		showLoading(10000);
 
 		getCoinInfo(coinID).then(info => {
 			getCoinMarketData(coinID, settings.currency, previousYear(new Date()), new Date()).then(data => {

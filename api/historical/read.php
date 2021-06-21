@@ -19,7 +19,7 @@
 			$data = array();
 			for($i = 0; $i < count($ids); $i++) {
 				$data[$ids[$i]] = $helper->fetchHistoricalData($ids[$i], $currency, $from, $to);
-				if($i !== count($ids) - 1 && !$helper->historicalDataExists($ids[$i + 1])) {
+				if($i !== count($ids) - 1 && !$helper->historicalDataExists($ids[$i + 1], $currency)) {
 					// 30 requests per minute, 2 second interval between each request.
 					sleep(2);
 				}

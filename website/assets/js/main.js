@@ -1103,12 +1103,16 @@ document.addEventListener("DOMContentLoaded", async () => {
 		}, 250);
 	}
 
-	function showLoading(limit) {
+	function showLoading(limit, text) {
+		if(empty(text)) {
+			text = "";
+		}
+		
 		hideLoading();
 
 		let element = document.createElement("div");
 		element.classList.add("loading-screen");
-		element.innerHTML = '<div class="loading-icon"><div></div><div></div></div>';
+		element.innerHTML = '<div class="loading-icon"><div></div><div></div></div><span>' + text + '</span>';
 		document.body.appendChild(element);
 
 		setTimeout(() => {

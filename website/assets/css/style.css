@@ -1383,6 +1383,18 @@ html.dark .highlight .coin-wrapper.negative {
 .loading-icon div:nth-child(2) {
 	animation-delay:-0.5s;
 }
+.loading-screen span {
+	font-size:18px;
+	font-weight:bold;
+	color:rgb(255,255,255);
+	display:block;
+	text-align:center;
+	width:100%;
+	line-height:40px;
+	position:absolute;
+	top:calc(50% - 40px / 2 + 70px);
+	pointer-events:none;
+}
 @keyframes loading-icon {
 	0% {
 		top:36px;

@@ -94,9 +94,9 @@
 
 				file_put_contents($historicalFile, $json);
 
-				return $json;
+				return json_decode($json, true);
 			} else {
-				return file_get_contents($historicalFile);
+				return json_decode(file_get_contents($historicalFile), true);
 			}
 		}
 

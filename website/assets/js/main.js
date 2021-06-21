@@ -885,7 +885,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 		getCoinInfo(coinID).then(info => {
 			getCoinMarketData(coinID, settings.currency, previousYear(new Date()), new Date()).then(data => {
-				data = parseMarketData(data, new Date().getTime(), currentPrice);
+				data = parseMarketData(data[coinID], new Date().getTime(), currentPrice);
 
 				if(empty(info.description.en)) {
 					info.description.en = "No description found for " + symbol.toUpperCase() + ".";
@@ -2894,7 +2894,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 		});
 	}
 
-	function getCoinMarketData(id, currency, from, to) {
+	function getCoinMarketData(ids, currency, from, to) {
 		return new Promise((resolve, reject) => {
 			try {
 				let xhr = new XMLHttpRequest();
@@ -2909,7 +2909,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 					}
 				});
 
-				xhr.open("GET", api + "historical/read.php?token=" + sessionToken + "&id=" + id + "&currency=" + currency + "&from=" + new Date(Date.parse(from)).getTime() / 1000 + "&to=" + new Date(Date.parse(to)).getTime() / 1000, true);
+				xhr.open("GET", api + "historical/read.php?token=" + sessionToken + "&ids=" + ids + "&currency=" + currency + "&from=" + new Date(Date.parse(from)).getTime() / 1000 + "&to=" + new Date(Date.parse(to)).getTime() / 1000, true);
 				xhr.send();
 			} catch(e) {
 				reject(e);

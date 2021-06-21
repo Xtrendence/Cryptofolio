@@ -1270,22 +1270,29 @@ document.addEventListener("DOMContentLoaded", async () => {
 	function clearMarketList() {
 		divMarketList.classList.add("loading");
 		divMarketList.innerHTML = '<div class="coin-wrapper loading"><span>Loading...</span></div>';
+		clearStats();
 	}
 
 	function clearHoldingsList() {
 		divHoldingsList.classList.add("loading");
 		divHoldingsList.innerHTML = '<div class="coin-wrapper loading"><span>Loading...</span></div>';
+		clearStats();
 	}
 
 	function clearActivityList() {
 		divActivityList.classList.add("loading");
 		divActivityList.innerHTML = '<div class="event-wrapper loading"><span>Loading...</span></div>';
+		clearStats();
 	}
 
 	function clearStats() {
+		spanDashboardMarketCap.textContent = "...";
+		spanDashboardMarketChange.textContent = "...";
+		spanDashboardHoldingsValue.textContent = "...";
 		spanGlobalMarketCap.textContent = "...";
 		spanGlobalVolume.textContent = "...";
 		spanGlobalDominance.textContent = "...";
+		spanHoldingsTotalValue.textContent = "...";
 	}
 
 	function listDashboard() {

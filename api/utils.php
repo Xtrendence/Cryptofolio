@@ -100,6 +100,16 @@
 			}
 		}
 
+		function historicalDataExists($id) {
+			$historicalFile = "../data/historical/" . $id;
+
+			if(!file_exists($historicalFile) || empty(file_get_contents($historicalFile)) || time() - 86400 > filemtime($historicalFile)) {
+				return false;
+			}
+			
+			return true;
+		}
+
 		function validDate($date){
 			return (bool)strtotime($date);
 		}

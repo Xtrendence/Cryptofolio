@@ -82,6 +82,24 @@
 			}
 		}
 
+		function fetchHistoricalData($id, $currency, $from, $to) {
+			if(!file_exists("../data/historical/")) {
+				mkdir("../data/historical/");
+			}
+
+			$historicalFile = "../data/historical/" . $id;
+
+			if(!file_exists($historicalFile) || empty(file_get_contents($historicalFile)) || time() - 86400 > filemtime($historicalFile)) {
+				$json = file_get_contents("https://api.coingecko.com/api/v3/coins/" . $id . "/market_chart/range?vs_currency=" . $currency . "&from=" . $from . "&to=" . $to);
+
+				file_put_contents($historicalFile, $json);
+
+				return $json;
+			} else {
+				return file_get_contents($historicalFile);
+			}
+		}
+
 		function validDate($date){
 			return (bool)strtotime($date);
 		}

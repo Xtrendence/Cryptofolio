@@ -2857,7 +2857,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 					}
 				});
 
-				xhr.open("GET", "https://api.coingecko.com/api/v3/coins/" + id + "/market_chart/range?vs_currency=" + currency + "&from=" + new Date(Date.parse(from)).getTime() / 1000 + "&to=" + new Date(Date.parse(to)).getTime() / 1000, true);
+				xhr.open("GET", api + "historical/read.php?token=" + sessionToken + "&id=" + id + "&currency=" + currency + "&from=" + new Date(Date.parse(from)).getTime() / 1000 + "&to=" + new Date(Date.parse(to)).getTime() / 1000, true);
 				xhr.send();
 			} catch(e) {
 				reject(e);

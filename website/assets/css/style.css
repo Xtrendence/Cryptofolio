@@ -494,7 +494,7 @@ input[type=number] {
 	background:var(--main-second);
 }
 
-.coin-chart-wrapper {
+.coin-chart-wrapper, .holdings-chart-wrapper {
 	width:calc(100% - 40px);
 	max-width:1100px;
 	display:block;
@@ -504,14 +504,14 @@ input[type=number] {
 	text-decoration:none;
 	color:var(--accent-third);
 }
-.popup-wrapper .coin-popup-wrapper .stats-wrapper {
+.popup-wrapper .coin-popup-wrapper .stats-wrapper, .popup-wrapper .holdings-poup-wrapper .stats-wrapper {
 	display:block;
 	margin:20px auto 20px auto;
 	width:calc(100% - 40px);
 	position:relative;
 	text-align:center;
 }
-.popup-wrapper .coin-popup-wrapper .stats-wrapper span {
+.popup-wrapper .coin-popup-wrapper .stats-wrapper span, .popup-wrapper .holdings-poup-wrapper .stats-wrapper span {
 	font-size:16px;
 	color:var(--main-contrast);
 	border-radius:var(--border-radius);
@@ -519,7 +519,7 @@ input[type=number] {
 	background:var(--main-third);
 	display:inline-block;
 }
-.popup-wrapper .coin-popup-wrapper .reject {
+.popup-wrapper .coin-popup-wrapper .reject, .popup-wrapper .holdings-poup-wrapper .reject {
 	width:200px;
 	margin:0 0 20px 0;
 }
@@ -1057,24 +1057,6 @@ html.dark .highlight .coin-wrapper.negative {
 	position:absolute;
 	bottom:15px;
 	left:0;
-}
-
-.holdings-chart-wrapper {
-	width:750px;
-	height:calc(100% - 304px - 100px);
-	padding:20px;
-	background:var(--main-first);
-	box-shadow:var(--shadow-smooth);
-	position:absolute;
-	overflow:hidden;
-	bottom:20px;
-	left:20px;
-	border-radius:var(--border-radius);
-}
-.holdings-chart-wrapper .chart-container {
-	width:95%;
-	margin:0 auto 0 auto;
-	display:block;
 }
 
 .activity-list-wrapper {

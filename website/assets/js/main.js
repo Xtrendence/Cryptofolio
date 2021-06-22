@@ -430,6 +430,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 					let dates = Object.keys(chartData);
 
+					let startDate;
+
 					for(let i = 0; i < dates.length; i++) {
 						let previousDay = chartData[dates[i - 1]];
 						let currentDay = chartData[dates[i]];
@@ -437,6 +439,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 						if(i - 1 >= 0 && Object.keys(previousDay).length > 1) {
 							Object.keys(previousDay).map(coin => {
 								if(coin !== "holdingsValue") {
+									if(empty(startDate)) {
+										startDate = i - 1;
+									}
+
 									if(previousDay[coin] < 0) {
 										chartData[dates[i - 1]][coin] = 0;
 									}
@@ -458,28 +464,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 						});
 					}
 
-					let today = formatDate(new Date()).replaceAll(" ", "");
-
-					delete chartData[today];
-
-					if(!(today in chartData) || empty(chartData[today]) || isNaN(chartData[today].holdingsValue)) {
-						let holdingsData = localStorage.getItem("holdingsData");
-						if(validJSON(holdingsData)) {
-							chartData[today] = { holdingsValue:0 };
-
-							let holdings = JSON.parse(holdingsData);
-							let keys = Object.keys(holdings);
-							
-							keys.map(id => {
-								chartData[today][id] = parseFloat(holdings[id].amount);
-								chartData[today].holdingsValue += parseFloat(holdings[id].value);
-							});
-						}
-					}
+					holdingsChartPopup(chartData, startDate);
 
 					setTimeout(() => {
 						hideLoading();
-					}, 500);
+					}, 1400);
 				}).catch(e => {
 					console.log(e);
 				});
@@ -995,7 +984,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 		});
 	}
 
-	function chartPopup(coinID, symbol, currentPrice) {
+	function marketChartPopup(coinID, symbol, currentPrice) {
 		showLoading(10000);
 
 		getCoinInfo(coinID).then(info => {
@@ -1010,7 +999,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 				popup(symbol.toUpperCase() + " / " + settings.currency.toUpperCase() + " - " + info.name, html, "calc(100% - 40px)", "calc(100% - 40px)", { delay:1500, closeIcon:true });
 										
-				generateChart(document.getElementsByClassName("coin-chart-wrapper")[0], "Price", data.labels, data.tooltips, data.prices, { symbol:symbol });
+				generateMarketChart(document.getElementsByClassName("coin-chart-wrapper")[0], "Price", data.labels, data.tooltips, data.prices, { symbol:symbol });
 
 				let ath = parseFloat(info.market_data.ath[settings.currency]);
 
@@ -1032,6 +1021,51 @@ document.addEventListener("DOMContentLoaded", async () => {
 			});
 		}).catch(e => {
 			console.log(e);
+		});
+	}
+
+	function holdingsChartPopup(chartData, startDate) {
+		let today = formatDate(new Date()).replaceAll(" ", "");
+
+		delete chartData[today];
+
+		if(!(today in chartData) || empty(chartData[today]) || isNaN(chartData[today].holdingsValue)) {
+			let holdingsData = localStorage.getItem("holdingsData");
+			if(validJSON(holdingsData)) {
+				chartData[today] = { holdingsValue:0 };
+
+				let holdings = JSON.parse(holdingsData);
+				let keys = Object.keys(holdings);
+							
+				keys.map(id => {
+					chartData[today][id] = parseFloat(holdings[id].amount);
+					chartData[today].holdingsValue += parseFloat(holdings[id].value);
+				});
+			}
+		}
+
+		let labels = [];
+		let tooltips = [];
+		let values = [];
+
+		let dates = Object.keys(chartData);
+		
+		for(let i = startDate; i < dates.length; i++) {
+			let date = dates[i];
+
+			labels.push(new Date(Date.parse(date)));
+			tooltips.push(formatDateHuman(new Date(Date.parse(date))));
+			values.push(chartData[date].holdingsValue);
+		}
+
+		let html = '<div class="holdings-popup-wrapper"><div class="holdings-chart-wrapper"></div><div class="stats-wrapper noselect"></div><button class="reject" id="popup-dismiss">Back</button></div>';
+
+		popup("Holdings Performance", html, "calc(100% - 40px)", "calc(100% - 40px)", { delay:1500, closeIcon:true });
+										
+		generateHoldingsChart(document.getElementsByClassName("holdings-chart-wrapper")[0], "Value", labels, tooltips, values);
+
+		document.getElementById("popup-dismiss").addEventListener("click", () => {
+			hidePopup();
 		});
 	}
 
@@ -1671,7 +1705,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 							div.innerHTML = '<span class="rank">' + rank + '</span><img draggable="false" src="' + icon + '" title="' + name + '"><span class="coin" title="' + name + '">' + symbol.toUpperCase() + '</span><span class="price">' + currencies[settings.currency] + price + '</span><span class="market-cap">' + currencies[settings.currency] + separateThousands(marketCap) + '</span><span class="day">' + priceChangeDay + '%</span>';
 
 							div.addEventListener("click", () => {
-								chartPopup(coin.id, symbol, coin.current_price);
+								marketChartPopup(coin.id, symbol, coin.current_price);
 							});
 
 							divMarketList.appendChild(div);
@@ -2016,7 +2050,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 		}
 	}
 
-	async function generateChart(element, title, labels, tooltips, data, args) {
+	async function generateMarketChart(element, title, labels, tooltips, data, args) {
 		let canvas = document.createElement("canvas");
 		canvas.id = "chart-canvas";
 		canvas.classList.add("chart-canvas");
@@ -2097,9 +2131,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 				}],
 			},
 			options: {
+				events: ["mousemove", "mouseout", "touchstart", "touchmove"],
 				responsive: true,
 				legend: {
-					display: true
+					display: false
 				},
 				hover: {
 					mode: "index",
@@ -2162,6 +2197,92 @@ document.addEventListener("DOMContentLoaded", async () => {
 					drawTime: "beforeDatasetsDraw",
 					annotations: [...annotationsBuy, ...annotationsSell]
 				}
+			}
+		});
+
+		element.innerHTML = "";
+		element.appendChild(canvas);
+	}
+	
+	async function generateHoldingsChart(element, title, labels, tooltips, data) {
+		let canvas = document.createElement("canvas");
+		canvas.id = "chart-canvas";
+		canvas.classList.add("chart-canvas");
+
+		let context = canvas.getContext("2d");
+
+		let gradientStroke = context.createLinearGradient(1000, 0, 300, 0);
+		gradientStroke.addColorStop(0, "#11998e");
+		gradientStroke.addColorStop(1, "#38ef7d");
+
+		new Chart(canvas, {
+			type: "line",
+			data: {
+				labels: labels,
+				datasets:[{
+					label: title,
+					backgroundColor: "rgba(0,0,0,0)",
+					borderColor: gradientStroke,
+					data: data,
+					pointRadius: 1,
+					pointHoverRadius: 6,
+				}],
+			},
+			options: {
+				events: ["mousemove", "mouseout", "touchstart", "touchmove"],
+				responsive: true,
+				legend: {
+					display: false
+				},
+				hover: {
+					mode: "index",
+					intersect: false,
+				},
+				scales: {
+					xAxes: [{
+						beginAtZero: true,
+						gridLines: {
+							zeroLineColor: settings.theme === "dark" ? "rgba(255,255,255,0.075)" : "rgba(0,0,0,0.1)",
+							color: settings.theme === "dark" ? "rgba(255,255,255,0.075)" : "rgba(0,0,0,0.1)",
+						},
+						ticks: {
+							autoSkip: true,
+							maxTicksLimit: 12,
+							fontColor: settings.theme === "dark" ? "rgba(255,255,255,0.9)" : "rgb(75,75,75)"
+						},
+						type: "time",
+						time: {
+							unit: "month"
+						}
+					}],
+					yAxes: [{
+						beginAtZero: true,
+						gridLines: {
+							color: settings.theme === "dark" ? "rgba(255,255,255,0.075)" : "rgba(0,0,0,0.1)",
+						},
+						ticks: {
+							fontColor: settings.theme === "dark" ? "rgba(255,255,255,0.9)" : "rgb(75,75,75)"
+						}
+					}]
+				},
+				tooltips: {
+					displayColors: false,
+					intersect: false,
+					callbacks: {
+						title: function() {
+							return "";
+						},
+						label: function(item) {
+							let value = data[item.index];
+
+							if(value > 1) {
+								value = separateThousands(value.toFixed(2));
+							}
+
+							return [tooltips[item.index], currencies[settings.currency] + value];
+						}
+					}
+				},
 			}
 		});
 

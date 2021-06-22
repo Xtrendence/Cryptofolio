@@ -41,7 +41,7 @@
 			}
 
 			if(empty(file_get_contents($this->settingsFile))) {
-				$settings = json_encode(array("shareHoldings" => "disabled", "pin" => "0000", "css" => ""));
+				$settings = json_encode(array("shareHoldings" => "disabled", "pin" => "0000", "css" => "", "refetchTime" => 86400));
 				file_put_contents($this->settingsFile, $settings);
 			}
 

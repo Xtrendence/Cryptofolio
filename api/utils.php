@@ -103,7 +103,13 @@
 		function historicalDataExists($id, $currency) {
 			$historicalFile = "../data/historical/" . $id . "-" . $currency;
 
-			if(!file_exists($historicalFile) || empty(file_get_contents($historicalFile)) || time() - 86400 > filemtime($historicalFile)) {
+			$settings = json_decode(file_get_contents($this->settingsFile), true);
+			$refetchTime = 86400;
+			if(!empty($settings["refetchTime"])) {
+				$refetchTime = $settings["refetchTime"];
+			}
+
+			if(!file_exists($historicalFile) || empty(file_get_contents($historicalFile)) || time() - $refetchTime > filemtime($historicalFile)) {
 				return false;
 			}
 

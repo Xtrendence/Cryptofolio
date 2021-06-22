@@ -378,7 +378,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 				for(let i = 0; i < 366; i++) {
 					let time = (start + counter) * 1000;
 					let date = formatDate(new Date(time)).replaceAll(" ", "");
-					chartData[date] = {};
+					chartData[date] = { holdingsValue:0 };
 					counter += 86400;
 				}
 
@@ -434,22 +434,48 @@ document.addEventListener("DOMContentLoaded", async () => {
 						let previousDay = chartData[dates[i - 1]];
 						let currentDay = chartData[dates[i]];
 
-						if(i - 1 >= 0 && Object.keys(previousDay).length > 0) {
+						if(i - 1 >= 0 && Object.keys(previousDay).length > 1) {
 							Object.keys(previousDay).map(coin => {
-								if(previousDay[coin] < 0) {
-									chartData[dates[i - 1]][coin] = 0;
-								}
+								if(coin !== "holdingsValue") {
+									if(previousDay[coin] < 0) {
+										chartData[dates[i - 1]][coin] = 0;
+									}
 
-								if(coin in currentDay) {
-									chartData[dates[i]][coin] = chartData[dates[i]][coin] + previousDay[coin];
-								} else {
-									chartData[dates[i]][coin] = previousDay[coin];
+									if(coin in currentDay) {
+										chartData[dates[i]][coin] = chartData[dates[i]][coin] + previousDay[coin];
+									} else {
+										chartData[dates[i]][coin] = previousDay[coin];
+									}
 								}
 							});
 						}
+
+						Object.keys(chartData[dates[i]]).map(coin => {
+							if(coin !== "holdingsValue") {
+								let value = chartData[dates[i]][coin] * formatted[coin][dates[i]];
+								chartData[dates[i]].holdingsValue += value;
+							}
+						});
 					}
 
-					console.log(chartData);
+					let today = formatDate(new Date()).replaceAll(" ", "");
+
+					delete chartData[today];
+
+					if(!(today in chartData) || empty(chartData[today]) || isNaN(chartData[today].holdingsValue)) {
+						let holdingsData = localStorage.getItem("holdingsData");
+						if(validJSON(holdingsData)) {
+							chartData[today] = { holdingsValue:0 };
+
+							let holdings = JSON.parse(holdingsData);
+							let keys = Object.keys(holdings);
+							
+							keys.map(id => {
+								chartData[today][id] = parseFloat(holdings[id].amount);
+								chartData[today].holdingsValue += parseFloat(holdings[id].value);
+							});
+						}
+					}
 
 					setTimeout(() => {
 						hideLoading();
@@ -1744,6 +1770,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 								}
 							}
 
+							let holdingsObject = {};
+
 							Object.keys(holdings).map(holding => {
 								let coin = holdings[holding];
 				
@@ -1752,6 +1780,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 								let amount = coin.amount;
 								let symbol = coin.symbol;
 								let value = coin.value.toFixed(2);
+
+								holdingsObject[holding] = { amount:amount, value:value };
 
 								let enableMoreMenu = true;
 
@@ -1850,6 +1880,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 									console.log(e);
 								}
 							});
+
+							localStorage.setItem("holdingsData", JSON.stringify(holdingsObject));
 						}).catch(e => {
 							console.log(e);
 						});

@@ -504,22 +504,37 @@ input[type=number] {
 	text-decoration:none;
 	color:var(--accent-third);
 }
-.popup-wrapper .coin-popup-wrapper .stats-wrapper, .popup-wrapper .holdings-poup-wrapper .stats-wrapper {
+.popup-wrapper .coin-popup-wrapper .stats-wrapper, .popup-wrapper .holdings-popup-wrapper .stats-wrapper {
 	display:block;
 	margin:20px auto 20px auto;
 	width:calc(100% - 40px);
 	position:relative;
 	text-align:center;
 }
-.popup-wrapper .coin-popup-wrapper .stats-wrapper span, .popup-wrapper .holdings-poup-wrapper .stats-wrapper span {
+.popup-wrapper .coin-popup-wrapper .stats-wrapper span, .popup-wrapper .holdings-popup-wrapper .stats-wrapper span {
 	font-size:16px;
+	font-weight:bold;
 	color:var(--main-contrast);
 	border-radius:var(--border-radius);
 	padding:10px;
+	margin:10px 5px 0 5px;
 	background:var(--main-third);
 	display:inline-block;
+	box-shadow:var(--shadow-smooth);
 }
-.popup-wrapper .coin-popup-wrapper .reject, .popup-wrapper .holdings-poup-wrapper .reject {
+html.light .popup-wrapper .holdings-popup-wrapper .stats-wrapper span.positive {
+	color:rgb(0,150,50);
+}
+html.light .popup-wrapper .holdings-popup-wrapper .stats-wrapper span.negative {
+	color:rgb(230,0,0);
+}
+html.dark .popup-wrapper .holdings-popup-wrapper .stats-wrapper span.positive {
+	color:rgb(0,255,150);
+}
+html.dark .popup-wrapper .holdings-popup-wrapper .stats-wrapper span.negative {
+	color:rgb(240,0,0);
+}
+.popup-wrapper .coin-popup-wrapper .reject, .popup-wrapper .holdings-popup-wrapper .reject {
 	width:200px;
 	margin:0 0 20px 0;
 }

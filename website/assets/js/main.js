@@ -374,9 +374,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 				let chartData = {};
 
 				let counter = 0;
-				let start = previousYear(new Date()).getTime() / 1000;
+				let startDate = previousYear(new Date()).getTime() / 1000;
 				for(let i = 0; i < 366; i++) {
-					let time = (start + counter) * 1000;
+					let time = (startDate + counter) * 1000;
 					let date = formatDate(new Date(time)).replaceAll(" ", "");
 					chartData[date] = { holdingsValue:0 };
 					counter += 86400;
@@ -409,7 +409,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 				showLoading(coins.length * 2000, "This might take a while... Don't touch anything.");
 
 				check();
-				
+
 				let update = setInterval(() => {
 					check();
 				}, 2000);
@@ -431,13 +431,15 @@ document.addEventListener("DOMContentLoaded", async () => {
 				}
 				
 				getCoinMarketData(ids, settings.currency, previousYear(new Date()), new Date()).then(data => {
+					showLoading(1400, "Generating chart...");
+
 					let keys = Object.keys(data);
 
-					let formatted = {};
+					let formattedPrices = {};
 
 					keys.map(coinID => {
-						if(!(coinID in formatted)) {
-							formatted[coinID] = {};
+						if(!(coinID in formattedPrices)) {
+							formattedPrices[coinID] = {};
 						}
 
 						let prices = data[coinID].prices;
@@ -446,7 +448,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 							let time = prices[i][0];
 							let price = prices[i][1];
 							let date = formatDate(new Date(time)).replaceAll(" ", "");
-							formatted[coinID][date] = price;
+							formattedPrices[coinID][date] = price;
 						}
 					});
 
@@ -480,17 +482,13 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 						Object.keys(chartData[dates[i]]).map(coin => {
 							if(coin !== "holdingsValue") {
-								let value = chartData[dates[i]][coin] * formatted[coin][dates[i]];
+								let value = chartData[dates[i]][coin] * formattedPrices[coin][dates[i]];
 								chartData[dates[i]].holdingsValue += value;
 							}
 						});
 					}
 
 					holdingsChartPopup(chartData, startDate);
-
-					setTimeout(() => {
-						hideLoading();
-					}, 1400);
 				}).catch(e => {
 					console.log(e);
 				});
@@ -1079,11 +1077,58 @@ document.addEventListener("DOMContentLoaded", async () => {
 			tooltips.push(formatDateHuman(new Date(Date.parse(date))));
 			values.push(chartData[date].holdingsValue);
 		}
+		
+		let currentValue = chartData[today].holdingsValue;
 
-		let html = '<div class="holdings-popup-wrapper"><div class="holdings-chart-wrapper"></div><div class="stats-wrapper noselect"></div><button class="reject" id="popup-dismiss">Back</button></div>';
+		let value0d = values.length >= 1 ? values[values.length - 1] : "-";
+		let value1d = values.length >= 2 ? values[values.length - 2] : "-";
+		let value1w = values.length >= 7 ? values[values.length - 8] : "-";
+		let value1m = values.length >= 30 ? values[values.length - 31] : "-";
+		let value3m = values.length >= 90 ? values[values.length - 91] : "-";
+		let value6m = values.length >= 180 ? values[values.length - 181] : "-";
+		let value1y = values.length >= 365 ? values[values.length - 366] : "-";
+
+		let stats = "";
+
+		if(!isNaN(value0d) && value0d > 1) {
+			value0d = separateThousands(value0d.toFixed(2));
+			stats += '<span>Current (' + currencies[settings.currency] + '): ' + value0d + '</span>';
+		}
+		if(!isNaN(value1d) && value1d > 1) {
+			let spanClass = (currentValue - value1d) === 0 ? "" : (currentValue - value1d) > 0 ? "positive" : "negative";
+			value1d = separateThousands((currentValue - value1d).toFixed(2));
+			stats += '<span class="' + spanClass + '">1D (' + currencies[settings.currency] + '): ' + value1d + '</span>';
+		}
+		if(!isNaN(value1w) && value1w > 1) {
+			let spanClass = (currentValue - value1w) === 0 ? "" : (currentValue - value1w) > 0 ? "positive" : "negative";
+			value1w = separateThousands((currentValue - value1w).toFixed(2));
+			stats += '<span class="' + spanClass + '">1W (' + currencies[settings.currency] + '): ' + value1w + '</span>';
+		}
+		if(!isNaN(value1m) && value1m > 1) {
+			let spanClass = (currentValue - value1m) === 0 ? "" : (currentValue - value1m) > 0 ? "positive" : "negative";
+			value1m = separateThousands((currentValue - value1m).toFixed(2));
+			stats += '<span class="' + spanClass + '">1M (' + currencies[settings.currency] + '): ' + value1m + '</span>';
+		}
+		if(!isNaN(value3m) && value3m > 1) {
+			let spanClass = (currentValue - value3m) === 0 ? "" : (currentValue - value3m) > 0 ? "positive" : "negative";
+			value3m = separateThousands((currentValue - value3m).toFixed(2));
+			stats += '<span class="' + spanClass + '">3M (' + currencies[settings.currency] + '): ' + value3m + '</span>';
+		}
+		if(!isNaN(value6m) && value6m > 1) {
+			let spanClass = (currentValue - value6m) === 0 ? "" : (currentValue - value6m) > 0 ? "positive" : "negative";
+			value6m = separateThousands((currentValue - value6m).toFixed(2));
+			stats += '<span class="' + spanClass + '">6M (' + currencies[settings.currency] + '): ' + value6m + '</span>';
+		}
+		if(!isNaN(value1y) && value1y > 1) {
+			let spanClass = (currentValue - value1y) === 0 ? "" : (currentValue - value1y) > 0 ? "positive" : "negative";
+			value1y = separateThousands((currentValue - value1y).toFixed(2));
+			stats += '<span class="' + spanClass + '">1Y (' + currencies[settings.currency] + '): ' + value1y + '</span>';
+		}
+
+		let html = '<div class="holdings-popup-wrapper"><div class="holdings-chart-wrapper"></div><div class="stats-wrapper noselect">' + stats + '</div><button class="reject" id="popup-dismiss">Back</button></div>';
 
 		popup("Holdings Performance", html, "calc(100% - 40px)", "calc(100% - 40px)", { delay:1500, closeIcon:true });
-										
+
 		generateHoldingsChart(document.getElementsByClassName("holdings-chart-wrapper")[0], "Value", labels, tooltips, values);
 
 		document.getElementById("popup-dismiss").addEventListener("click", () => {

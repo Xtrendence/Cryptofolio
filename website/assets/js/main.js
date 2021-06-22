@@ -395,7 +395,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 						if(!coins.includes(id)) {
 							coins.push(id);
 						}
-						
+
 						if(id in chartData[eventDate]) {
 							event.type === "buy" ? chartData[eventDate][id] += amount : chartData[eventDate][id] -= amount;
 						} else {
@@ -403,8 +403,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 						}
 					}
 				});
-
-				console.log(chartData);
 
 				let ids = coins.join(",");
 
@@ -429,6 +427,29 @@ document.addEventListener("DOMContentLoaded", async () => {
 							formatted[coinID][date] = price;
 						}
 					});
+
+					let dates = Object.keys(chartData);
+
+					for(let i = 0; i < dates.length; i++) {
+						let previousDay = chartData[dates[i - 1]];
+						let currentDay = chartData[dates[i]];
+
+						if(i - 1 >= 0 && Object.keys(previousDay).length > 0) {
+							Object.keys(previousDay).map(coin => {
+								if(previousDay[coin] < 0) {
+									chartData[dates[i - 1]][coin] = 0;
+								}
+
+								if(coin in currentDay) {
+									chartData[dates[i]][coin] = chartData[dates[i]][coin] + previousDay[coin];
+								} else {
+									chartData[dates[i]][coin] = previousDay[coin];
+								}
+							});
+						}
+					}
+
+					console.log(chartData);
 
 					setTimeout(() => {
 						hideLoading();

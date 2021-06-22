@@ -122,6 +122,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 	let buttonImportActivity = document.getElementById("import-activity-button");
 	let buttonExportActivity = document.getElementById("export-activity-button");
 
+	let buttonDeleteCache = document.getElementById("delete-cache-button");
+
 	let buttonShowQRCode = document.getElementById("show-qr-code-button");
 
 	let buttonDonations = document.getElementsByClassName("donation-button");
@@ -431,6 +433,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 				}
 				
 				getCoinMarketData(ids, settings.currency, previousYear(new Date()), new Date()).then(data => {
+					hideLoading();
+					
 					showLoading(1400, "Generating chart...");
 
 					let keys = Object.keys(data);
@@ -886,6 +890,28 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 	buttonExportActivity.addEventListener("click", () => {
 		download(api + "activity/export.php?token=" + sessionToken);
+	});
+
+	buttonDeleteCache.addEventListener("click", () => {
+		deleteCache().then(response => {
+			if("error" in response) {
+				Notify.error({
+					title:"Error",
+					description:response.error
+				});
+			} else {
+				Notify.success({
+					title:"Cache Deleted",
+					description:response.message
+				});
+			}
+		}).catch(e => {
+			console.log(e);
+			Notify.error({
+				title:"Error",
+				description:"Couldn't delete cache."
+			});
+		});
 	});
 
 	buttonShowQRCode.addEventListener("click", () => {
@@ -3478,6 +3504,29 @@ document.addEventListener("DOMContentLoaded", async () => {
 					reject("No File Uploaded.");
 				}
 			});
+		});
+	}
+
+	function deleteCache() {
+		return new Promise((resolve, reject) => {
+			try {
+				let xhr = new XMLHttpRequest();
+
+				xhr.addEventListener("readystatechange", () => {
+					if(xhr.readyState === XMLHttpRequest.DONE) {
+						if(validJSON(xhr.responseText)) {
+							resolve(JSON.parse(xhr.responseText));
+						} else {
+							reject("Invalid JSON.");
+						}
+					}
+				});
+
+				xhr.open("DELETE", api + "historical/delete.php", true);
+				xhr.send(JSON.stringify({ token:sessionToken }));
+			} catch(e) {
+				reject(e);
+			}
 		});
 	}
 

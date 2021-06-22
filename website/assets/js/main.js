@@ -367,7 +367,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 	});
 
 	divHoldingsValueCard.addEventListener("click", () => {
-		if(settings.transactionsAffectHoldings === "override") {
+		if(settings.transactionsAffectHoldings === "override" && divHoldingsList.getElementsByClassName("more").length === 0) {
 			getActivity().then(events => {
 				let coins = [];
 
@@ -1836,25 +1836,31 @@ document.addEventListener("DOMContentLoaded", async () => {
 					} else {
 						let transactionsBySymbol;
 						if(settings.transactionsAffectHoldings === "mixed") {
-							transactionsBySymbol = sortActivityBySymbol(await getActivity());
+							let activity = await getActivity();
+							if(!empty(activity)) {
+								transactionsBySymbol = sortActivityBySymbol(activity);
 
-							let ids = Object.keys(transactionsBySymbol);
-							ids.map(id => {
-								if(!(id in coins)) {
-									coins[id] = { amount:0, symbol:transactionsBySymbol[id].symbol };
-								}
-							});
+								let ids = Object.keys(transactionsBySymbol);
+								ids.map(id => {
+									if(!(id in coins)) {
+										coins[id] = { amount:0, symbol:transactionsBySymbol[id].symbol };
+									}
+								});
+							}
 						} else if(settings.transactionsAffectHoldings === "override") {
-							transactionsBySymbol = sortActivityBySymbol(await getActivity());
+							let activity = await getActivity();
+							if(!empty(activity)) {
+								transactionsBySymbol = sortActivityBySymbol(activity);
 
-							coins = {};
+								coins = {};
 
-							let ids = Object.keys(transactionsBySymbol);
-							ids.map(id => {
-								if(transactionsBySymbol[id].amount > 0) {
-									coins[id] = { amount:transactionsBySymbol[id].amount, symbol:transactionsBySymbol[id].symbol };
-								}
-							});
+								let ids = Object.keys(transactionsBySymbol);
+								ids.map(id => {
+									if(transactionsBySymbol[id].amount > 0) {
+										coins[id] = { amount:transactionsBySymbol[id].amount, symbol:transactionsBySymbol[id].symbol };
+									}
+								});
+							}
 						}
 						
 						parseHoldings(coins).then(holdings => {

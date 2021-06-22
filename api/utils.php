@@ -116,6 +116,29 @@
 			return true;
 		}
 
+		function rrmdir($directory) {
+			if(is_dir($directory)) {
+				$files = scandir($directory);
+
+				foreach($files as $file) {
+					if($file != "." && $file != "..") {
+						if(filetype($directory . "/" . $file) == "dir") {
+							$this->rrmdir($directory . "/" . $file);
+						} else {
+							unlink($directory . "/" . $file);
+						}
+					}
+				}
+				reset($files);
+				rmdir($directory);
+			}
+
+			if(file_exists($directory)) {
+				return false;
+			}
+			return true;
+		}
+
 		function validDate($date){
 			return (bool)strtotime($date);
 		}

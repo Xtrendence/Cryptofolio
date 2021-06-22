@@ -407,6 +407,28 @@ document.addEventListener("DOMContentLoaded", async () => {
 				let ids = coins.join(",");
 
 				showLoading(coins.length * 2000, "This might take a while... Don't touch anything.");
+
+				check();
+				
+				let update = setInterval(() => {
+					check();
+				}, 2000);
+
+				function check() {
+					if(document.getElementById("loading-text")) {
+						let spanText = document.getElementById("loading-text");
+						if(!spanText.hasAttribute("data-current")) {
+							spanText.setAttribute("data-current", "0");
+						} else {
+							spanText.setAttribute("data-current", parseInt(spanText.getAttribute("data-current")) + 1);
+						}
+
+						let current = spanText.getAttribute("data-current");
+						spanText.textContent = "This might take a while... Don't touch anything. (" + current + " / " + coins.length + ")";
+					} else {
+						clearInterval(update);
+					}
+				}
 				
 				getCoinMarketData(ids, settings.currency, previousYear(new Date()), new Date()).then(data => {
 					let keys = Object.keys(data);

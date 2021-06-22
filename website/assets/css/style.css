@@ -523,16 +523,16 @@ input[type=number] {
 	box-shadow:var(--shadow-smooth);
 }
 html.light .popup-wrapper .holdings-popup-wrapper .stats-wrapper span.positive {
-	color:rgb(0,150,50);
+	color:rgb(40,150,70);
 }
 html.light .popup-wrapper .holdings-popup-wrapper .stats-wrapper span.negative {
-	color:rgb(230,0,0);
+	color:rgb(210,40,40);
 }
 html.dark .popup-wrapper .holdings-popup-wrapper .stats-wrapper span.positive {
-	color:rgb(0,255,150);
+	color:rgb(20,180,120);
 }
 html.dark .popup-wrapper .holdings-popup-wrapper .stats-wrapper span.negative {
-	color:rgb(240,0,0);
+	color:rgb(210,50,50);
 }
 .popup-wrapper .coin-popup-wrapper .reject, .popup-wrapper .holdings-popup-wrapper .reject {
 	width:200px;

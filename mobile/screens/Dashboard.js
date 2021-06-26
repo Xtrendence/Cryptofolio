@@ -19,8 +19,11 @@ export default function Dashboard({ navigation }) {
 	const loadingText = "Loading...";
 
 	const [pageKey, setPageKey] = React.useState(epoch());
+	const [holdingsKey, setHoldingsKey] = React.useState(epoch());
 
 	const [refreshing, setRefreshing] = React.useState(false);
+
+	const [transactionsAffectHoldingsState, setTransactionsAffectHoldingsState] = React.useState("disabled");
 
 	const [marketCap, setMarketCap] = React.useState(loadingText);
 	const [marketChange, setMarketChange] = React.useState();
@@ -30,13 +33,13 @@ export default function Dashboard({ navigation }) {
 	const [holdingsData, setHoldingsData] = React.useState([<Text key="loading" style={[styles.headerText, styles[`headerText${theme}`]]}>Loading...</Text>]);
 
 	useEffect(() => {
-		setInterval(() => {
-			if(navigation.isFocused()) {
-				getMarket();
-				getGlobal();
-				getHoldings();
-			}
-		}, 20000);
+		// setInterval(() => {
+		// 	if(navigation.isFocused()) {
+		// 		getMarket();
+		// 		getGlobal();
+		// 		getHoldings();
+		// 	}
+		// }, 20000);
 
 		navigation.addListener("focus", () => {
 			if(navigation.isFocused()) {
@@ -61,6 +64,10 @@ export default function Dashboard({ navigation }) {
 		getHoldings();
 	}, [theme]);
 
+	useEffect(() => {
+		setHoldingsKey(epoch());
+	}, [transactionsAffectHoldingsState]);
+
 	const onRefresh = React.useCallback(() => {
 		setRefreshing(true);
 		getMarket();
@@ -84,7 +91,7 @@ export default function Dashboard({ navigation }) {
 			<LinearGradient style={[styles.card, { marginBottom:20 }]} colors={globalColors[theme].blueGradient} useAngle={true} angle={45}>
 				<Text style={[styles.cardText, styles[`cardText${theme}`]]}>{holdingsValue}</Text>
 			</LinearGradient>
-			<ScrollView ref={holdingsRef} style={[styles.tableWrapper, styles[`tableWrapper${theme}`], { marginBottom:60 }]} contentContainerStyle={{ paddingLeft:20, paddingTop:10, paddingBottom:10 }} nestedScrollEnabled={true}>
+			<ScrollView ref={holdingsRef} key={holdingsKey} style={[styles.tableWrapper, styles[`tableWrapper${theme}`], { marginBottom:60 }]} contentContainerStyle={{ paddingLeft:20, paddingTop:10, paddingBottom:10 }} nestedScrollEnabled={true}>
 				{ !empty(holdingsData) &&
 					holdingsData.map(row => {
 						return row;
@@ -200,6 +207,15 @@ export default function Dashboard({ navigation }) {
 	}
 
 	async function getHoldings() {
+		let transactionsAffectHoldings = await AsyncStorage.getItem("transactionsAffectHoldings");
+		if(empty(transactionsAffectHoldings)) {
+			transactionsAffectHoldings = "disabled";
+		}
+
+		if(transactionsAffectHoldingsState !== transactionsAffectHoldings) {
+			setTransactionsAffectHoldingsState(transactionsAffectHoldings);
+		}
+
 		let theme = empty(await AsyncStorage.getItem("theme")) ? "Light" : await AsyncStorage.getItem("theme");
 
 		let api = await AsyncStorage.getItem("api");
@@ -223,6 +239,30 @@ export default function Dashboard({ navigation }) {
 					setHoldingsValue("-");
 				}
 			} else {
+				let transactionsBySymbol;
+
+				if(transactionsAffectHoldings === "mixed") {
+					transactionsBySymbol = await getActivityHoldings();
+
+					let ids = Object.keys(transactionsBySymbol);
+					ids.map(id => {
+						if(!(id in coins)) {
+							coins[id] = { amount:0, symbol:transactionsBySymbol[id].symbol };
+						}
+					});
+				} else if(transactionsAffectHoldings === "override") {
+					transactionsBySymbol = await getActivityHoldings();
+
+					coins = {};
+
+					let ids = Object.keys(transactionsBySymbol);
+					ids.map(id => {
+						if(transactionsBySymbol[id].amount > 0) {
+							coins[id] = { amount:transactionsBySymbol[id].amount, symbol:transactionsBySymbol[id].symbol };
+						}
+					});
+				}
+
 				parseHoldings(coins).then(holdings => {
 					let data = [];
 
@@ -245,15 +285,31 @@ export default function Dashboard({ navigation }) {
 						let amount = coin.amount;
 						let symbol = coin.symbol;
 
+						let enableModal = true;
+
+						if(!empty(transactionsBySymbol)) {
+							if(transactionsAffectHoldings === "mixed") {
+								if(holding in transactionsBySymbol) {
+									amount = parseFloat(amount) + transactionsBySymbol[holding].amount;
+									value = (coin.price * amount).toFixed(2);
+									enableModal = false;
+								}
+							} else if(transactionsAffectHoldings === "override") {
+								enableModal = false;
+							}
+						}
+
+						if(amount < 0) {
+							amount = 0;
+						}
+
 						data.push(
-							<TouchableOpacity key={epoch() + holding} onPress={() => {  }}>
-								<View style={[styles.row, rank % 2 ? {...styles.rowOdd, ...styles[`rowOdd${theme}`]} : null]}>
-									<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellRank]}>{rank}</Text>
-									<Image style={styles.cellImage} source={{uri:icon}}/>
-									<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellSymbol]}>{symbol}</Text>
-									<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellAmount]}>{separateThousands(amount)}</Text>
-								</View>
-							</TouchableOpacity>
+							<View key={epoch() + holding} style={styles.row}>
+								<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellRank]}>{rank}</Text>
+								<Image style={styles.cellImage} source={{uri:icon}}/>
+								<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellSymbol]}>{symbol}</Text>
+								<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellAmount]}>{separateThousands(amount)}</Text>
+							</View>
 						);
 					});
 
@@ -346,6 +402,55 @@ export default function Dashboard({ navigation }) {
 			} catch(error) {
 				reject(error);
 			}
+		});
+	}
+
+	async function getActivityHoldings() {
+		console.log("Holdings - Getting Activity - " + epoch());
+
+		return new Promise(async (resolve, reject) => {
+			let api = await AsyncStorage.getItem("api");
+			let token = await AsyncStorage.getItem("token");
+
+			let endpoint = api + "activity/read.php?platform=app&token=" + token;
+
+			fetch(endpoint, {
+				method: "GET",
+				headers: {
+					Accept: "application/json", "Content-Type": "application/json"
+				}
+			})
+			.then((response) => {
+				return response.json();
+			})
+			.then(async (events) => {
+				let txIDs = Object.keys(events);
+
+				let sorted = {};
+
+				txIDs.map(txID => {
+					let transaction = events[txID];
+					let id = transaction.id;
+					let symbol = transaction.symbol;
+					let type = transaction.type;
+					let amount = parseFloat(transaction.amount);
+
+					if(!(id in sorted)) {
+						sorted[id] = { amount:0, symbol:symbol };
+					}
+			
+					if(type === "sell") {
+						sorted[id].amount = parseFloat(sorted[id].amount) - amount;
+					} else if(type === "buy") {
+						sorted[id].amount = parseFloat(sorted[id].amount) + amount;
+					}
+				});
+
+				resolve(sorted);
+			}).catch(error => {
+				console.log(arguments.callee.name + " - " + error);
+				reject(error);
+			});
 		});
 	}
 }

@@ -40,11 +40,11 @@ export default function Holdings({ navigation }) {
 	const [holdingsData, setHoldingsData] = React.useState([<Text key="loading" style={[styles.loadingText, styles.headerText, styles[`headerText${theme}`]]}>Loading...</Text>]);
 
 	useEffect(() => {
-		setInterval(() => {
-			if(navigation.isFocused()) {
-				getHoldings();
-			}
-		}, 10000);
+		// setInterval(() => {
+		// 	if(navigation.isFocused()) {
+		// 		getHoldings();
+		// 	}
+		// }, 10000);
 
 		navigation.addListener("focus", () => {
 			if(navigation.isFocused()) {
@@ -326,7 +326,7 @@ export default function Holdings({ navigation }) {
 		.then(async (coins) => {
 			if(Object.keys(coins).length === 0) {
 				if(navigation.isFocused()) {
-					setHoldingsData([<Text key="empty" style={[styles.headerText, styles[`headerText${theme}`], { marginLeft:20 }]}>No Holdings Found...</Text>]);
+					setHoldingsData([<Text key="empty" style={[styles.headerText, styles[`headerText${theme}`], { marginLeft:20 }]}>No Holdings Found.</Text>]);
 					setHoldingsValue("-");
 				}
 			} else {

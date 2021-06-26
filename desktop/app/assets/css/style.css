@@ -579,7 +579,7 @@ input[type=number] {
 	background:var(--main-second);
 }
 
-.coin-chart-wrapper {
+.coin-chart-wrapper, .holdings-chart-wrapper {
 	width:calc(100% - 40px);
 	max-width:890px;
 	display:block;
@@ -589,22 +589,37 @@ input[type=number] {
 	text-decoration:none;
 	color:var(--accent-third);
 }
-.popup-wrapper .coin-popup-wrapper .stats-wrapper {
+.popup-wrapper .coin-popup-wrapper .stats-wrapper, .popup-wrapper .holdings-popup-wrapper .stats-wrapper {
 	display:block;
 	margin:20px auto 20px auto;
 	width:calc(100% - 40px);
 	position:relative;
 	text-align:center;
 }
-.popup-wrapper .coin-popup-wrapper .stats-wrapper span {
+.popup-wrapper .coin-popup-wrapper .stats-wrapper span, .popup-wrapper .holdings-popup-wrapper .stats-wrapper span {
 	font-size:16px;
+	font-weight:bold;
 	color:var(--main-contrast);
 	border-radius:var(--border-radius);
 	padding:10px;
+	margin:10px 5px 0 5px;
 	background:var(--main-third);
 	display:inline-block;
+	box-shadow:var(--shadow-smooth);
 }
-.popup-wrapper .coin-popup-wrapper .reject {
+html.light .popup-wrapper .holdings-popup-wrapper .stats-wrapper span.positive {
+	color:rgb(40,150,70);
+}
+html.light .popup-wrapper .holdings-popup-wrapper .stats-wrapper span.negative {
+	color:rgb(210,40,40);
+}
+html.dark .popup-wrapper .holdings-popup-wrapper .stats-wrapper span.positive {
+	color:rgb(20,180,120);
+}
+html.dark .popup-wrapper .holdings-popup-wrapper .stats-wrapper span.negative {
+	color:rgb(210,50,50);
+}
+.popup-wrapper .coin-popup-wrapper .reject, .popup-wrapper .holdings-popup-wrapper .reject {
 	width:200px;
 	margin:0 0 20px 0;
 }
@@ -1103,13 +1118,17 @@ html.dark .highlight .coin-wrapper.negative {
 	display:block;
 	position:relative;
 }
+.holdings-value-card.clickable {
+	cursor:pointer;
+	transition:transform 0.25s;
+}
 .holdings-add-card {
 	margin-top:20px;
 	cursor:pointer;
 	transition:transform 0.25s;
 	background:var(--calm-gradient);
 }
-#desktop .holdings-add-card:hover {
+#desktop .holdings-add-card:hover, #desktop .holdings-value-card.clickable:hover {
 	transform:scale(0.95);
 }
 .holdings-add-card svg {
@@ -1138,24 +1157,6 @@ html.dark .highlight .coin-wrapper.negative {
 	position:absolute;
 	bottom:15px;
 	left:0;
-}
-
-.holdings-chart-wrapper {
-	width:750px;
-	height:calc(100% - 304px - 100px);
-	padding:20px;
-	background:var(--main-first);
-	box-shadow:var(--shadow-smooth);
-	position:absolute;
-	overflow:hidden;
-	bottom:20px;
-	left:20px;
-	border-radius:var(--border-radius);
-}
-.holdings-chart-wrapper .chart-container {
-	width:95%;
-	margin:0 auto 0 auto;
-	display:block;
 }
 
 .activity-list-wrapper {
@@ -1467,6 +1468,18 @@ html.dark .highlight .coin-wrapper.negative {
 }
 .loading-icon div:nth-child(2) {
 	animation-delay:-0.5s;
+}
+.loading-screen span {
+	font-size:18px;
+	font-weight:bold;
+	color:rgb(255,255,255);
+	display:block;
+	text-align:center;
+	width:100%;
+	line-height:40px;
+	position:absolute;
+	top:calc(50% - 40px / 2 + 70px);
+	pointer-events:none;
 }
 @keyframes loading-icon {
 	0% {

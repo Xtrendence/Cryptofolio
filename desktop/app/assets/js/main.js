@@ -96,6 +96,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 	let divHoldingsList = document.getElementById("holdings-list");
 	let divActivityList = document.getElementById("activity-list");
 
+	let divHoldingsValueCard = document.getElementById("holdings-value-card");
 	let divHoldingsAddCard = document.getElementById("holdings-add-card");
 	let divHoldingsMoreMenu = document.getElementById("holdings-more-menu");
 
@@ -128,6 +129,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 	let buttonImportActivity = document.getElementById("import-activity-button");
 	let buttonExportActivity = document.getElementById("export-activity-button");
+
+	let buttonDeleteCache = document.getElementById("delete-cache-button");
 
 	let buttonShowQRCode = document.getElementById("show-qr-code-button");
 
@@ -384,6 +387,138 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 	buttonNextPage.addEventListener("click", () => {
 		nextPage();
+	});
+
+	divHoldingsValueCard.addEventListener("click", () => {
+		if(settings.transactionsAffectHoldings === "override" && divHoldingsList.getElementsByClassName("more").length === 0) {
+			getActivity().then(events => {
+				let coins = [];
+
+				let chartData = {};
+
+				let counter = 0;
+				let startDate = previousYear(new Date()).getTime() / 1000;
+				for(let i = 0; i < 366; i++) {
+					let time = (startDate + counter) * 1000;
+					let date = formatDate(new Date(time)).replaceAll(" ", "");
+					chartData[date] = { holdingsValue:0 };
+					counter += 86400;
+				}
+
+				let keys = Object.keys(events);
+
+				keys.map(key => {
+					let event = events[key];
+					let id = event.id;
+					let amount = parseFloat(event.amount);
+					let eventTime = parseInt(event.time) * 1000;
+					let eventDate = formatDate(new Date(eventTime)).replaceAll(" ", "");
+					let previousYearTime = previousYear(new Date());
+					if(eventTime > previousYearTime && event.type !== "transfer") {
+						if(!coins.includes(id)) {
+							coins.push(id);
+						}
+
+						if(id in chartData[eventDate]) {
+							event.type === "buy" ? chartData[eventDate][id] += amount : chartData[eventDate][id] -= amount;
+						} else {
+							event.type === "buy" ? chartData[eventDate][id] = amount : chartData[eventDate][id] = -amount;
+						}
+					}
+				});
+
+				let ids = coins.join(",");
+
+				showLoading((coins.length * 2000) + 6000, "This might take a while... Don't touch anything.");
+
+				check();
+
+				let update = setInterval(() => {
+					check();
+				}, 2000);
+
+				function check() {
+					if(document.getElementById("loading-text")) {
+						let spanText = document.getElementById("loading-text");
+						if(!spanText.hasAttribute("data-current")) {
+							spanText.setAttribute("data-current", "0");
+						} else {
+							spanText.setAttribute("data-current", parseInt(spanText.getAttribute("data-current")) + 1);
+						}
+
+						let current = spanText.getAttribute("data-current");
+						spanText.textContent = "This might take a while... Don't touch anything. (" + current + " / " + coins.length + ")";
+					} else {
+						clearInterval(update);
+					}
+				}
+				
+				getCoinMarketData(ids, settings.currency, previousYear(new Date()), new Date()).then(data => {
+					hideLoading();
+					
+					showLoading(1400, "Generating chart...");
+
+					let keys = Object.keys(data);
+
+					let formattedPrices = {};
+
+					keys.map(coinID => {
+						if(!(coinID in formattedPrices)) {
+							formattedPrices[coinID] = {};
+						}
+
+						let prices = data[coinID].prices;
+
+						for(let i = 0; i < prices.length; i++) {
+							let time = prices[i][0];
+							let price = prices[i][1];
+							let date = formatDate(new Date(time)).replaceAll(" ", "");
+							formattedPrices[coinID][date] = price;
+						}
+					});
+
+					let dates = Object.keys(chartData);
+
+					let startDate;
+
+					for(let i = 0; i < dates.length; i++) {
+						let previousDay = chartData[dates[i - 1]];
+						let currentDay = chartData[dates[i]];
+
+						if(i - 1 >= 0 && Object.keys(previousDay).length > 1) {
+							Object.keys(previousDay).map(coin => {
+								if(coin !== "holdingsValue") {
+									if(empty(startDate)) {
+										startDate = i - 1;
+									}
+
+									if(previousDay[coin] < 0) {
+										chartData[dates[i - 1]][coin] = 0;
+									}
+
+									if(coin in currentDay) {
+										chartData[dates[i]][coin] = chartData[dates[i]][coin] + previousDay[coin];
+									} else {
+										chartData[dates[i]][coin] = previousDay[coin];
+									}
+								}
+							});
+						}
+
+						Object.keys(chartData[dates[i]]).map(coin => {
+							if(coin !== "holdingsValue") {
+								let value = chartData[dates[i]][coin] * formattedPrices[coin][dates[i]];
+								chartData[dates[i]].holdingsValue += value;
+							}
+						});
+					}
+
+					holdingsChartPopup(chartData, startDate);
+				}).catch(e => {
+					console.log(e);
+				});
+			});
+		}
 	});
 
 	divHoldingsAddCard.addEventListener("click", () => {
@@ -760,6 +895,28 @@ document.addEventListener("DOMContentLoaded", async () => {
 		download(api + "activity/export.php?token=" + sessionToken);
 	});
 
+	buttonDeleteCache.addEventListener("click", () => {
+		deleteCache().then(response => {
+			if("error" in response) {
+				Notify.error({
+					title:"Error",
+					description:response.error
+				});
+			} else {
+				Notify.success({
+					title:"Cache Deleted",
+					description:response.message
+				});
+			}
+		}).catch(e => {
+			console.log(e);
+			Notify.error({
+				title:"Error",
+				description:"Couldn't delete cache."
+			});
+		});
+	});
+
 	buttonShowQRCode.addEventListener("click", () => {
 		let html = '<span class="message">Generating a QR code would log you out of any mobile device you\'re currently logged in on.</span><input id="popup-password" placeholder="Password..." type="password"><button class="reject" id="popup-cancel">Cancel</button><button class="resolve" id="popup-confirm">Confirm</button>';
 
@@ -876,12 +1033,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 		});
 	}
 
-	function chartPopup(coinID, symbol, currentPrice) {
-		showLoading(6000);
+	function marketChartPopup(coinID, symbol, currentPrice) {
+		showLoading(10000);
 
 		getCoinInfo(coinID).then(info => {
 			getCoinMarketData(coinID, settings.currency, previousYear(new Date()), new Date()).then(data => {
-				data = parseMarketData(data, new Date().getTime(), currentPrice);
+				data = parseMarketData(data[coinID], new Date().getTime(), currentPrice);
 
 				if(empty(info.description.en)) {
 					info.description.en = "No description found for " + symbol.toUpperCase() + ".";
@@ -891,7 +1048,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 				popup(symbol.toUpperCase() + " / " + settings.currency.toUpperCase() + " - " + info.name, html, "calc(100% - 40px)", "calc(100% - 40px)", { delay:1500, closeIcon:true });
 										
-				generateChart(document.getElementsByClassName("coin-chart-wrapper")[0], "Price", data.labels, data.tooltips, data.prices, { symbol:symbol });
+				generateMarketChart(document.getElementsByClassName("coin-chart-wrapper")[0], "Price", data.labels, data.tooltips, data.prices, { symbol:symbol });
 
 				let ath = parseFloat(info.market_data.ath[settings.currency]);
 
@@ -913,6 +1070,98 @@ document.addEventListener("DOMContentLoaded", async () => {
 			});
 		}).catch(e => {
 			console.log(e);
+		});
+	}
+
+	async function holdingsChartPopup(chartData, startDate) {
+		let today = formatDate(new Date()).replaceAll(" ", "");
+
+		delete chartData[today];
+
+		if(!(today in chartData) || empty(chartData[today]) || isNaN(chartData[today].holdingsValue)) {
+			let holdingsData = await Storage.getItem("holdingsData");
+			if(validJSON(holdingsData)) {
+				chartData[today] = { holdingsValue:0 };
+
+				let holdings = JSON.parse(holdingsData);
+				let keys = Object.keys(holdings);
+							
+				keys.map(id => {
+					chartData[today][id] = parseFloat(holdings[id].amount);
+					chartData[today].holdingsValue += parseFloat(holdings[id].value);
+				});
+			}
+		}
+
+		let labels = [];
+		let tooltips = [];
+		let values = [];
+
+		let dates = Object.keys(chartData);
+		
+		for(let i = startDate; i < dates.length; i++) {
+			let date = dates[i];
+
+			labels.push(new Date(Date.parse(date)));
+			tooltips.push(formatDateHuman(new Date(Date.parse(date))));
+			values.push(chartData[date].holdingsValue);
+		}
+		
+		let currentValue = chartData[today].holdingsValue;
+
+		let value0d = values.length >= 1 ? values[values.length - 1] : "-";
+		let value1d = values.length >= 2 ? values[values.length - 2] : "-";
+		let value1w = values.length >= 7 ? values[values.length - 8] : "-";
+		let value1m = values.length >= 30 ? values[values.length - 31] : "-";
+		let value3m = values.length >= 90 ? values[values.length - 91] : "-";
+		let value6m = values.length >= 180 ? values[values.length - 181] : "-";
+		let value1y = values.length >= 365 ? values[values.length - 366] : "-";
+
+		let stats = "";
+
+		if(!isNaN(value0d) && value0d > 1) {
+			value0d = separateThousands(value0d.toFixed(2));
+			stats += '<span>Current (' + currencies[settings.currency] + '): ' + value0d + '</span>';
+		}
+		if(!isNaN(value1d) && value1d > 1) {
+			let spanClass = (currentValue - value1d) === 0 ? "" : (currentValue - value1d) > 0 ? "positive" : "negative";
+			value1d = separateThousands((currentValue - value1d).toFixed(2));
+			stats += '<span class="' + spanClass + '">1D (' + currencies[settings.currency] + '): ' + value1d + '</span>';
+		}
+		if(!isNaN(value1w) && value1w > 1) {
+			let spanClass = (currentValue - value1w) === 0 ? "" : (currentValue - value1w) > 0 ? "positive" : "negative";
+			value1w = separateThousands((currentValue - value1w).toFixed(2));
+			stats += '<span class="' + spanClass + '">1W (' + currencies[settings.currency] + '): ' + value1w + '</span>';
+		}
+		if(!isNaN(value1m) && value1m > 1) {
+			let spanClass = (currentValue - value1m) === 0 ? "" : (currentValue - value1m) > 0 ? "positive" : "negative";
+			value1m = separateThousands((currentValue - value1m).toFixed(2));
+			stats += '<span class="' + spanClass + '">1M (' + currencies[settings.currency] + '): ' + value1m + '</span>';
+		}
+		if(!isNaN(value3m) && value3m > 1) {
+			let spanClass = (currentValue - value3m) === 0 ? "" : (currentValue - value3m) > 0 ? "positive" : "negative";
+			value3m = separateThousands((currentValue - value3m).toFixed(2));
+			stats += '<span class="' + spanClass + '">3M (' + currencies[settings.currency] + '): ' + value3m + '</span>';
+		}
+		if(!isNaN(value6m) && value6m > 1) {
+			let spanClass = (currentValue - value6m) === 0 ? "" : (currentValue - value6m) > 0 ? "positive" : "negative";
+			value6m = separateThousands((currentValue - value6m).toFixed(2));
+			stats += '<span class="' + spanClass + '">6M (' + currencies[settings.currency] + '): ' + value6m + '</span>';
+		}
+		if(!isNaN(value1y) && value1y > 1) {
+			let spanClass = (currentValue - value1y) === 0 ? "" : (currentValue - value1y) > 0 ? "positive" : "negative";
+			value1y = separateThousands((currentValue - value1y).toFixed(2));
+			stats += '<span class="' + spanClass + '">1Y (' + currencies[settings.currency] + '): ' + value1y + '</span>';
+		}
+
+		let html = '<div class="holdings-popup-wrapper"><div class="holdings-chart-wrapper"></div><div class="stats-wrapper noselect">' + stats + '</div><button class="reject" id="popup-dismiss">Back</button></div>';
+
+		popup("Holdings Performance", html, "calc(100% - 40px)", "calc(100% - 40px)", { delay:1500, closeIcon:true });
+
+		generateHoldingsChart(document.getElementsByClassName("holdings-chart-wrapper")[0], "Value", labels, tooltips, values);
+
+		document.getElementById("popup-dismiss").addEventListener("click", () => {
+			hidePopup();
 		});
 	}
 
@@ -1137,12 +1386,16 @@ document.addEventListener("DOMContentLoaded", async () => {
 		}, 250);
 	}
 
-	function showLoading(limit) {
+	function showLoading(limit, text) {
+		if(empty(text)) {
+			text = "";
+		}
+
 		hideLoading();
 
 		let element = document.createElement("div");
 		element.classList.add("loading-screen");
-		element.innerHTML = '<div class="loading-icon"><div></div><div></div></div>';
+		element.innerHTML = '<div class="loading-icon"><div></div><div></div></div><span id="loading-text">' + text + '</span>';
 		document.body.appendChild(element);
 
 		setTimeout(() => {
@@ -1295,7 +1548,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 		spanHoldingsTotalValue.textContent = "...";
 	}
 
-	function listDashboard() {
+	async function listDashboard() {
 		if(!divLoginWrapper.classList.contains("active") && divNavbarDashboard.classList.contains("active")) {
 			clearInterval(updateDashboardListInterval);
 
@@ -1397,13 +1650,36 @@ document.addEventListener("DOMContentLoaded", async () => {
 				console.log(e);
 			});
 
-			getHoldings().then(coins => {
+			getHoldings().then(async coins => {
 				try {
-					if(Object.keys(coins).length === 0) {
+					if(Object.keys(coins).length === 0 && settings.transactionsAffectHoldings !== "override") {
 						if(divDashboardHoldingsList.getElementsByClassName("coin-wrapper loading").length > 0) {
 							divDashboardHoldingsList.getElementsByClassName("coin-wrapper loading")[0].innerHTML = '<span>No Holdings Found...</span>';
 						}
 					} else {
+						let transactionsBySymbol;
+						if(settings.transactionsAffectHoldings === "mixed") {
+							transactionsBySymbol = sortActivityBySymbol(await getActivity());
+
+							let ids = Object.keys(transactionsBySymbol);
+							ids.map(id => {
+								if(!(id in coins)) {
+									coins[id] = { amount:0, symbol:transactionsBySymbol[id].symbol };
+								}
+							});
+						} else if(settings.transactionsAffectHoldings === "override") {
+							transactionsBySymbol = sortActivityBySymbol(await getActivity());
+
+							coins = {};
+
+							let ids = Object.keys(transactionsBySymbol);
+							ids.map(id => {
+								if(transactionsBySymbol[id].amount > 0) {
+									coins[id] = { amount:transactionsBySymbol[id].amount, symbol:transactionsBySymbol[id].symbol };
+								}
+							});
+						}
+
 						parseHoldings(coins).then(holdings => {
 							if(divDashboardHoldingsList.getElementsByClassName("coin-wrapper loading").length > 0) {
 								divDashboardHoldingsList.getElementsByClassName("coin-wrapper loading")[0].remove();
@@ -1425,6 +1701,18 @@ document.addEventListener("DOMContentLoaded", async () => {
 								let icon = coin.image;
 								let amount = coin.amount;
 								let symbol = coin.symbol;
+
+								if(!empty(transactionsBySymbol)) {
+									if(settings.transactionsAffectHoldings === "mixed") {
+										if(holding in transactionsBySymbol) {
+											amount = parseFloat(amount) + transactionsBySymbol[holding].amount;
+										}
+									}
+								}
+
+								if(amount < 0) {
+									amount = 0;
+								}
 
 								let div;
 
@@ -1556,7 +1844,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 							div.innerHTML = '<span class="rank">' + rank + '</span><img draggable="false" src="' + icon + '" title="' + name + '"><span class="coin" title="' + name + '">' + symbol.toUpperCase() + '</span><span class="price">' + currencies[settings.currency] + price + '</span><span class="market-cap">' + currencies[settings.currency] + separateThousands(marketCap) + '</span><span class="day">' + priceChangeDay + '%</span>';
 
 							div.addEventListener("click", () => {
-								chartPopup(coin.id, symbol, coin.current_price);
+								marketChartPopup(coin.id, symbol, coin.current_price);
 							});
 
 							divMarketList.appendChild(div);
@@ -1612,7 +1900,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 			getHoldings().then(async coins => {
 				try {
-					if(Object.keys(coins).length === 0) {
+					if(Object.keys(coins).length === 0 && settings.transactionsAffectHoldings !== "override") {
 						clearHoldingsList();
 						if(divHoldingsList.getElementsByClassName("coin-wrapper loading").length > 0) {
 							divHoldingsList.getElementsByClassName("coin-wrapper loading")[0].innerHTML = '<span>No Holdings Found...</span>';
@@ -1620,28 +1908,34 @@ document.addEventListener("DOMContentLoaded", async () => {
 					} else {
 						let transactionsBySymbol;
 						if(settings.transactionsAffectHoldings === "mixed") {
-							transactionsBySymbol = sortActivityBySymbol(await getActivity());
+							let activity = await getActivity();
+							if(!empty(activity)) {
+								transactionsBySymbol = sortActivityBySymbol(activity);
 
-							let ids = Object.keys(transactionsBySymbol);
-							ids.map(id => {
-								if(!(id in coins)) {
-									coins[id] = { amount:0, symbol:transactionsBySymbol[id].symbol };
-								}
-							});
+								let ids = Object.keys(transactionsBySymbol);
+								ids.map(id => {
+									if(!(id in coins)) {
+										coins[id] = { amount:0, symbol:transactionsBySymbol[id].symbol };
+									}
+								});
+							}
 						} else if(settings.transactionsAffectHoldings === "override") {
-							transactionsBySymbol = sortActivityBySymbol(await getActivity());
+							let activity = await getActivity();
+							if(!empty(activity)) {
+								transactionsBySymbol = sortActivityBySymbol(activity);
 
-							coins = {};
+								coins = {};
 
-							let ids = Object.keys(transactionsBySymbol);
-							ids.map(id => {
-								if(transactionsBySymbol[id].amount > 0) {
-									coins[id] = { amount:transactionsBySymbol[id].amount, symbol:transactionsBySymbol[id].symbol };
-								}
-							});
+								let ids = Object.keys(transactionsBySymbol);
+								ids.map(id => {
+									if(transactionsBySymbol[id].amount > 0) {
+										coins[id] = { amount:transactionsBySymbol[id].amount, symbol:transactionsBySymbol[id].symbol };
+									}
+								});
+							}
 						}
 
-						parseHoldings(coins).then(holdings => {
+						parseHoldings(coins).then(async holdings => {
 							if(divHoldingsList.getElementsByClassName("coin-wrapper loading").length > 0) {
 								divHoldingsList.getElementsByClassName("coin-wrapper loading")[0].remove();
 								divHoldingsList.classList.remove("loading");
@@ -1655,6 +1949,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 								}
 							}
 
+							let holdingsObject = {};
+
 							Object.keys(holdings).map(holding => {
 								let coin = holdings[holding];
 				
@@ -1663,6 +1959,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 								let amount = coin.amount;
 								let symbol = coin.symbol;
 								let value = coin.value.toFixed(2);
+
+								holdingsObject[holding] = { amount:amount, value:value };
 
 								let enableMoreMenu = true;
 
@@ -1761,6 +2059,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 									console.log(e);
 								}
 							});
+
+							await Storage.setItem("holdingsData", JSON.stringify(holdingsObject));
 						}).catch(e => {
 							console.log(e);
 						});
@@ -1895,7 +2195,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 		}
 	}
 
-	async function generateChart(element, title, labels, tooltips, data, args) {
+	async function generateMarketChart(element, title, labels, tooltips, data, args) {
 		let canvas = document.createElement("canvas");
 		canvas.id = "chart-canvas";
 		canvas.classList.add("chart-canvas");
@@ -1976,9 +2276,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 				}],
 			},
 			options: {
+				events: ["mousemove", "mouseout", "touchstart", "touchmove"],
 				responsive: true,
 				legend: {
-					display: true
+					display: false
 				},
 				hover: {
 					mode: "index",
@@ -2041,6 +2342,92 @@ document.addEventListener("DOMContentLoaded", async () => {
 					drawTime: "beforeDatasetsDraw",
 					annotations: [...annotationsBuy, ...annotationsSell]
 				}
+			}
+		});
+
+		element.innerHTML = "";
+		element.appendChild(canvas);
+	}
+
+	async function generateHoldingsChart(element, title, labels, tooltips, data) {
+		let canvas = document.createElement("canvas");
+		canvas.id = "chart-canvas";
+		canvas.classList.add("chart-canvas");
+
+		let context = canvas.getContext("2d");
+
+		let gradientStroke = context.createLinearGradient(1000, 0, 300, 0);
+		gradientStroke.addColorStop(0, "#11998e");
+		gradientStroke.addColorStop(1, "#38ef7d");
+
+		new Chart(canvas, {
+			type: "line",
+			data: {
+				labels: labels,
+				datasets:[{
+					label: title,
+					backgroundColor: "rgba(0,0,0,0)",
+					borderColor: gradientStroke,
+					data: data,
+					pointRadius: 1,
+					pointHoverRadius: 6,
+				}],
+			},
+			options: {
+				events: ["mousemove", "mouseout", "touchstart", "touchmove"],
+				responsive: true,
+				legend: {
+					display: false
+				},
+				hover: {
+					mode: "index",
+					intersect: false,
+				},
+				scales: {
+					xAxes: [{
+						beginAtZero: true,
+						gridLines: {
+							zeroLineColor: settings.theme === "dark" ? "rgba(255,255,255,0.075)" : "rgba(0,0,0,0.1)",
+							color: settings.theme === "dark" ? "rgba(255,255,255,0.075)" : "rgba(0,0,0,0.1)",
+						},
+						ticks: {
+							autoSkip: true,
+							maxTicksLimit: 12,
+							fontColor: settings.theme === "dark" ? "rgba(255,255,255,0.9)" : "rgb(75,75,75)"
+						},
+						type: "time",
+						time: {
+							unit: "month"
+						}
+					}],
+					yAxes: [{
+						beginAtZero: true,
+						gridLines: {
+							color: settings.theme === "dark" ? "rgba(255,255,255,0.075)" : "rgba(0,0,0,0.1)",
+						},
+						ticks: {
+							fontColor: settings.theme === "dark" ? "rgba(255,255,255,0.9)" : "rgb(75,75,75)"
+						}
+					}]
+				},
+				tooltips: {
+					displayColors: false,
+					intersect: false,
+					callbacks: {
+						title: function() {
+							return "";
+						},
+						label: function(item) {
+							let value = data[item.index];
+
+							if(value > 1) {
+								value = separateThousands(value.toFixed(2));
+							}
+
+							return [tooltips[item.index], currencies[settings.currency] + value];
+						}
+					}
+				},
 			}
 		});
 
@@ -2158,6 +2545,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 					divDashboardHoldingsList.classList.remove("highlight");
 					divMarketList.classList.remove("highlight");
 					divHoldingsList.classList.remove("highlight");
+				}
+
+				if(settings.transactionsAffectHoldings === "override") {
+					divHoldingsValueCard.classList.add("clickable");
+				} else {
+					divHoldingsValueCard.classList.remove("clickable");
 				}
 
 				resolve();
@@ -2884,7 +3277,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 		});
 	}
 
-	function getCoinMarketData(id, currency, from, to) {
+	function getCoinMarketData(ids, currency, from, to) {
 		return new Promise((resolve, reject) => {
 			try {
 				let xhr = new XMLHttpRequest();
@@ -2899,7 +3292,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 					}
 				});
 
-				xhr.open("GET", "https://api.coingecko.com/api/v3/coins/" + id + "/market_chart/range?vs_currency=" + currency + "&from=" + new Date(Date.parse(from)).getTime() / 1000 + "&to=" + new Date(Date.parse(to)).getTime() / 1000, true);
+				xhr.open("GET", api + "historical/read.php?token=" + sessionToken + "&ids=" + ids + "&currency=" + currency + "&from=" + new Date(Date.parse(from)).getTime() / 1000 + "&to=" + new Date(Date.parse(to)).getTime() / 1000, true);
 				xhr.send();
 			} catch(e) {
 				reject(e);
@@ -3153,6 +3546,29 @@ document.addEventListener("DOMContentLoaded", async () => {
 					reject("No File Uploaded.");
 				}
 			});
+		});
+	}
+
+	function deleteCache() {
+		return new Promise((resolve, reject) => {
+			try {
+				let xhr = new XMLHttpRequest();
+
+				xhr.addEventListener("readystatechange", () => {
+					if(xhr.readyState === XMLHttpRequest.DONE) {
+						if(validJSON(xhr.responseText)) {
+							resolve(JSON.parse(xhr.responseText));
+						} else {
+							reject("Invalid JSON.");
+						}
+					}
+				});
+
+				xhr.open("DELETE", api + "historical/delete.php", true);
+				xhr.send(JSON.stringify({ token:sessionToken }));
+			} catch(e) {
+				reject(e);
+			}
 		});
 	}
 

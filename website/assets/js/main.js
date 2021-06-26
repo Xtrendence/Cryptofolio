@@ -408,7 +408,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 				let ids = coins.join(",");
 
-				showLoading(coins.length * 2000, "This might take a while... Don't touch anything.");
+				showLoading((coins.length * 2000) + 6000, "This might take a while... Don't touch anything.");
 
 				check();
 

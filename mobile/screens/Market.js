@@ -3,6 +3,7 @@ import { Text, StyleSheet, View, Image, Dimensions, ScrollView, RefreshControl, 
 import { StatusBar } from "expo-status-bar";
 import Icon from "react-native-vector-icons/FontAwesome5";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Stop, LinearGradient as SVGLinearGradient } from "react-native-svg";
 import LinearGradient from "react-native-linear-gradient";
 import { LineChart } from 'react-native-chart-kit';
 import HTML from "react-native-render-html";
@@ -13,6 +14,16 @@ import GradientChart from "../components/GradientChart";
 
 const screenWidth = Dimensions.get("screen").width;
 const screenHeight = Dimensions.get("screen").height;
+
+const gradientColor = () => {
+	return (
+		<SVGLinearGradient id="gradient" x1="0" y1="0" x2="0" y2="1">
+			<Stop offset="0" stopColor="#feac5e" stopOpacity="1" />
+			<Stop offset="0.5" stopColor="#c779d0" stopOpacity="1" />
+			<Stop offset="1" stopColor="#4bc0c8" stopOpacity="1" />
+		</SVGLinearGradient>
+	);
+}
 
 export default function Market({ navigation }) {
 	const { theme } = React.useContext(ThemeContext);
@@ -133,6 +144,7 @@ export default function Market({ navigation }) {
 											style={{
 												backgroundColor: "rgba(255,255,255,0)",
 											}}
+											gradient={gradientColor()}
 										/>
 									: 
 										<View style={{ height:320, width:screenWidth }}></View>

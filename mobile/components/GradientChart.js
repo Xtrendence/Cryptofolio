@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Animated } from "react-native";
 import { LineChart } from 'react-native-chart-kit';
-import Svg, { Defs, Stop, G, Rect, LinearGradient } from "react-native-svg";
+import Svg, { Defs, G, Rect } from "react-native-svg";
 
 export default class GradientChart extends LineChart {
 	render() {
@@ -28,6 +28,7 @@ export default class GradientChart extends LineChart {
 			segments,
 			transparent = false,
 			chartConfig,
+			gradient
 		} = this.props;
 		
 		const { scrollableDotHorizontalOffset } = this.state;
@@ -61,11 +62,7 @@ export default class GradientChart extends LineChart {
 			<View style={style}>
 				<Svg height={height + paddingBottom + legendOffset} width={width - margin * 2 - marginRight}>
 					<Defs>
-						<LinearGradient id="gradient" x1="0" y1="0" x2="0" y2="1">
-							<Stop offset="0" stopColor="#feac5e" stopOpacity="1" />
-							<Stop offset="0.5" stopColor="#c779d0" stopOpacity="1" />
-							<Stop offset="1" stopColor="#4bc0c8" stopOpacity="1" />
-						</LinearGradient>
+						{gradient}
 					</Defs>
 					<Rect width="100%" height={height + legendOffset} rx={borderRadius} ry={borderRadius} fillOpacity={transparent ? 0 : 1}/>
 					{this.props.data.legend && this.renderLegend(config.width, legendOffset)}

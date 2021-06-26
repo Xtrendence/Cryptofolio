@@ -3,6 +3,7 @@ import React, { useEffect } from "react";
 import { Text, StyleSheet, View, Image, Dimensions, ScrollView, Modal, TouchableOpacity, TextInput, RefreshControl, SafeAreaView } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import changeNavigationBarColor from "react-native-navigation-bar-color";
+import { Stop, LinearGradient as SVGLinearGradient } from "react-native-svg";
 import LinearGradient from "react-native-linear-gradient";
 import { globalColors, globalStyles } from "../styles/global";
 import { ThemeContext } from "../utils/theme";
@@ -11,6 +12,15 @@ import { empty, separateThousands, abbreviateNumber, epoch, capitalizeFirstLette
 
 const screenWidth = Dimensions.get("screen").width;
 const screenHeight = Dimensions.get("screen").height;
+
+const gradientColor = () => {
+	return (
+		<SVGLinearGradient id="gradient" x1="0" y1="0" x2="0" y2="1">
+			<Stop offset="0" stopColor="#11998e" stopOpacity="1" />
+			<Stop offset="1" stopColor="#38ef7d" stopOpacity="1" />
+		</SVGLinearGradient>
+	);
+}
 
 export default function Holdings({ navigation }) {
 	const { theme } = React.useContext(ThemeContext);
@@ -34,6 +44,13 @@ export default function Holdings({ navigation }) {
 	const [coinAmount, setCoinAmount] = React.useState();
 	const [showCoinList, setShowCoinList] = React.useState(false);
 	const [coinList, setCoinList] = React.useState();
+
+	const [chartModal, setChartModal] = React.useState(false);
+	const [chartModalMessage, setChartModalMessage] = React.useState();
+	const [chartLabels, setChartLabels] = React.useState();
+	const [chartData, setChartData] = React.useState();
+	const [chartSegments, setChartSegments] = React.useState(1);
+	const [userCurrency, setUserCurrency] = React.useState("$");
 
 	const [holdingsValue, setHoldingsValue] = React.useState(loadingText);
 
@@ -111,8 +128,90 @@ export default function Holdings({ navigation }) {
 					}
 				</View>
 			</Modal>
+			<Modal animationType="fade" visible={chartModal} onRequestClose={() => { hideChartModal()}} transparent={false}>
+				<ScrollView style={[styles.modalScroll, styles[`modalScroll${theme}`]]} contentContainerStyle={{paddingBottom:20}}>
+					<View style={[styles.chartModalWrapper, styles[`chartModalWrapper${theme}`]]}>
+						<View stlye={[styles.chartModal, styles[`chartModal${theme}`]]}>
+							<View style={[styles.chartWrapper, styles[`chartModal${theme}`]]}>
+								<ScrollView horizontal={true} style={{ height:300 }}>
+									{ !empty(chartData) && !empty(chartLabels) ? 
+										<GradientChart
+											data={{
+												labels: chartLabels,
+												datasets: [
+													{
+														data: chartData
+													}
+												]
+											}}
+											width={1400}
+											height={300}
+											segments={chartSegments}
+											withHorizontalLines={true}
+											withVerticalLines={false}
+											withVerticalLabels={true}
+											yAxisLabel={empty(userCurrency) ? "$" : userCurrency}
+											yAxisInterval={500}
+											formatYLabel={(label) => abbreviateNumber(parseFloat(label), 2)}
+											withShadow={false}
+											chartConfig={{
+												backgroundColor: "rgba(0,0,0,0)",
+												backgroundGradientFrom: "rgba(0,0,0,0)",
+												backgroundGradientTo: "rgba(0,0,0,0)",
+												decimalPlaces: 2,
+												color: () => "url(#gradient)",
+												labelColor: () => globalColors[theme].mainContrast,
+												style: {
+													borderRadius: 0
+												},
+												propsForDots: {
+													r: "0",
+													strokeWidth: "2",
+													stroke: globalColors[theme].mainFifth
+												},
+												propsForVerticalLabels: {
+													fontFamily: globalStyles.fontFamily,
+													fontSize: 12,
+													rotation: 0,
+													fontWeight: "bold",
+												},
+												propsForBackgroundLines: {
+													strokeWidth: 2,
+													stroke: globalColors[theme].mainThirdTransparent
+												}
+											}}
+											bezier
+											style={{
+												backgroundColor: "rgba(255,255,255,0)",
+											}}
+											gradient={gradientColor()}
+										/>
+									: 
+										<View style={{ height:320, width:screenWidth }}></View>
+									}
+								</ScrollView>
+							</View>
+							{ !empty(chartModalMessage) &&
+								<View style={styles.chartModalMessageWrapper}>
+									<Text style={styles.chartModalMessage}>{chartModalMessage}</Text>
+								</View>
+							}
+							{/* <View style={[styles.modalDescriptionWrapper, styles[`modalDescriptionWrapper${theme}`]]}>
+								<Text style={[styles.modalDescription, styles[`modalDescription${theme}`]]}>{modalATH}</Text>
+							</View> */}
+							<View style={styles.chartButtonWrapper}>
+								<TouchableOpacity style={[styles.chartButton, styles[`chartButton${theme}`]]} onPress={() => { hideChartModal()}}>
+									<Text style={styles.text}>Close</Text>
+								</TouchableOpacity>
+							</View>
+						</View>
+					</View>
+				</ScrollView>
+			</Modal>
 			<LinearGradient style={[styles.card, { marginBottom:20 }]} colors={globalColors[theme].greenerGradient} useAngle={true} angle={45}>
-				<Text style={[styles.cardText, styles[`cardText${theme}`]]}>{holdingsValue}</Text>
+				<TouchableOpacity onPress={() => { openChartModal()}}>
+					<Text style={[styles.cardText, styles[`cardText${theme}`]]}>{holdingsValue}</Text>
+				</TouchableOpacity>
 			</LinearGradient>
 			<ScrollView ref={holdingsRef} style={[styles.tableWrapper, styles[`tableWrapper${theme}`]]} contentContainerStyle={{ paddingTop:10, paddingBottom:10 }} nestedScrollEnabled={true} key={holdingsKey}>
 				{ !empty(holdingsData) &&
@@ -148,6 +247,23 @@ export default function Holdings({ navigation }) {
 			setCoinSymbol(symbol);
 			setCoinAmount(amount);
 			setModal(true);
+		}
+	}
+
+	function hideChartModal() {
+		setChartModalMessage();
+		setChartModal(false);
+	}
+
+	async function openChartModal() {
+		let transactionsAffectHoldings = await AsyncStorage.getItem("transactionsAffectHoldings");
+		if(empty(transactionsAffectHoldings)) {
+			transactionsAffectHoldings = "disabled";
+		}
+
+		if(transactionsAffectHoldings === "override") {
+			setChartModalMessage("Loading...");
+			setChartModal(true);
 		}
 	}
 
@@ -593,6 +709,12 @@ const styles = StyleSheet.create({
 	pageDark: {
 		backgroundColor:globalColors["Dark"].mainSecond
 	},
+	modalScroll: {
+		backgroundColor:globalColors["Light"].mainThird
+	},
+	modalScrollDark: {
+		backgroundColor:globalColors["Dark"].mainThird
+	},
 	modalWrapper: {
 		width:"100%",
 		height:"100%",
@@ -697,6 +819,96 @@ const styles = StyleSheet.create({
 		marginTop:20,
 		paddingLeft:14,
 		paddingRight:14,
+	},
+	chartModalWrapper: {
+		width:"100%",
+		height:"100%",
+		flex:1,
+		justifyContent:"flex-start",
+		alignItems:"center",
+		backgroundColor:globalColors["Light"].mainThird
+	},
+	chartModalWrapperDark: {
+		backgroundColor:globalColors["Dark"].mainThird
+	},
+	chartModal: {
+		width:300,
+		height:300,
+		alignItems:"center",
+		backgroundColor:globalColors["Light"].mainFirst
+	},
+	chartModalDark: {
+		backgroundColor:globalColors["Dark"].mainFirst
+	},
+	chartModalMessageWrapper: {
+		alignSelf:"center",
+		backgroundColor:globalColors["Light"].accentFirst,
+		borderRadius:globalStyles.borderRadius,
+		width:200,
+		alignItems:"center",
+		padding:10,
+		marginTop:20,
+	},
+	chartModalMessage: {
+		color:globalColors["Light"].accentContrast,
+		fontSize:16,
+		fontFamily:globalStyles.fontFamily,
+		lineHeight:25,
+	},
+	chartModalDescriptionWrapper: {
+		alignSelf:"center",
+		backgroundColor:globalColors["Light"].mainFirst,
+		borderRadius:globalStyles.borderRadius,
+		width:screenWidth - 40,
+		alignItems:"center",
+		padding:10,
+		marginTop:20,
+	},
+	chartModalDescriptionWrapperDark: {
+		backgroundColor:globalColors["Dark"].mainFirst,
+	},
+	chartModalDescription: {
+		color:globalColors["Light"].mainContrast,
+		fontSize:16,
+		fontFamily:globalStyles.fontFamily,
+		lineHeight:25,
+	},
+	chartModalDescriptionDark: {
+		color:globalColors["Dark"].mainContrast
+	},
+	chartWrapper: {
+		height:320,
+		paddingTop:30,
+		width:"100%",
+		backgroundColor:globalColors["Light"].mainFirst
+	},
+	chartWrapperDark: {
+		backgroundColor:globalColors["Dark"].mainFirst
+	},
+	chartButtonWrapper: {
+		width:screenWidth - 40,
+		marginTop:20,
+		alignSelf:"center",
+		flexDirection:"row",
+		justifyContent:"center",
+		alignItems:"center"
+	},
+	chartButton: {
+		height:40,
+		width:120,
+		shadowColor:globalStyles.shadowColor,
+		shadowOffset:globalStyles.shadowOffset,
+		shadowOpacity:globalStyles.shadowOpacity,
+		shadowRadius:globalStyles.shadowRadius,
+		elevation:globalStyles.shadowElevation,
+		borderRadius:globalStyles.borderRadius,
+		alignItems:"center",
+		justifyContent:"center",
+		borderRadius:globalStyles.borderRadius,
+		backgroundColor:globalColors["Light"].mainContrast
+	},
+	chartButtonDark: {
+		backgroundColor:globalColors["Dark"].mainFirst
 	},
 	text: {
 		lineHeight:38,

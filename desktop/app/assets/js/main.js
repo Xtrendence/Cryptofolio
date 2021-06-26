@@ -1520,6 +1520,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 		}
 	}
 
+	function clearDashboard() {
+		divDashboardMarketList.classList.add("loading");
+		divDashboardHoldingsList.classList.add("loading");
+		divDashboardMarketList.innerHTML = '<div class="coin-wrapper loading"><span>Loading...</span></div>';
+		divDashboardHoldingsList.innerHTML = '<div class="coin-wrapper loading"><span>Loading...</span></div>';
+		clearStats();
+	}
+
 	function clearMarketList() {
 		divMarketList.classList.add("loading");
 		divMarketList.innerHTML = '<div class="coin-wrapper loading"><span>Loading...</span></div>';
@@ -2468,6 +2476,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 	function processSettingChange(setting) {
 		switch(setting) {
 			case "transactionsAffectHoldings":
+				clearDashboard();
 				clearHoldingsList();
 				break;
 		}

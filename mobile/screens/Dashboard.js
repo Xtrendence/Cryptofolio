@@ -233,7 +233,7 @@ export default function Dashboard({ navigation }) {
 			return response.json();
 		})
 		.then(async (coins) => {
-			if(Object.keys(coins).length === 0) {
+			if(Object.keys(coins).length === 0 && transactionsAffectHoldings !== "override" && transactionsAffectHoldings !== "mixed") {
 				if(navigation.isFocused()) {
 					setHoldingsData([<Text key="empty" style={[styles.headerText, styles[`headerText${theme}`]]}>No Holdings Found.</Text>]);
 					setHoldingsValue("-");
@@ -263,7 +263,7 @@ export default function Dashboard({ navigation }) {
 					});
 				}
 
-				parseHoldings(coins).then(holdings => {
+				parseHoldings(coins).then(async holdings => {
 					let data = [];
 
 					data.push(
@@ -275,6 +275,8 @@ export default function Dashboard({ navigation }) {
 					);
 
 					let rank = 0;
+					
+					let mixedValue = 0;
 
 					Object.keys(holdings).map(holding => {
 						rank += 1;
@@ -292,6 +294,7 @@ export default function Dashboard({ navigation }) {
 								if(holding in transactionsBySymbol) {
 									amount = parseFloat(amount) + transactionsBySymbol[holding].amount;
 									value = (coin.price * amount).toFixed(2);
+									mixedValue += parseFloat(value.replaceAll(",", ""));
 									enableModal = false;
 								}
 							} else if(transactionsAffectHoldings === "override") {
@@ -312,6 +315,27 @@ export default function Dashboard({ navigation }) {
 							</View>
 						);
 					});
+
+					if(mixedValue > 0 && navigation.isFocused()) {
+						let currency = await AsyncStorage.getItem("currency");
+						if(empty(currency)) {
+							currency = "usd";
+						}
+
+						let totalValue = holdingsValue;
+
+						if(!isNaN(totalValue)) {
+							totalValue += mixedValue;
+						} else {
+							totalValue = mixedValue;
+						}
+
+						if(screenWidth > 380) {
+							setHoldingsValue(currencies[currency] + separateThousands(totalValue.toFixed(2)));
+						} else {
+							setHoldingsValue(currencies[currency] + abbreviateNumber(totalValue, 2));
+						}
+					}
 
 					if(navigation.isFocused()) {
 						setHoldingsData(data);

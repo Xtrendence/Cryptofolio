@@ -1606,7 +1606,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 			getHoldings().then(async coins => {
 				try {
-					if(Object.keys(coins).length === 0 && settings.transactionsAffectHoldings !== "override") {
+					if(Object.keys(coins).length === 0 && settings.transactionsAffectHoldings !== "override" && settings.transactionsAffectHoldings !== "mixed") {
 						if(divDashboardHoldingsList.getElementsByClassName("coin-wrapper loading").length > 0) {
 							divDashboardHoldingsList.getElementsByClassName("coin-wrapper loading")[0].innerHTML = '<span>No Holdings Found...</span>';
 						}
@@ -1634,18 +1634,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 							});
 						}
 
+						let mixedValue = 0;
+
 						parseHoldings(coins).then(holdings => {
 							if(divDashboardHoldingsList.getElementsByClassName("coin-wrapper loading").length > 0) {
 								divDashboardHoldingsList.getElementsByClassName("coin-wrapper loading")[0].remove();
 								divDashboardHoldingsList.classList.remove("loading");
-							}
-
-							if(globalData.totalValue > 0) {
-								if(window.innerWidth > 480) {
-									spanDashboardHoldingsValue.textContent = currencies[settings.currency] + separateThousands(globalData.totalValue.toFixed(2));
-								} else {
-									spanDashboardHoldingsValue.textContent = currencies[settings.currency] + abbreviateNumber(globalData.totalValue, 2);
-								}
 							}
 
 							Object.keys(holdings).map(holding => {
@@ -1655,11 +1649,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 								let icon = coin.image;
 								let amount = coin.amount;
 								let symbol = coin.symbol;
+								let value = parseFloat(coin.value);
 
 								if(!empty(transactionsBySymbol)) {
 									if(settings.transactionsAffectHoldings === "mixed") {
 										if(holding in transactionsBySymbol) {
 											amount = parseFloat(amount) + transactionsBySymbol[holding].amount;
+											value = (coin.price * amount).toFixed(2);
+											mixedValue += parseFloat(value);
 										}
 									}
 								}
@@ -1668,25 +1665,41 @@ document.addEventListener("DOMContentLoaded", async () => {
 									amount = 0;
 								}
 
-								let div;
+								if(value < 0) {
+									value = 0;
+								}
 
-								try {
-									if(document.getElementById(id)) {
-										div = document.getElementById(id);
-										div.getElementsByClassName("amount")[0].textContent = separateThousands(amount);
-									} else {
-										div = document.createElement("div");
-										div.id = id;
-										div.classList.add("coin-wrapper");
+								if(value !== 0) {
+									let div;
 
-										div.innerHTML = '<img draggable="false" src="' + icon + '"><span class="coin">' + symbol.toUpperCase() + '</span><span class="amount">' + separateThousands(amount) + '</span>';
+									try {
+										if(document.getElementById(id)) {
+											div = document.getElementById(id);
+											div.getElementsByClassName("amount")[0].textContent = separateThousands(amount);
+										} else {
+											div = document.createElement("div");
+											div.id = id;
+											div.classList.add("coin-wrapper");
 
-										divDashboardHoldingsList.appendChild(div);
+											div.innerHTML = '<img draggable="false" src="' + icon + '"><span class="coin">' + symbol.toUpperCase() + '</span><span class="amount">' + separateThousands(amount) + '</span>';
+
+											divDashboardHoldingsList.appendChild(div);
+										}
+									} catch(e) {
+										console.log(e);
 									}
-								} catch(e) {
-									console.log(e);
 								}
 							});
+
+							if(mixedValue > 0) {
+								globalData.totalValue = mixedValue;
+							}
+
+							if(window.innerWidth > 480) {
+								spanDashboardHoldingsValue.textContent = currencies[settings.currency] + separateThousands(globalData.totalValue.toFixed(2));
+							} else {
+								spanDashboardHoldingsValue.textContent = currencies[settings.currency] + abbreviateNumber(globalData.totalValue, 2);
+							}
 						}).catch(e => {
 							console.log(e);
 						});
@@ -1854,7 +1867,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 			getHoldings().then(async coins => {
 				try {
-					if(Object.keys(coins).length === 0 && settings.transactionsAffectHoldings !== "override") {
+					if(Object.keys(coins).length === 0 && settings.transactionsAffectHoldings !== "override" && settings.transactionsAffectHoldings !== "mixed") {
 						clearHoldingsList();
 						if(divHoldingsList.getElementsByClassName("coin-wrapper loading").length > 0) {
 							divHoldingsList.getElementsByClassName("coin-wrapper loading")[0].innerHTML = '<span>No Holdings Found...</span>';
@@ -1888,19 +1901,13 @@ document.addEventListener("DOMContentLoaded", async () => {
 								});
 							}
 						}
+
+						let mixedValue = 0;
 						
 						parseHoldings(coins).then(holdings => {
 							if(divHoldingsList.getElementsByClassName("coin-wrapper loading").length > 0) {
 								divHoldingsList.getElementsByClassName("coin-wrapper loading")[0].remove();
 								divHoldingsList.classList.remove("loading");
-							}
-
-							if(globalData.totalValue > 0) {
-								if(window.innerWidth > 480) {
-									spanHoldingsTotalValue.textContent = currencies[settings.currency] + separateThousands(globalData.totalValue.toFixed(2));
-								} else {
-									spanHoldingsTotalValue.textContent = currencies[settings.currency] + abbreviateNumber(globalData.totalValue, 2);
-								}
 							}
 
 							let holdingsObject = {};
@@ -1931,6 +1938,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 										if(holding in transactionsBySymbol) {
 											amount = parseFloat(amount) + transactionsBySymbol[holding].amount;
 											value = (coin.price * amount).toFixed(2);
+											mixedValue += parseFloat(value);
 											enableMoreMenu = false;
 										}
 									} else if(settings.transactionsAffectHoldings === "override") {
@@ -1946,73 +1954,85 @@ document.addEventListener("DOMContentLoaded", async () => {
 									value = 0;
 								}
 
-								let div;
+								if(value !== 0) {
+									let div;
 
-								try {
-									if(document.getElementById(id)) {
-										div = document.getElementById(id);
-										div.getElementsByClassName("amount")[0].textContent = separateThousands(amount);
-										div.getElementsByClassName("value")[0].textContent = currencies[settings.currency] + separateThousands(value);
-										div.getElementsByClassName("day")[0].textContent = day;
+									try {
+										if(document.getElementById(id)) {
+											div = document.getElementById(id);
+											div.getElementsByClassName("amount")[0].textContent = separateThousands(amount);
+											div.getElementsByClassName("value")[0].textContent = currencies[settings.currency] + separateThousands(value);
+											div.getElementsByClassName("day")[0].textContent = day;
 
-										if(day.includes("+")) {
-											div.classList.add("positive");
-											div.classList.remove("negative");
-										} else if(day.includes("-")) {
-											div.classList.remove("positive");
-											div.classList.add("negative");
+											if(day.includes("+")) {
+												div.classList.add("positive");
+												div.classList.remove("negative");
+											} else if(day.includes("-")) {
+												div.classList.remove("positive");
+												div.classList.add("negative");
+											} else {
+												div.classList.remove("positive");
+												div.classList.remove("negative");
+											}
 										} else {
-											div.classList.remove("positive");
-											div.classList.remove("negative");
+											div = document.createElement("div");
+											div.id = id;
+											div.classList.add("coin-wrapper");
+
+											if(day.includes("+")) {
+												div.classList.add("positive");
+											} else if(day.includes("-")) {
+												div.classList.add("negative");
+											}
+
+											div.innerHTML = '<img draggable="false" src="' + icon + '"><span class="coin">' + symbol.toUpperCase() + '</span><span class="amount">' + separateThousands(amount) + '</span><span class="value">' + currencies[settings.currency] + separateThousands(value) + '</span><span class="day">' + day + '</span>';
+
+											if(enableMoreMenu) {
+												let more = document.createElement("div");
+												more.classList.add("more");
+												more.innerHTML = '<svg class="more-icon" width="1792" height="1792" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path class="more-path" d="M576 736v192q0 40-28 68t-68 28h-192q-40 0-68-28t-28-68v-192q0-40 28-68t68-28h192q40 0 68 28t28 68zm512 0v192q0 40-28 68t-68 28h-192q-40 0-68-28t-28-68v-192q0-40 28-68t68-28h192q40 0 68 28t28 68zm512 0v192q0 40-28 68t-68 28h-192q-40 0-68-28t-28-68v-192q0-40 28-68t68-28h192q40 0 68 28t28 68z"/></svg>';
+
+												more.addEventListener("click", (e) => {
+													divHoldingsMoreMenu.setAttribute("data-coin", holding);
+													divHoldingsMoreMenu.setAttribute("data-symbol", coin.symbol.toUpperCase());
+													divHoldingsMoreMenu.setAttribute("data-amount", amount);
+
+													divHoldingsMoreMenu.classList.remove("hidden");
+
+													divHoldingsMoreMenu.style.top = e.clientY - 2 + "px";
+													divHoldingsMoreMenu.style.left = e.clientX - 2 - 200 + "px";
+
+													if(window.innerWidth <= 1230 && window.innerWidth > 700) {
+														divHoldingsMoreMenu.style.left = e.clientX - 2 - 200 - divHoldingsMoreMenu.clientWidth + "px";
+													}
+													if(window.innerWidth <= 1120 && window.innerWidth > 700) {
+														divHoldingsMoreMenu.style.left = e.clientX - 2 - 100 - divHoldingsMoreMenu.clientWidth + "px";
+													}
+													else if(window.innerWidth <= 700) {
+														divHoldingsMoreMenu.style.left = e.clientX - 2 - divHoldingsMoreMenu.clientWidth + "px";
+													}
+												});
+												
+												div.appendChild(more);
+											}
+
+											divHoldingsList.appendChild(div);
 										}
-									} else {
-										div = document.createElement("div");
-										div.id = id;
-										div.classList.add("coin-wrapper");
-
-										if(day.includes("+")) {
-											div.classList.add("positive");
-										} else if(day.includes("-")) {
-											div.classList.add("negative");
-										}
-
-										div.innerHTML = '<img draggable="false" src="' + icon + '"><span class="coin">' + symbol.toUpperCase() + '</span><span class="amount">' + separateThousands(amount) + '</span><span class="value">' + currencies[settings.currency] + separateThousands(value) + '</span><span class="day">' + day + '</span>';
-
-										if(enableMoreMenu) {
-											let more = document.createElement("div");
-											more.classList.add("more");
-											more.innerHTML = '<svg class="more-icon" width="1792" height="1792" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path class="more-path" d="M576 736v192q0 40-28 68t-68 28h-192q-40 0-68-28t-28-68v-192q0-40 28-68t68-28h192q40 0 68 28t28 68zm512 0v192q0 40-28 68t-68 28h-192q-40 0-68-28t-28-68v-192q0-40 28-68t68-28h192q40 0 68 28t28 68zm512 0v192q0 40-28 68t-68 28h-192q-40 0-68-28t-28-68v-192q0-40 28-68t68-28h192q40 0 68 28t28 68z"/></svg>';
-
-											more.addEventListener("click", (e) => {
-												divHoldingsMoreMenu.setAttribute("data-coin", holding);
-												divHoldingsMoreMenu.setAttribute("data-symbol", coin.symbol.toUpperCase());
-												divHoldingsMoreMenu.setAttribute("data-amount", amount);
-
-												divHoldingsMoreMenu.classList.remove("hidden");
-
-												divHoldingsMoreMenu.style.top = e.clientY - 2 + "px";
-												divHoldingsMoreMenu.style.left = e.clientX - 2 - 200 + "px";
-
-												if(window.innerWidth <= 1230 && window.innerWidth > 700) {
-													divHoldingsMoreMenu.style.left = e.clientX - 2 - 200 - divHoldingsMoreMenu.clientWidth + "px";
-												}
-												if(window.innerWidth <= 1120 && window.innerWidth > 700) {
-													divHoldingsMoreMenu.style.left = e.clientX - 2 - 100 - divHoldingsMoreMenu.clientWidth + "px";
-												}
-												else if(window.innerWidth <= 700) {
-													divHoldingsMoreMenu.style.left = e.clientX - 2 - divHoldingsMoreMenu.clientWidth + "px";
-												}
-											});
-											
-											div.appendChild(more);
-										}
-
-										divHoldingsList.appendChild(div);
+									} catch(e) {
+										console.log(e);
 									}
-								} catch(e) {
-									console.log(e);
 								}
 							});
+
+							if(mixedValue > 0) {
+								globalData.totalValue = mixedValue;
+							}
+							
+							if(window.innerWidth > 480) {
+								spanHoldingsTotalValue.textContent = currencies[settings.currency] + separateThousands(globalData.totalValue.toFixed(2));
+							} else {
+								spanHoldingsTotalValue.textContent = currencies[settings.currency] + abbreviateNumber(globalData.totalValue, 2);
+							}
 
 							localStorage.setItem("holdingsData", JSON.stringify(holdingsObject));
 						}).catch(e => {

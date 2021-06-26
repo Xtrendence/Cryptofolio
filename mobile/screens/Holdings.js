@@ -324,7 +324,7 @@ export default function Holdings({ navigation }) {
 			return response.json();
 		})
 		.then(async (coins) => {
-			if(Object.keys(coins).length === 0) {
+			if(Object.keys(coins).length === 0 && transactionsAffectHoldings !== "override" && transactionsAffectHoldings !== "mixed") {
 				if(navigation.isFocused()) {
 					setHoldingsData([<Text key="empty" style={[styles.headerText, styles[`headerText${theme}`], { marginLeft:20 }]}>No Holdings Found.</Text>]);
 					setHoldingsValue("-");
@@ -354,7 +354,7 @@ export default function Holdings({ navigation }) {
 					});
 				}
 
-				parseHoldings(coins).then(holdings => {
+				parseHoldings(coins).then(async holdings => {
 					let data = [];
 
 					data.push(
@@ -367,6 +367,8 @@ export default function Holdings({ navigation }) {
 					);
 
 					let rank = 0;
+
+					let mixedValue = 0;
 
 					Object.keys(holdings).map(holding => {
 						rank += 1;
@@ -385,6 +387,7 @@ export default function Holdings({ navigation }) {
 								if(holding in transactionsBySymbol) {
 									amount = parseFloat(amount) + transactionsBySymbol[holding].amount;
 									value = (coin.price * amount).toFixed(2);
+									mixedValue += parseFloat(value.replaceAll(",", ""));
 									enableModal = false;
 								}
 							} else if(transactionsAffectHoldings === "override") {
@@ -400,18 +403,41 @@ export default function Holdings({ navigation }) {
 							value = 0;
 						}
 
-						data.push(
-							<TouchableOpacity onPress={() => { openModal(transactionsAffectHoldings, "update", capitalizeFirstLetter(holding), symbol.toUpperCase(), amount.toString())}} key={epoch() + holding}>
-								<View style={[styles.row, rank % 2 ? {...styles.rowOdd, ...styles[`rowOdd${theme}`]} : null]}>
-									<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellRank]} ellipsizeMode="tail">{rank}</Text>
-									<Image style={styles.cellImage} source={{uri:icon}}/>
-									<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellSymbol]} ellipsizeMode="tail">{symbol}</Text>
-									<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellAmount]} ellipsizeMode="tail">{separateThousands(amount)}</Text>
-									<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellValue]} ellipsizeMode="tail">{currencies[currency] + value}</Text>
-								</View>
-							</TouchableOpacity>
-						);
+						if(value !== 0) {
+							data.push(
+								<TouchableOpacity onPress={() => { openModal(transactionsAffectHoldings, "update", capitalizeFirstLetter(holding), symbol.toUpperCase(), amount.toString())}} key={epoch() + holding}>
+									<View style={[styles.row, rank % 2 ? {...styles.rowOdd, ...styles[`rowOdd${theme}`]} : null]}>
+										<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellRank]} ellipsizeMode="tail">{rank}</Text>
+										<Image style={styles.cellImage} source={{uri:icon}}/>
+										<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellSymbol]} ellipsizeMode="tail">{symbol}</Text>
+										<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellAmount]} ellipsizeMode="tail">{separateThousands(amount)}</Text>
+										<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellValue]} ellipsizeMode="tail">{currencies[currency] + value}</Text>
+									</View>
+								</TouchableOpacity>
+							);
+						}
 					});
+
+					if(mixedValue > 0 && navigation.isFocused()) {
+						let currency = await AsyncStorage.getItem("currency");
+						if(empty(currency)) {
+							currency = "usd";
+						}
+
+						let totalValue = holdingsValue;
+
+						if(!isNaN(totalValue)) {
+							totalValue += mixedValue;
+						} else {
+							totalValue = mixedValue;
+						}
+
+						if(screenWidth > 380) {
+							setHoldingsValue(currencies[currency] + separateThousands(totalValue.toFixed(2)));
+						} else {
+							setHoldingsValue(currencies[currency] + abbreviateNumber(totalValue, 2));
+						}
+					}
 
 					if(navigation.isFocused()) {
 						setHoldingsData(data);

@@ -17,6 +17,17 @@ export function empty(value) {
 	return false;
 }
 
+export function validJSON(json) {
+	try {
+		let object = JSON.parse(json);
+		if(object && typeof object === "object") {
+			return true;
+		}
+	}
+	catch(e) { }
+	return false;
+}
+
 export function separateThousands(number) {
 	let parts = number.toString().split(".");
 	parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");

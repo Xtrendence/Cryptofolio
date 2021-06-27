@@ -8,7 +8,8 @@ import LinearGradient from "react-native-linear-gradient";
 import { globalColors, globalStyles } from "../styles/global";
 import { ThemeContext } from "../utils/theme";
 import { getCoinID } from "../utils/requests";
-import { empty, separateThousands, abbreviateNumber, epoch, capitalizeFirstLetter, wait, currencies } from "../utils/utils";
+import GradientChart from "../components/GradientChart";
+import { empty, separateThousands, abbreviateNumber, epoch, capitalizeFirstLetter, wait, currencies, validJSON } from "../utils/utils";
 
 const screenWidth = Dimensions.get("screen").width;
 const screenHeight = Dimensions.get("screen").height;
@@ -45,10 +46,11 @@ export default function Holdings({ navigation }) {
 	const [showCoinList, setShowCoinList] = React.useState(false);
 	const [coinList, setCoinList] = React.useState();
 
+	const [holdingsCache, setHoldingsCache] = React.useState();
 	const [chartModal, setChartModal] = React.useState(false);
 	const [chartModalMessage, setChartModalMessage] = React.useState();
 	const [chartLabels, setChartLabels] = React.useState();
-	const [chartData, setChartData] = React.useState();
+	const [chartDataset, setChartDataset] = React.useState();
 	const [chartSegments, setChartSegments] = React.useState(1);
 	const [userCurrency, setUserCurrency] = React.useState("$");
 
@@ -134,13 +136,13 @@ export default function Holdings({ navigation }) {
 						<View stlye={[styles.chartModal, styles[`chartModal${theme}`]]}>
 							<View style={[styles.chartWrapper, styles[`chartModal${theme}`]]}>
 								<ScrollView horizontal={true} style={{ height:300 }}>
-									{ !empty(chartData) && !empty(chartLabels) ? 
+									{ !empty(chartDataset) && !empty(chartLabels) ? 
 										<GradientChart
 											data={{
 												labels: chartLabels,
 												datasets: [
 													{
-														data: chartData
+														data: chartDataset
 													}
 												]
 											}}
@@ -251,6 +253,8 @@ export default function Holdings({ navigation }) {
 	}
 
 	function hideChartModal() {
+		setChartLabels();
+		setChartDataset();
 		setChartModalMessage();
 		setChartModal(false);
 	}
@@ -262,9 +266,262 @@ export default function Holdings({ navigation }) {
 		}
 
 		if(transactionsAffectHoldings === "override") {
-			setChartModalMessage("Loading...");
+			setChartLabels();
+			setChartDataset();
+
+			setChartModalMessage("Loading... This might take a while. Don't touch anything.");
 			setChartModal(true);
+
+			let currency = await AsyncStorage.getItem("currency");
+			if(empty(currency)) {
+				currency = "usd";
+			}
+
+			let chartData = await getChartData(currency);
+			let startDate = chartData.startDate;
+			chartData = chartData.chartData;
+
+			let today = formatDate(new Date()).replaceAll(" ", "");
+
+			delete chartData[today];
+
+			if(!(today in chartData) || empty(chartData[today]) || isNaN(chartData[today].holdingsValue)) {
+				if(!empty(holdingsCache)) {
+					chartData[today] = { holdingsValue:0 };
+
+					let keys = Object.keys(holdingsCache);
+
+					keys.map(id => {
+						chartData[today][id] = parseFloat(holdingsCache[id].amount);
+						chartData[today].holdingsValue += parseFloat(holdingsCache[id].value);
+					});
+				}
+			}
+
+			let labels = [];
+			let values = [];
+
+			let dates = Object.keys(chartData);
+		
+			for(let i = startDate; i < dates.length; i++) {
+				let date = dates[i];
+
+				labels.push(new Date(Date.parse(date.replaceAll("/", "-"))));
+				values.push(chartData[date].holdingsValue);
+			}
+
+			labels = parseChartLabels(labels);
+
+			setChartLabels(labels);
+			setChartDataset(values);
+		
+			let currentValue = chartData[today].holdingsValue;
+
+			let value0d = values.length >= 1 ? values[values.length - 1] : "-";
+			let value1d = values.length >= 2 ? values[values.length - 2] : "-";
+			let value1w = values.length >= 7 ? values[values.length - 8] : "-";
+			let value1m = values.length >= 30 ? values[values.length - 31] : "-";
+			let value3m = values.length >= 90 ? values[values.length - 91] : "-";
+			let value6m = values.length >= 180 ? values[values.length - 181] : "-";
+			let value1y = values.length >= 365 ? values[values.length - 366] : "-";
+
+			let stats = "";
+
+			if(!isNaN(value0d) && value0d > 1) {
+				value0d = separateThousands(value0d.toFixed(2));
+				stats += '<span>Current (' + currencies[currency] + '): ' + value0d + '</span>';
+			}
+			if(!isNaN(value1d) && value1d > 1) {
+				let spanClass = (currentValue - value1d) === 0 ? "" : (currentValue - value1d) > 0 ? "positive" : "negative";
+				value1d = separateThousands((currentValue - value1d).toFixed(2));
+				stats += '<span class="' + spanClass + '">1D (' + currencies[currency] + '): ' + value1d + '</span>';
+			}
+			if(!isNaN(value1w) && value1w > 1) {
+				let spanClass = (currentValue - value1w) === 0 ? "" : (currentValue - value1w) > 0 ? "positive" : "negative";
+				value1w = separateThousands((currentValue - value1w).toFixed(2));
+				stats += '<span class="' + spanClass + '">1W (' + currencies[currency] + '): ' + value1w + '</span>';
+			}
+			if(!isNaN(value1m) && value1m > 1) {
+				let spanClass = (currentValue - value1m) === 0 ? "" : (currentValue - value1m) > 0 ? "positive" : "negative";
+				value1m = separateThousands((currentValue - value1m).toFixed(2));
+				stats += '<span class="' + spanClass + '">1M (' + currencies[currency] + '): ' + value1m + '</span>';
+			}
+			if(!isNaN(value3m) && value3m > 1) {
+				let spanClass = (currentValue - value3m) === 0 ? "" : (currentValue - value3m) > 0 ? "positive" : "negative";
+				value3m = separateThousands((currentValue - value3m).toFixed(2));
+				stats += '<span class="' + spanClass + '">3M (' + currencies[currency] + '): ' + value3m + '</span>';
+			}
+			if(!isNaN(value6m) && value6m > 1) {
+				let spanClass = (currentValue - value6m) === 0 ? "" : (currentValue - value6m) > 0 ? "positive" : "negative";
+				value6m = separateThousands((currentValue - value6m).toFixed(2));
+				stats += '<span class="' + spanClass + '">6M (' + currencies[currency] + '): ' + value6m + '</span>';
+			}
+			if(!isNaN(value1y) && value1y > 1) {
+				let spanClass = (currentValue - value1y) === 0 ? "" : (currentValue - value1y) > 0 ? "positive" : "negative";
+				value1y = separateThousands((currentValue - value1y).toFixed(2));
+				stats += '<span class="' + spanClass + '">1Y (' + currencies[currency] + '): ' + value1y + '</span>';
+			}
+
+			setChartModalMessage();
 		}
+	}
+
+	function parseChartLabels(labels) {
+		let months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+		let parsed = [];
+
+		for(let i = 0; i < labels.length; i++) {
+			let date = labels[i];
+			let month = date.getMonth();
+			let monthName = months[month];
+
+			let lastMonth = parsed.slice(i - 31, i);
+			if(i - 31 < 0) {
+				lastMonth = parsed.slice(0, i);
+			}
+
+			if(!lastMonth.includes(monthName)) {
+				parsed.push(monthName);
+			} else {
+				parsed.push("");
+			}
+		}
+
+		return parsed;
+	}
+
+	async function getChartData(currency) {
+		return new Promise((resolve, reject) => {
+			getActivity().then(events => {
+				let coins = [];
+
+				let chartData = {};
+
+				let startDate = previousYear(new Date()).getTime() / 1000;
+
+				let counter = 0;
+				for(let i = 0; i < 366; i++) {
+					let time = (startDate + counter) * 1000;
+					let date = formatDate(new Date(time)).replaceAll(" ", "");
+					chartData[date] = { holdingsValue:0 };
+					counter += 86400;
+				}
+
+				let keys = Object.keys(events);
+
+				keys.map(key => {
+					let event = events[key];
+					let id = event.id;
+					let amount = parseFloat(event.amount);
+					let eventTime = parseInt(event.time) * 1000;
+					let eventDate = formatDate(new Date(eventTime)).replaceAll(" ", "");
+					let previousYearTime = previousYear(new Date());
+					if(eventTime > previousYearTime && event.type !== "transfer") {
+						if(!coins.includes(id)) {
+							coins.push(id);
+						}
+
+						if(id in chartData[eventDate]) {
+							event.type === "buy" ? chartData[eventDate][id] += amount : chartData[eventDate][id] -= amount;
+						} else {
+							event.type === "buy" ? chartData[eventDate][id] = amount : chartData[eventDate][id] = -amount;
+						}
+					}
+				});
+
+				let ids = coins.join(",");
+				
+				getCoinMarketData(ids, currency, previousYear(new Date()), new Date()).then(data => {
+					setChartSegments(4);
+
+					let keys = Object.keys(data);
+
+					let formattedPrices = {};
+
+					keys.map(coinID => {
+						if(!(coinID in formattedPrices)) {
+							formattedPrices[coinID] = {};
+						}
+
+						let prices = data[coinID].prices;
+
+						for(let i = 0; i < prices.length; i++) {
+							let time = prices[i][0];
+							let price = prices[i][1];
+							let date = formatDate(new Date(time)).replaceAll(" ", "");
+							formattedPrices[coinID][date] = price;
+						}
+					});
+
+					let dates = Object.keys(chartData);
+
+					startDate = null;
+
+					for(let i = 0; i < dates.length; i++) {
+						let previousDay = chartData[dates[i - 1]];
+						let currentDay = chartData[dates[i]];
+
+						if(i - 1 >= 0 && Object.keys(previousDay).length > 1) {
+							Object.keys(previousDay).map(coin => {
+								if(coin !== "holdingsValue") {
+									if(empty(startDate)) {
+										startDate = i - 1;
+									}
+
+									if(previousDay[coin] < 0) {
+										chartData[dates[i - 1]][coin] = 0;
+									}
+
+									if(coin in currentDay) {
+										chartData[dates[i]][coin] = chartData[dates[i]][coin] + previousDay[coin];
+									} else {
+										chartData[dates[i]][coin] = previousDay[coin];
+									}
+								}
+							});
+						}
+
+						Object.keys(chartData[dates[i]]).map(coin => {
+							if(coin !== "holdingsValue") {
+								let value = chartData[dates[i]][coin] * formattedPrices[coin][dates[i]];
+								chartData[dates[i]].holdingsValue += value;
+							}
+						});
+					}
+
+					resolve({ chartData:chartData, startDate:startDate });
+				}).catch(error => {
+					console.log(error);
+					reject(error);
+				});
+			});
+		});
+	}
+
+	function getCoinMarketData(ids, currency, from, to) {
+		return new Promise(async (resolve, reject) => {
+			let api = await AsyncStorage.getItem("api");
+			let token = await AsyncStorage.getItem("token");
+
+			let endpoint = api + "historical/read.php?token=" + token + "&ids=" + ids + "&currency=" + currency + "&from=" + new Date(Date.parse(from)).getTime() / 1000 + "&to=" + new Date(Date.parse(to)).getTime() / 1000;
+
+			fetch(endpoint, {
+				method: "GET",
+				headers: {
+					Accept: "application/json", "Content-Type": "application/json"
+				}
+			})
+			.then((json) => {
+				return json.json();
+			})
+			.then(async (response) => {
+				resolve(response);
+			}).catch(error => {
+				console.log(arguments.callee.name + " - " + error);
+				reject(error);
+			});
+		});
 	}
 
 	async function createHolding(id, amount) {
@@ -449,7 +706,7 @@ export default function Holdings({ navigation }) {
 				let transactionsBySymbol;
 
 				if(transactionsAffectHoldings === "mixed") {
-					transactionsBySymbol = await getActivityHoldings();
+					transactionsBySymbol = processActivity(await getActivity());
 
 					let ids = Object.keys(transactionsBySymbol);
 					ids.map(id => {
@@ -458,7 +715,7 @@ export default function Holdings({ navigation }) {
 						}
 					});
 				} else if(transactionsAffectHoldings === "override") {
-					transactionsBySymbol = await getActivityHoldings();
+					transactionsBySymbol = processActivity(await getActivity());
 
 					coins = {};
 
@@ -486,6 +743,8 @@ export default function Holdings({ navigation }) {
 
 					let mixedValue = 0;
 
+					let holdingsObject = {};
+
 					Object.keys(holdings).map(holding => {
 						rank += 1;
 
@@ -495,6 +754,8 @@ export default function Holdings({ navigation }) {
 						let amount = coin.amount;
 						let symbol = coin.symbol;
 						let value = separateThousands(abbreviateNumber(coin.value.toFixed(2), 2));
+
+						holdingsObject[holding] = { amount:amount, value:coin.value };
 
 						let enableModal = true;
 
@@ -533,6 +794,8 @@ export default function Holdings({ navigation }) {
 							);
 						}
 					});
+
+					setHoldingsCache(holdingsObject);
 
 					if(mixedValue > 0 && navigation.isFocused()) {
 						let currency = await AsyncStorage.getItem("currency");
@@ -647,7 +910,7 @@ export default function Holdings({ navigation }) {
 		});
 	}
 
-	async function getActivityHoldings() {
+	async function getActivity() {
 		console.log("Holdings - Getting Activity - " + epoch());
 
 		return new Promise(async (resolve, reject) => {
@@ -666,34 +929,59 @@ export default function Holdings({ navigation }) {
 				return response.json();
 			})
 			.then(async (events) => {
-				let txIDs = Object.keys(events);
-
-				let sorted = {};
-
-				txIDs.map(txID => {
-					let transaction = events[txID];
-					let id = transaction.id;
-					let symbol = transaction.symbol;
-					let type = transaction.type;
-					let amount = parseFloat(transaction.amount);
-
-					if(!(id in sorted)) {
-						sorted[id] = { amount:0, symbol:symbol };
-					}
-			
-					if(type === "sell") {
-						sorted[id].amount = parseFloat(sorted[id].amount) - amount;
-					} else if(type === "buy") {
-						sorted[id].amount = parseFloat(sorted[id].amount) + amount;
-					}
-				});
-
-				resolve(sorted);
+				resolve(events);
 			}).catch(error => {
 				console.log(arguments.callee.name + " - " + error);
 				reject(error);
 			});
 		});
+	}
+
+	function processActivity(events) {
+		let txIDs = Object.keys(events);
+
+		let sorted = {};
+
+		txIDs.map(txID => {
+			let transaction = events[txID];
+			let id = transaction.id;
+			let symbol = transaction.symbol;
+			let type = transaction.type;
+			let amount = parseFloat(transaction.amount);
+
+			if(!(id in sorted)) {
+				sorted[id] = { amount:0, symbol:symbol };
+			}
+			
+			if(type === "sell") {
+				sorted[id].amount = parseFloat(sorted[id].amount) - amount;
+			} else if(type === "buy") {
+				sorted[id].amount = parseFloat(sorted[id].amount) + amount;
+			}
+		});
+
+		return sorted;
+	}
+
+	function previousYear(date) {
+		let day = date.getDate();
+		let month = date.getMonth() + 1;
+		let year = date.getFullYear() - 1;
+		return new Date(Date.parse(year + "-" + month + "-" + day));
+	}
+
+	function formatDate(date) {
+		let day = date.getDate();
+		let month = date.getMonth() + 1;
+		let year = date.getFullYear();
+		return year + " / " + month + " / " + day;
+	}
+
+	function formatDateHuman(date) {
+		let day = date.getDate();
+		let month = date.getMonth() + 1;
+		let year = date.getFullYear();
+		return day + " / " + month + " / " + year;
 	}
 }
 

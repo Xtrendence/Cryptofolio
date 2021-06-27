@@ -9,7 +9,7 @@ import { globalColors, globalStyles } from "../styles/global";
 import { ThemeContext } from "../utils/theme";
 import { getCoinID } from "../utils/requests";
 import GradientChart from "../components/GradientChart";
-import { empty, separateThousands, abbreviateNumber, epoch, capitalizeFirstLetter, wait, currencies, validJSON } from "../utils/utils";
+import { empty, separateThousands, abbreviateNumber, epoch, capitalizeFirstLetter, wait, currencies, validJSON, previousYear, formatDate, formatDateHuman } from "../utils/utils";
 
 const screenWidth = Dimensions.get("screen").width;
 const screenHeight = Dimensions.get("screen").height;
@@ -995,27 +995,6 @@ export default function Holdings({ navigation }) {
 		});
 
 		return sorted;
-	}
-
-	function previousYear(date) {
-		let day = date.getDate();
-		let month = date.getMonth() + 1;
-		let year = date.getFullYear() - 1;
-		return new Date(Date.parse(year + "-" + month + "-" + day));
-	}
-
-	function formatDate(date) {
-		let day = date.getDate();
-		let month = date.getMonth() + 1;
-		let year = date.getFullYear();
-		return year + " / " + month + " / " + day;
-	}
-
-	function formatDateHuman(date) {
-		let day = date.getDate();
-		let month = date.getMonth() + 1;
-		let year = date.getFullYear();
-		return day + " / " + month + " / " + year;
 	}
 }
 

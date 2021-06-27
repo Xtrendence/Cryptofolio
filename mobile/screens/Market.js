@@ -9,7 +9,7 @@ import { LineChart } from 'react-native-chart-kit';
 import HTML from "react-native-render-html";
 import { globalColors, globalStyles } from "../styles/global";
 import { ThemeContext } from "../utils/theme";
-import { empty, separateThousands, abbreviateNumber, epoch, wait, currencies, replaceAll } from "../utils/utils";
+import { empty, separateThousands, abbreviateNumber, epoch, wait, currencies, replaceAll, formatDate, formatDateHuman, previousYear } from "../utils/utils";
 import GradientChart from "../components/GradientChart";
 
 const screenWidth = Dimensions.get("screen").width;
@@ -444,41 +444,6 @@ export default function Market({ navigation }) {
 				reject(error);
 			});
 		});
-	}
-
-	function formatHour(date) {
-		let hours = ("00" + date.getHours()).slice(-2);
-		let minutes = ("00" + date.getMinutes()).slice(-2);
-		return hours + ":" + minutes;
-	}
-
-	function formatDate(date) {
-		let day = date.getDate();
-		let month = date.getMonth() + 1;
-		let year = date.getFullYear();
-		return year + " / " + month + " / " + day;
-	}
-
-	function formatDateHuman(date) {
-		let day = date.getDate();
-		let month = date.getMonth() + 1;
-		let year = date.getFullYear();
-		return day + " / " + month + " / " + year;
-	}
-
-	function previousYear(date) {
-		let day = date.getDate();
-		let month = date.getMonth() + 1;
-		let year = date.getFullYear() - 1;
-		return new Date(Date.parse(year + "-" + month + "-" + day));
-	}
-
-	function previousMonth(date) {
-		return new Date(date.getTime() - 2592000 * 1000);
-	}
-
-	function previousWeek(date) {
-		return new Date(date.getTime() - (60 * 60 * 24 * 6 * 1000));
 	}
 }
 

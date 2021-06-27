@@ -16,7 +16,7 @@ const screenHeight = Dimensions.get("screen").height;
 
 const gradientColor = () => {
 	return (
-		<SVGLinearGradient id="gradient" x1="0" y1="0" x2="0" y2="1">
+		<SVGLinearGradient id="gradient" x1="1" y1="0" x2="0" y2="1">
 			<Stop offset="0" stopColor="#11998e" stopOpacity="1" />
 			<Stop offset="1" stopColor="#38ef7d" stopOpacity="1" />
 		</SVGLinearGradient>
@@ -52,6 +52,7 @@ export default function Holdings({ navigation }) {
 	const [chartLabels, setChartLabels] = React.useState();
 	const [chartDataset, setChartDataset] = React.useState();
 	const [chartSegments, setChartSegments] = React.useState(1);
+	const [chartStats, setChartStats] = React.useState();
 	const [userCurrency, setUserCurrency] = React.useState("$");
 
 	const [holdingsValue, setHoldingsValue] = React.useState(loadingText);
@@ -198,9 +199,11 @@ export default function Holdings({ navigation }) {
 									<Text style={styles.chartModalMessage}>{chartModalMessage}</Text>
 								</View>
 							}
-							{/* <View style={[styles.modalDescriptionWrapper, styles[`modalDescriptionWrapper${theme}`]]}>
-								<Text style={[styles.modalDescription, styles[`modalDescription${theme}`]]}>{modalATH}</Text>
-							</View> */}
+							{ !empty(chartStats) &&
+								chartStats.map(stat => {
+									return stat;
+								})
+							}
 							<View style={styles.chartButtonWrapper}>
 								<TouchableOpacity style={[styles.chartButton, styles[`chartButton${theme}`]]} onPress={() => { hideChartModal()}}>
 									<Text style={styles.text}>Close</Text>
@@ -255,6 +258,7 @@ export default function Holdings({ navigation }) {
 	function hideChartModal() {
 		setChartLabels();
 		setChartDataset();
+		setChartStats();
 		setChartModalMessage();
 		setChartModal(false);
 	}
@@ -268,6 +272,7 @@ export default function Holdings({ navigation }) {
 		if(transactionsAffectHoldings === "override") {
 			setChartLabels();
 			setChartDataset();
+			setChartStats();
 
 			setChartModalMessage("Loading... This might take a while. Don't touch anything.");
 			setChartModal(true);
@@ -325,43 +330,72 @@ export default function Holdings({ navigation }) {
 			let value6m = values.length >= 180 ? values[values.length - 181] : "-";
 			let value1y = values.length >= 365 ? values[values.length - 366] : "-";
 
-			let stats = "";
+			let stats = [];
 
 			if(!isNaN(value0d) && value0d > 1) {
 				value0d = separateThousands(value0d.toFixed(2));
-				stats += '<span>Current (' + currencies[currency] + '): ' + value0d + '</span>';
+				stats.push(
+					<View style={[styles.chartModalDescriptionWrapper, styles[`chartModalDescriptionWrapper${theme}`]]} key="value0d">
+						<Text style={[styles.chartModalDescription, styles[`chartModalDescription${theme}`]]}>Current ({currencies[currency]}): {value0d}</Text>
+					</View>
+				);
 			}
 			if(!isNaN(value1d) && value1d > 1) {
-				let spanClass = (currentValue - value1d) === 0 ? "" : (currentValue - value1d) > 0 ? "positive" : "negative";
+				let style = (currentValue - value1d) === 0 ? "" : (currentValue - value1d) > 0 ? "Positive" : "Negative";
 				value1d = separateThousands((currentValue - value1d).toFixed(2));
-				stats += '<span class="' + spanClass + '">1D (' + currencies[currency] + '): ' + value1d + '</span>';
+				stats.push(
+					<View style={[styles.chartModalDescriptionWrapper, styles[`chartModalDescriptionWrapper${theme}`]]} key="value1d">
+						<Text style={[styles.chartModalDescription, styles[`chartModalDescription${theme}`], styles[`chartModalDescription${style + theme}`]]}>1D ({currencies[currency]}): {value1d}</Text>
+					</View>
+				);
 			}
 			if(!isNaN(value1w) && value1w > 1) {
-				let spanClass = (currentValue - value1w) === 0 ? "" : (currentValue - value1w) > 0 ? "positive" : "negative";
+				let style = (currentValue - value1w) === 0 ? "" : (currentValue - value1w) > 0 ? "Positive" : "Negative";
 				value1w = separateThousands((currentValue - value1w).toFixed(2));
-				stats += '<span class="' + spanClass + '">1W (' + currencies[currency] + '): ' + value1w + '</span>';
+				stats.push(
+					<View style={[styles.chartModalDescriptionWrapper, styles[`chartModalDescriptionWrapper${theme}`]]} key="value1w">
+						<Text style={[styles.chartModalDescription, styles[`chartModalDescription${theme}`], styles[`chartModalDescription${style + theme}`]]}>1W ({currencies[currency]}): {value1w}</Text>
+					</View>
+				);
 			}
 			if(!isNaN(value1m) && value1m > 1) {
-				let spanClass = (currentValue - value1m) === 0 ? "" : (currentValue - value1m) > 0 ? "positive" : "negative";
+				let style = (currentValue - value1m) === 0 ? "" : (currentValue - value1m) > 0 ? "Positive" : "Negative";
 				value1m = separateThousands((currentValue - value1m).toFixed(2));
-				stats += '<span class="' + spanClass + '">1M (' + currencies[currency] + '): ' + value1m + '</span>';
+				stats.push(
+					<View style={[styles.chartModalDescriptionWrapper, styles[`chartModalDescriptionWrapper${theme}`]]} key="value1m">
+						<Text style={[styles.chartModalDescription, styles[`chartModalDescription${theme}`], styles[`chartModalDescription${style + theme}`]]}>1M ({currencies[currency]}): {value1m}</Text>
+					</View>
+				);
 			}
 			if(!isNaN(value3m) && value3m > 1) {
-				let spanClass = (currentValue - value3m) === 0 ? "" : (currentValue - value3m) > 0 ? "positive" : "negative";
+				let style = (currentValue - value3m) === 0 ? "" : (currentValue - value3m) > 0 ? "Positive" : "Negative";
 				value3m = separateThousands((currentValue - value3m).toFixed(2));
-				stats += '<span class="' + spanClass + '">3M (' + currencies[currency] + '): ' + value3m + '</span>';
+				stats.push(
+					<View style={[styles.chartModalDescriptionWrapper, styles[`chartModalDescriptionWrapper${theme}`]]} key="value3m">
+						<Text style={[styles.chartModalDescription, styles[`chartModalDescription${theme}`], styles[`chartModalDescription${style + theme}`]]}>3M ({currencies[currency]}): {value3m}</Text>
+					</View>
+				);
 			}
 			if(!isNaN(value6m) && value6m > 1) {
-				let spanClass = (currentValue - value6m) === 0 ? "" : (currentValue - value6m) > 0 ? "positive" : "negative";
+				let style = (currentValue - value6m) === 0 ? "" : (currentValue - value6m) > 0 ? "Positive" : "Negative";
 				value6m = separateThousands((currentValue - value6m).toFixed(2));
-				stats += '<span class="' + spanClass + '">6M (' + currencies[currency] + '): ' + value6m + '</span>';
+				stats.push(
+					<View style={[styles.chartModalDescriptionWrapper, styles[`chartModalDescriptionWrapper${theme}`]]} key="value6m">
+						<Text style={[styles.chartModalDescription, styles[`chartModalDescription${theme}`], styles[`chartModalDescription${style + theme}`]]}>6M ({currencies[currency]}): {value6m}</Text>
+					</View>
+				);
 			}
 			if(!isNaN(value1y) && value1y > 1) {
-				let spanClass = (currentValue - value1y) === 0 ? "" : (currentValue - value1y) > 0 ? "positive" : "negative";
+				let style = (currentValue - value1y) === 0 ? "" : (currentValue - value1y) > 0 ? "Positive" : "Negative";
 				value1y = separateThousands((currentValue - value1y).toFixed(2));
-				stats += '<span class="' + spanClass + '">1Y (' + currencies[currency] + '): ' + value1y + '</span>';
+				stats.push(
+					<View style={[styles.chartModalDescriptionWrapper, styles[`chartModalDescriptionWrapper${theme}`]]} key="value1y">
+						<Text style={[styles.chartModalDescription, styles[`chartModalDescription${theme}`], styles[`chartModalDescription${style + theme}`]]}>1Y ({currencies[currency]}): {value1y}</Text>
+					</View>
+				);
 			}
 
+			setChartStats(stats);
 			setChartModalMessage();
 		}
 	}
@@ -1132,7 +1166,7 @@ const styles = StyleSheet.create({
 		alignSelf:"center",
 		backgroundColor:globalColors["Light"].accentFirst,
 		borderRadius:globalStyles.borderRadius,
-		width:200,
+		width:screenWidth - 40,
 		alignItems:"center",
 		padding:10,
 		marginTop:20,
@@ -1163,6 +1197,18 @@ const styles = StyleSheet.create({
 	},
 	chartModalDescriptionDark: {
 		color:globalColors["Dark"].mainContrast
+	},
+	chartModalDescriptionPositiveLight: {
+		color:"rgb(40,150,70)"
+	},
+	chartModalDescriptionNegativeLight: {
+		color:"rgb(210,40,40)"
+	},
+	chartModalDescriptionPositiveDark: {
+		color:"rgb(20,180,120)"
+	},
+	chartModalDescriptionNegativeDark: {
+		color:"rgb(210,50,50)"
 	},
 	chartWrapper: {
 		height:320,

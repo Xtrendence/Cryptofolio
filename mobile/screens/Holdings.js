@@ -60,11 +60,11 @@ export default function Holdings({ navigation }) {
 	const [holdingsData, setHoldingsData] = React.useState([<Text key="loading" style={[styles.loadingText, styles.headerText, styles[`headerText${theme}`]]}>Loading...</Text>]);
 
 	useEffect(() => {
-		// setInterval(() => {
-		// 	if(navigation.isFocused()) {
-		// 		getHoldings();
-		// 	}
-		// }, 10000);
+		setInterval(() => {
+			if(navigation.isFocused()) {
+				getHoldings();
+			}
+		}, 10000);
 
 		navigation.addListener("focus", () => {
 			if(navigation.isFocused()) {

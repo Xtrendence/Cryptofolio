@@ -945,22 +945,24 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 									hidePopup();
 
-									let html = '<span class="message">Please scan the QR code with the Cryptofolio mobile app from the login screen.</span><div class="popup-canvas-wrapper"></div><button class="reject" id="popup-dismiss">Dismiss</button>';
+									setTimeout(() => {
+										let html = '<span class="message">Please scan the QR code with the Cryptofolio mobile app from the login screen.</span><div class="popup-canvas-wrapper"></div><button class="reject" id="popup-dismiss">Dismiss</button>';
 				
-									popup("QR Login Code", html, "400px", "540px");
+										popup("QR Login Code", html, "400px", "540px");
 
-									let qrStyle = JSON.parse(qrCodeStyle);
-									qrStyle.width = 340;
-									qrStyle.height = 340;
-									qrStyle.data = token + "!" + new URL(api, document.baseURI).href;
+										let qrStyle = JSON.parse(qrCodeStyle);
+										qrStyle.width = 340;
+										qrStyle.height = 340;
+										qrStyle.data = token + "!" + new URL(api, document.baseURI).href;
 
-									let qrCode = new QRCodeStyling(qrStyle);
+										let qrCode = new QRCodeStyling(qrStyle);
 
-									qrCode.append(document.getElementsByClassName("popup-canvas-wrapper")[0]);
+										qrCode.append(document.getElementsByClassName("popup-canvas-wrapper")[0]);
 
-									document.getElementById("popup-dismiss").addEventListener("click", () => {
-										hidePopup();
-									});
+										document.getElementById("popup-dismiss").addEventListener("click", () => {
+											hidePopup();
+										});
+									}, 300);
 								}
 							}
 						} else {

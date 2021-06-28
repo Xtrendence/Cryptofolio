@@ -3,6 +3,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { NavigationActions } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
 import { Text, TouchableOpacity, View, StyleSheet, ScrollView, Dimensions, Switch, TextInput, Linking, ToastAndroid } from "react-native";
+import Clipboard from "@react-native-clipboard/clipboard";
 import DocumentPicker from "react-native-document-picker";
 import * as RNFS from "react-native-fs";
 import { ThemeContext } from "../utils/theme";
@@ -129,9 +130,58 @@ export default function Settings({ navigation, route }) {
 					<Text style={styles.text}>Export Activity</Text>
 				</TouchableOpacity>
 			</View>
+			<View style={[styles.section, styles[`section${theme}`]]}>
+				<Text style={[styles.header, styles[`header${theme}`]]}>Donate</Text>
+				<View style={[styles.sectionDescriptionWrapper, styles[`sectionDescriptionWrapper${theme}`]]}>
+					<Text style={[styles.sectionDescription, styles[`sectionDescription${theme}`]]}>If you'd like to donate, then please feel free to do so, it'd be much appreciated. However, I don't want you to feel obliged to do so, and there are no perks for it. If you decide to donate, please contact me afterwards so I can actually thank you, and I'd love to hear about any ideas you may have for Cryptofolio. If they're within the scope of the project, I'll probably implement them.</Text>
+				</View>
+				<View style={styles.container}>
+					<TouchableOpacity style={[styles.inlineButton, styles[`inlineButton${theme}`]]} onPress={() => { copyAddress("ADA")}}>
+						<Text style={[styles.buttonText, styles[`buttonText${theme}`]]}>ADA</Text>
+					</TouchableOpacity>
+					<TouchableOpacity style={[styles.inlineButton, styles[`inlineButton${theme}`]]} onPress={() => { copyAddress("XMR")}}>
+						<Text style={[styles.buttonText, styles[`buttonText${theme}`]]}>XMR</Text>
+					</TouchableOpacity>
+					<TouchableOpacity style={[styles.inlineButton, styles[`inlineButton${theme}`]]} onPress={() => { copyAddress("ETH")}}>
+						<Text style={[styles.buttonText, styles[`buttonText${theme}`]]}>ETH</Text>
+					</TouchableOpacity>
+					<TouchableOpacity style={[styles.inlineButton, styles[`inlineButton${theme}`]]} onPress={() => { copyAddress("BCH")}}>
+						<Text style={[styles.buttonText, styles[`buttonText${theme}`]]}>BCH</Text>
+					</TouchableOpacity>
+					<TouchableOpacity style={[styles.inlineButton, styles[`inlineButton${theme}`]]} onPress={() => { copyAddress("BTC")}}>
+						<Text style={[styles.buttonText, styles[`buttonText${theme}`]]}>BTC</Text>
+					</TouchableOpacity>
+					<TouchableOpacity style={[styles.inlineButton, styles[`inlineButton${theme}`]]} onPress={() => { copyAddress("LTC")}}>
+						<Text style={[styles.buttonText, styles[`buttonText${theme}`]]}>LTC</Text>
+					</TouchableOpacity>
+					<TouchableOpacity style={[styles.inlineButton, styles[`inlineButton${theme}`]]} onPress={() => { copyAddress("NANO")}}>
+						<Text style={[styles.buttonText, styles[`buttonText${theme}`]]}>NANO</Text>
+					</TouchableOpacity>
+					<TouchableOpacity style={[styles.inlineButton, styles[`inlineButton${theme}`]]} onPress={() => { copyAddress("DOT")}}>
+						<Text style={[styles.buttonText, styles[`buttonText${theme}`]]}>DOT</Text>
+					</TouchableOpacity>
+				</View>
+			</View>
 			<StatusBar style={theme === "Dark" ? "light" : "dark"}/>
 		</ScrollView>
 	);
+
+	function copyAddress(address) {
+		let addresses = {
+			ADA: "addr1qyh9ejp2z7drzy8vzpyfeuvzuej5t5tnmjyfpfjn0vt722zqupdg44rqfw9fd8jruaez30fg9fxl34vdnncc33zqwhlqn37lz4",
+			XMR: "49wDQf83p5tHibw9ay6fBvcv48GJynyjVE2V8EX8Vrtt89rPyECRm5zbBqng3udqrYHTjsZStSpnMCa8JRw7cfyGJwMPxDM",
+			ETH: "0x40E1452025d7bFFDfa05d64C2d20Fb87c2b9C0be",
+			BCH: "qrvyd467djuxtw5knjt3d50mqzspcf6phydmyl8ka0",
+			BTC: "bc1qdy5544m2pwpyr6rhzcqwmerczw7e2ytjjc2wvj",
+			LTC: "ltc1qq0ptdjsuvhw6gz9m4huwmhq40gpyljwn5hncxz",
+			NANO: "nano_3ed4ip7cjkzkrzh9crgcdipwkp3h49cudxxz4t8x7pkb8rad7bckqfhzyadg",
+			DOT: "12nGqTQsgEHwkAuHGNXpvzcfgtQkTeo3WCZgwrXLsiqs3KyA"
+		};
+
+		Clipboard.setString(addresses[address]);
+
+		ToastAndroid.showWithGravity("Copied " + address + " address to clipboard.", ToastAndroid.LONG, ToastAndroid.BOTTOM);
+	}
 
 	async function readData(type) {
 		DocumentPicker.pick({ type:"text/csv", copyTo:"cachesDirectory" }).then(result => {
@@ -408,6 +458,27 @@ const styles = StyleSheet.create({
 		fontSize:18,
 		paddingBottom:2,
 		color:globalColors["Light"].accentContrast
+	},
+	sectionDescriptionWrapper: {
+		alignSelf:"center",
+		backgroundColor:globalColors["Light"].mainThird,
+		borderRadius:globalStyles.borderRadius,
+		width:screenWidth - 120,
+		alignItems:"center",
+		padding:10,
+		marginBottom:10,
+	},
+	sectionDescriptionWrapperDark: {
+		backgroundColor:globalColors["Dark"].mainThird,
+	},
+	sectionDescription: {
+		color:globalColors["Light"].mainContrast,
+		fontSize:16,
+		fontFamily:globalStyles.fontFamily,
+		lineHeight:25,
+	},
+	sectionDescriptionDark: {
+		color:globalColors["Dark"].mainContrast
 	},
 	inlineButton: {
 		alignItems:"center",

@@ -1,0 +1,15 @@
+version: "3"
+
+services:
+  cryptofolio:
+  # use this to build Cryptofolio from the Dockerfile or image to pull from the Dockerhub registry
+    build: .
+    # image: xtrendence/cryptofolio:V.2.1.0
+    container_name: cryptofolio
+    restart: unless-stopped
+    ports:
+      - 8080:80
+    # environment:
+    #  PORT: 80
+    volumes:
+      - ./data:/var/www/html/api/data

@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# set the port apache listen to from the $PORT env variable
+sed -i "s/Listen 80/Listen ${PORT:-80}/g" /etc/apache2/ports.conf
+sed -i "s/:80/:${PORT:-80}/g" /etc/apache2/sites-enabled/*
+# set the correct folder permissions
+chown -R www-data:www-data /var/www/html/
+# start the server
+apache2-foreground

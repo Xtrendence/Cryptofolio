@@ -85,7 +85,9 @@ Since no private keys or actual funds are held on Cryptofolio, your assets aren'
 
 ### How do I set it up? 
 
-If you use Dockerhub, then simply follow the instructions on the [page there](https://hub.docker.com/r/xtrendence/cryptofolio).
+If you use DockerHub, then simply follow the instructions on the [page there](https://hub.docker.com/r/xtrendence/cryptofolio).
+
+Use `docker pull xtrendence/cryptofolio:latest` to quickly pull the latest image.
 
 **Initial Password**: admin
 

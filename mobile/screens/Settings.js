@@ -79,6 +79,18 @@ export default function Settings({ navigation, route }) {
 					<TouchableOpacity style={[styles.inlineButton, styles[`inlineButton${theme}`], (currency === "eur") ? styles.inlineButtonActive : null]} onPress={() => { changeCurrency("eur")}}>
 						<Text style={[styles.buttonText, styles[`buttonText${theme}`], (currency === "eur") ? styles.buttonTextActive : null]}>EUR</Text>
 					</TouchableOpacity>
+					<TouchableOpacity style={[styles.inlineButton, styles[`inlineButton${theme}`], (currency === "chf") ? styles.inlineButtonActive : null]} onPress={() => { changeCurrency("chf")}}>
+						<Text style={[styles.buttonText, styles[`buttonText${theme}`], (currency === "chf") ? styles.buttonTextActive : null]}>CHF</Text>
+					</TouchableOpacity>
+					<TouchableOpacity style={[styles.inlineButton, styles[`inlineButton${theme}`], (currency === "aud") ? styles.inlineButtonActive : null]} onPress={() => { changeCurrency("aud")}}>
+						<Text style={[styles.buttonText, styles[`buttonText${theme}`], (currency === "aud") ? styles.buttonTextActive : null]}>AUD</Text>
+					</TouchableOpacity>
+					<TouchableOpacity style={[styles.inlineButton, styles[`inlineButton${theme}`], (currency === "jpy") ? styles.inlineButtonActive : null]} onPress={() => { changeCurrency("jpy")}}>
+						<Text style={[styles.buttonText, styles[`buttonText${theme}`], (currency === "jpy") ? styles.buttonTextActive : null]}>JPY</Text>
+					</TouchableOpacity>
+					<TouchableOpacity style={[styles.inlineButton, styles[`inlineButton${theme}`], (currency === "cad") ? styles.inlineButtonActive : null]} onPress={() => { changeCurrency("cad")}}>
+						<Text style={[styles.buttonText, styles[`buttonText${theme}`], (currency === "cad") ? styles.buttonTextActive : null]}>CAD</Text>
+					</TouchableOpacity>
 				</View>
 			</View>
 			<View style={[styles.section, styles[`section${theme}`]]}>
@@ -332,7 +344,7 @@ export default function Settings({ navigation, route }) {
 	}
 
 	async function changeCurrency(fiatCurrency) {
-		let validCurrencies = ["usd", "gbp", "eur"];
+		let validCurrencies = ["usd", "gbp", "eur", "chf", "aud", "jpy", "cad"];
 		if(empty(fiatCurrency) || !validCurrencies.includes(fiatCurrency)) {
 			setCurrency("usd");
 			await AsyncStorage.setItem("currency", "usd");

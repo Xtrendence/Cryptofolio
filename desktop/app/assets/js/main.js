@@ -20,7 +20,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 	let currencies = {
 		usd: "$",
 		gbp: "£",
-		eur: "€"
+		eur: "€",
+		chf: "",
+		aud: "$",
+		jpy: "¥",
+		cad: "$"
 	};
 
 	let settings = {

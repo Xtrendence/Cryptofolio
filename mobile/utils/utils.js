@@ -71,7 +71,11 @@ export function wait(timeout) {
 export const currencies = {
 	usd: "$",
 	gbp: "£",
-	eur: "€"
+	eur: "€",
+	chf: "",
+	aud: "$",
+	jpy: "¥",
+	cad: "$"
 };
 
 export function previousYear(date) {

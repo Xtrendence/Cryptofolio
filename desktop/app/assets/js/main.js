@@ -2877,6 +2877,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 		let popupFrom = document.getElementById("popup-from");
 		let popupTo = document.getElementById("popup-to");
 
+		flatpickr(popupDate, {
+			enableTime: true,
+			dateFormat: "Y-m-d H:i",
+			allowInput: true
+		});
+
 		if(action !== "create") {
 			popupID = document.getElementById("popup-id");
 		}

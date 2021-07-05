@@ -258,6 +258,9 @@ input[type=number] {
 	color:var(--main-fifth);
 	pointer-events:none;
 }
+.popup-wrapper .bottom input.flatpickr-input:read-only {
+	pointer-events:all;
+}
 .popup-wrapper .bottom button {
 	display:block;
 	padding:0 10px 0 10px;

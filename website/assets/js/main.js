@@ -2526,16 +2526,26 @@ document.addEventListener("DOMContentLoaded", async () => {
 					divHoldingsList.classList.remove("backdrop");
 				}
 
-				if(settings.highlightPriceChange === "enabled") {
-					divDashboardMarketList.classList.add("highlight");
-					divDashboardHoldingsList.classList.add("highlight");
-					divMarketList.classList.add("highlight");
-					divHoldingsList.classList.add("highlight");
-				} else {
-					divDashboardMarketList.classList.remove("highlight");
-					divDashboardHoldingsList.classList.remove("highlight");
-					divMarketList.classList.remove("highlight");
-					divHoldingsList.classList.remove("highlight");
+				divDashboardMarketList.classList.remove("highlight-row");
+				divDashboardHoldingsList.classList.remove("highlight-row");
+				divMarketList.classList.remove("highlight-row");
+				divHoldingsList.classList.remove("highlight-row");
+
+				divDashboardMarketList.classList.remove("highlight-text");
+				divDashboardHoldingsList.classList.remove("highlight-text");
+				divMarketList.classList.remove("highlight-text");
+				divHoldingsList.classList.remove("highlight-text");
+
+				if(settings.highlightPriceChange === "row") {
+					divDashboardMarketList.classList.add("highlight-row");
+					divDashboardHoldingsList.classList.add("highlight-row");
+					divMarketList.classList.add("highlight-row");
+					divHoldingsList.classList.add("highlight-row");
+				} else if(settings.highlightPriceChange === "text") {
+					divDashboardMarketList.classList.add("highlight-text");
+					divDashboardHoldingsList.classList.add("highlight-text");
+					divMarketList.classList.add("highlight-text");
+					divHoldingsList.classList.add("highlight-text");
 				}
 
 				if(settings.transactionsAffectHoldings === "override") {

@@ -126,6 +126,12 @@ In order to add an asset to your list of holdings, you will need to find out wha
 - Your PIN code for sharing your portfolio is stored in plaintext.
 - CoinGecko's API is limited in terms of both functionality, and how often requests can be made. As such, be careful not to refresh **too** often. Any rate limits are temporary though, you won't get banned or anything permanently.
 
+#### Credits
+
+Chart.js: https://www.chartjs.org/
+QR Code Styling: https://qr-code-styling.com/
+Flatpickr: https://flatpickr.js.org/
+
 #### Mobile App
 ![Screenshot](https://i.imgur.com/cTYZdwT.png)
 ![Screenshot](https://i.imgur.com/J7uQBu4.png)

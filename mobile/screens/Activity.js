@@ -1,12 +1,14 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { useEffect } from "react";
 import { Text, StyleSheet, View, Image, Dimensions, ScrollView, Modal, TouchableOpacity, TextInput, RefreshControl, SafeAreaView } from "react-native";
+import Icon from "react-native-vector-icons/FontAwesome5";
 import { StatusBar } from "expo-status-bar";
 import LinearGradient from "react-native-linear-gradient";
+import DatePicker from "react-native-modern-datepicker";
 import { globalColors, globalStyles } from "../styles/global";
 import { ThemeContext } from "../utils/theme";
 import { getCoinID } from "../utils/requests";
-import { empty, separateThousands, abbreviateNumber, epoch, capitalizeFirstLetter, wait, currencies, replaceAll } from "../utils/utils";
+import { empty, separateThousands, abbreviateNumber, epoch, capitalizeFirstLetter, wait, currencies, replaceAll, formatDateHuman, formatDate } from "../utils/utils";
 
 const screenWidth = Dimensions.get("screen").width;
 const screenHeight = Dimensions.get("screen").height;
@@ -29,6 +31,7 @@ export default function Activity({ navigation }) {
 	const [coinID, setCoinID] = React.useState();
 	const [coinSymbol, setCoinSymbol] = React.useState();
 	const [eventDate, setEventDate] = React.useState();
+	const [showDatePicker, setShowDatePicker] = React.useState(false);
 	const [eventType, setEventType] = React.useState("buy");
 	const [coinAmount, setCoinAmount] = React.useState();
 	const [eventFee, setEventFee] = React.useState();
@@ -42,11 +45,11 @@ export default function Activity({ navigation }) {
 	const [activityData, setActivityData] = React.useState([<Text key="loading" style={[styles.loadingText, styles.headerText, styles[`headerText${theme}`]]}>Loading...</Text>]);
 
 	useEffect(() => {
-		setInterval(() => {
-			if(navigation.isFocused()) {
-				getActivity();
-			}
-		}, 15000);
+		// setInterval(() => {
+		// 	if(navigation.isFocused()) {
+		// 		getActivity();
+		// 	}
+		// }, 15000);
 
 		navigation.addListener("focus", () => {
 			if(navigation.isFocused()) {
@@ -74,12 +77,41 @@ export default function Activity({ navigation }) {
 
 	return (
 		<ScrollView style={[styles.page, styles[`page${theme}`]]} key={pageKey} contentContainerStyle={{ padding:20 }} nestedScrollEnabled={true} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[globalColors[theme].accentFirst]} progressBackgroundColor={globalColors[theme].mainFirst}/>}>
-			<Modal animationType="fade" visible={modal} onRequestClose={() => { hideModal()}} transparent={false}>
+			<Modal animationType="fade" visible={(showDatePicker)} onRequestClose={() => { setModal(true); setShowDatePicker(false)}} transparent={false}>
+				<ScrollView style={[styles.modalScroll, styles[`modalScroll${theme}`]]} contentContainerStyle={{ padding:20 }}>
+					<DatePicker 
+						onSelectedChange={(date) => { changeDate(date)}} 
+						style={styles.calendar}
+						options={{
+							backgroundColor:globalColors[theme].mainFirst,
+							textHeaderColor:globalColors[theme].accentSecond,
+							textDefaultColor:globalColors[theme].mainContrast,
+							selectedTextColor:globalColors[theme].accentContrast,
+							mainColor:globalColors[theme].accentSecond,
+							textSecondaryColor:globalColors[theme].accentFirst,
+							borderColor:globalColors[theme].accentSecond,
+						}}
+					/>
+					<View style={[styles.buttonWrapper, { justifyContent:"center", width:"100%", marginTop:20 }]}>
+						<TouchableOpacity style={[styles.button, styles[`button${theme}`]]} onPress={() => { setModal(true); setShowDatePicker(false)}}>
+							<Text style={styles.text}>Cancel</Text>
+						</TouchableOpacity>
+					</View>
+				</ScrollView>
+			</Modal>
+			<Modal animationType="fade" visible={(modal && !showDatePicker)} onRequestClose={() => { hideModal()}} transparent={false}>
 				<ScrollView style={[styles.modalScroll, styles[`modalScroll${theme}`]]} contentContainerStyle={{ padding:20 }}>
 					<View style={styles.modalWrapper}>
 						<View stlye={[styles.modal, styles[`modal${theme}`]]}>
 							<TextInput style={[styles.input, styles[`input${theme}`]]} placeholder={"Symbol... (e.g. BTC)"} onChangeText={(value) => { setCoinSymbol(value)}} value={coinSymbol} placeholderTextColor={globalColors[theme].mainContrastLight}/>
-							<TextInput style={[styles.input, styles[`input${theme}`]]} placeholder={"Date... (e.g. 2021/04/18 04:20)"} onChangeText={(value) => { setEventDate(value)}} value={eventDate} placeholderTextColor={globalColors[theme].mainContrastLight}/>
+							<View style={[styles.inlineContainer, { marginBottom:0 }]}>
+								<TextInput style={[styles.input, styles[`input${theme}`], { width:screenWidth - 240, marginRight:15 }]} placeholder={"Date... (e.g. 2021/04/18 04:20)"} onChangeText={(value) => { setEventDate(value)}} value={eventDate} placeholderTextColor={globalColors[theme].mainContrastLight}/>
+								<TouchableOpacity style={[styles.iconButton, styles[`iconButton${theme}`]]} onPress={() => { setShowDatePicker(true)}}>
+									<View style={styles.iconWrapper}>
+										<Icon name="calendar" size={26} color={globalColors[theme].mainContrastLight}></Icon>
+									</View>
+								</TouchableOpacity>
+							</View>
 							<View style={styles.inlineContainer}>
 								<TouchableOpacity style={[styles.inlineButton, styles[`inlineButton${theme}`], (eventType === "buy") ? styles.inlineButtonActive : null]} onPress={() => { setEventType("buy")}}>
 									<Text style={[styles.buttonText, styles[`buttonText${theme}`], (eventType === "buy") ? styles.buttonTextActive : null]}>Buy</Text>
@@ -153,6 +185,11 @@ export default function Activity({ navigation }) {
 			<StatusBar style={theme === "Dark" ? "light" : "dark"}/>
 		</ScrollView>
 	);
+
+	function changeDate(value) {
+		setShowDatePicker(false);
+		setEventDate(value);
+	}
 
 	function hideModal() {
 		setEventID();
@@ -466,6 +503,14 @@ const styles = StyleSheet.create({
 		fontFamily:globalStyles.fontFamily,
 		lineHeight:25,
 	},
+	calendar: {
+		borderRadius:globalStyles.borderRadius,
+		shadowColor:globalStyles.shadowColor,
+		shadowOffset:globalStyles.shadowOffset,
+		shadowOpacity:globalStyles.shadowOpacity,
+		shadowRadius:globalStyles.shadowRadius,
+		elevation:globalStyles.shadowElevation,
+	},
 	inlineContainer: {
 		flexDirection:"row",
 		flexWrap:"wrap",
@@ -493,6 +538,23 @@ const styles = StyleSheet.create({
 	},
 	inlineButtonActive: {
 		backgroundColor:globalColors["Light"].accentFirst
+	},
+	iconButton: {
+		shadowColor:globalStyles.shadowColor,
+		shadowOffset:globalStyles.shadowOffset,
+		shadowOpacity:globalStyles.shadowOpacity,
+		shadowRadius:globalStyles.shadowRadius,
+		elevation:globalStyles.shadowElevation,
+		backgroundColor:globalColors["Light"].mainFirst,
+		height:48,
+		width:48,
+		justifyContent:"center",
+		alignItems:"center",
+		paddingBottom:2,
+		borderRadius:globalStyles.borderRadius,
+	},
+	iconButtonDark: {
+		backgroundColor:globalColors["Dark"].mainFirst
 	},
 	buttonText: {
 		fontFamily:globalStyles.fontFamily,

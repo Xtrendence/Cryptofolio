@@ -23,11 +23,11 @@ app.on("ready", function() {
 	const { width, height } = screen.getPrimaryDisplay().workAreaSize;
 
 	let windowWidth = 1000;
-	let windowHeight = 620;
+	let windowHeight = 720;
 
 	if(width > 1200 && height > 800) {
 		windowWidth = 1181;
-		windowHeight = 650;
+		windowHeight = 750;
 	}
 
 	if(debugMode) {

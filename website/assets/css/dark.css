@@ -11,6 +11,7 @@ html.dark {
 	--main-fifth:rgb(60,60,60);
 	--main-contrast:rgb(255,255,255);
 	--main-contrast-light:rgb(245,245,245);
+	--main-contrast-lightest:rgb(200,200,200);
 	--accent-first:rgb(93,79,156);
 	--accent-second:rgb(80,125,182);
 	--accent-third:rgb(69,168,199);

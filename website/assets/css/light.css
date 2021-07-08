@@ -11,6 +11,7 @@ html.light {
 	--main-fifth:rgb(215,215,215);
 	--main-contrast:rgb(50,50,50);
 	--main-contrast-light:rgb(100,100,100);
+	--main-contrast-lightest:rgb(150,150,150);
 	--accent-first:rgb(93,79,156);
 	--accent-second:rgb(80,125,182);
 	--accent-third:rgb(69,168,199);

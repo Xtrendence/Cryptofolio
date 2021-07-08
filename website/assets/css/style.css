@@ -489,11 +489,11 @@ input[type=number] {
 	text-align:center;
 }
 
-.market-list .coin-wrapper {
+.market-list .coin-wrapper, .holdings-list .coin-wrapper.clickable {
 	cursor:pointer;
 	transition:background 0.25s;
 }
-.market-list .coin-wrapper:hover {
+.market-list .coin-wrapper:hover, .holdings-list .coin-wrapper.clickable:hover {
 	background:var(--main-second);
 }
 

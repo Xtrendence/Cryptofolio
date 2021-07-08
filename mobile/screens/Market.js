@@ -9,7 +9,7 @@ import { LineChart } from 'react-native-chart-kit';
 import HTML from "react-native-render-html";
 import { globalColors, globalStyles } from "../styles/global";
 import { ThemeContext } from "../utils/theme";
-import { empty, separateThousands, abbreviateNumber, epoch, wait, currencies, replaceAll, formatDate, formatDateHuman, previousYear } from "../utils/utils";
+import { empty, separateThousands, abbreviateNumber, epoch, wait, currencies, replaceAll, formatDate, capitalizeFirstLetter, formatDateHuman, previousYear } from "../utils/utils";
 import GradientChart from "../components/GradientChart";
 
 const screenWidth = Dimensions.get("screen").width;
@@ -45,6 +45,8 @@ export default function Market({ navigation }) {
 
 	const [refreshing, setRefreshing] = React.useState(false);
 
+	const [highlightPriceChangeState, setHighlightPriceChangeState] = React.useState("disabled");
+
 	const [marketCap, setMarketCap] = React.useState(loadingText);
 	const [marketChange, setMarketChange] = React.useState();
 	const [volume, setVolume] = React.useState(loadingText);
@@ -52,12 +54,12 @@ export default function Market({ navigation }) {
 	const [marketData, setMarketData] = React.useState([<Text key="loading" style={[styles.loadingText, styles.headerText, styles[`headerText${theme}`]]}>Loading...</Text>]);
 
 	useEffect(() => {
-		setInterval(() => {
-			if(navigation.isFocused()) {
-				getMarket();
-				getGlobal();
-			}
-		}, 15000);
+		// setInterval(() => {
+		// 	if(navigation.isFocused()) {
+		// 		getMarket();
+		// 		getGlobal();
+		// 	}
+		// }, 15000);
 
 		navigation.addListener("focus", () => {
 			if(navigation.isFocused()) {
@@ -77,7 +79,7 @@ export default function Market({ navigation }) {
 
 		getMarket();
 		getGlobal();
-	}, [theme]);
+	}, [theme, highlightPriceChangeState]);
 
 	const onRefresh = React.useCallback(() => {
 		setRefreshing(true);
@@ -293,6 +295,15 @@ export default function Market({ navigation }) {
 			currency = "usd";
 		}
 
+		let highlightPriceChange = await AsyncStorage.getItem("highlightPriceChange");
+		if(empty(highlightPriceChange)) {
+			highlightPriceChange = "disabled";
+		}
+
+		if(highlightPriceChangeState !== highlightPriceChange) {
+			setHighlightPriceChangeState(highlightPriceChange);
+		}
+
 		let theme = empty(await AsyncStorage.getItem("theme")) ? "Light" : await AsyncStorage.getItem("theme");
 
 		let endpoint = "https://api.coingecko.com/api/v3/coins/markets?vs_currency=" + currency + "&order=market_cap_desc&per_page=200&page=1&sparkline=false";
@@ -327,6 +338,7 @@ export default function Market({ navigation }) {
 
 				let coin = coins[key];
 				let price = parseFloat(coin.current_price);
+				let change = parseFloat(coin.market_cap_change_percentage_24h);
 				let cap = separateThousands(abbreviateNumber(parseFloat(coin.market_cap), 2));
 
 				if(price > 1) {
@@ -338,14 +350,26 @@ export default function Market({ navigation }) {
 				let id = coin.id;
 				let symbol = coin.symbol.toUpperCase();
 
+				let changeType = "";
+				if(change > 0) {
+					changeType = "Positive";
+				} else if(change === 0) {
+					changeType = "None"
+				} else {
+					changeType = "Negative";
+				}
+
+				let highlightRow = `rowHighlight${capitalizeFirstLetter(highlightPriceChange)}${changeType}${theme}`;
+				let highlightText = `cellHighlight${capitalizeFirstLetter(highlightPriceChange)}${changeType}${theme}`;
+
 				data.push(
 					<TouchableOpacity key={epoch() + key} onPress={() => { openModal(id, symbol, coin.current_price)}}>
-						<View style={[styles.row, rank % 2 ? {...styles.rowOdd, ...styles[`rowOdd${theme}`]} : null]}>
-							<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellRank]} ellipsizeMode="tail">{rank}</Text>
+						<View style={[styles.row, rank % 2 ? {...styles.rowOdd, ...styles[`rowOdd${theme}`]} : null, styles[highlightRow]]}>
+							<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellRank, styles[highlightText]]} ellipsizeMode="tail">{rank}</Text>
 							<Image style={styles.cellImage} source={{uri:icon}}/>
-							<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellSymbol]} ellipsizeMode="tail">{symbol}</Text>
-							<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellPrice]} ellipsizeMode="tail">{currencies[currency] + price}</Text>
-							<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellCap]} ellipsizeMode="tail">{currencies[currency] + cap}</Text>
+							<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellSymbol, styles[highlightText]]} ellipsizeMode="tail">{symbol}</Text>
+							<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellPrice, styles[highlightText]]} ellipsizeMode="tail">{currencies[currency] + price}</Text>
+							<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellCap, styles[highlightText]]} ellipsizeMode="tail">{currencies[currency] + cap}</Text>
 						</View>
 					</TouchableOpacity>
 				);
@@ -578,6 +602,30 @@ const styles = StyleSheet.create({
 		paddingLeft:4,
 		paddingTop:8,
 		paddingBottom:8,
+	},
+	rowHighlightRowPositiveLight: {
+		backgroundColor:"rgba(0,255,150,0.1)"
+	},
+	rowHighlightRowNegativeLight: {
+		backgroundColor:"rgba(255,0,0,0.1)"
+	},
+	rowHighlightRowPositiveDark: {
+		backgroundColor:"rgba(0,255,150,0.1)"
+	},
+	rowHighlightRowNegativeDark: {
+		backgroundColor:"rgba(255,0,0,0.15)"
+	},
+	cellHighlightTextPositiveLight: {
+		color:"rgb(40,150,70)"
+	},
+	cellHighlightTextNegativeLight: {
+		color:"rgb(210,40,40)"
+	},
+	cellHighlightTextPositiveDark: {
+		color:"rgb(20,180,120)"
+	},
+	cellHighlightTextNegativeDark: {
+		color:"rgb(210,50,50)"
 	},
 	rowOdd: {
 		backgroundColor:globalColors["Light"].mainSecond,

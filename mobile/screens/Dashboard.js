@@ -33,13 +33,13 @@ export default function Dashboard({ navigation }) {
 	const [holdingsData, setHoldingsData] = React.useState([<Text key="loading" style={[styles.headerText, styles[`headerText${theme}`]]}>Loading...</Text>]);
 
 	useEffect(() => {
-		setInterval(() => {
-			if(navigation.isFocused()) {
-				getMarket();
-				getGlobal();
-				getHoldings();
-			}
-		}, 20000);
+		// setInterval(() => {
+		// 	if(navigation.isFocused()) {
+		// 		getMarket();
+		// 		getGlobal();
+		// 		getHoldings();
+		// 	}
+		// }, 20000);
 
 		navigation.addListener("focus", () => {
 			if(navigation.isFocused()) {

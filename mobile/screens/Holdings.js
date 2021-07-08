@@ -36,6 +36,7 @@ export default function Holdings({ navigation }) {
 	const [refreshing, setRefreshing] = React.useState(false);
 
 	const [transactionsAffectHoldingsState, setTransactionsAffectHoldingsState] = React.useState("disabled");
+	const [highlightPriceChangeState, setHighlightPriceChangeState] = React.useState("disabled");
 
 	const [modal, setModal] = React.useState(false);
 	const [modalMessage, setModalMessage] = React.useState();
@@ -60,11 +61,11 @@ export default function Holdings({ navigation }) {
 	const [holdingsData, setHoldingsData] = React.useState([<Text key="loading" style={[styles.loadingText, styles.headerText, styles[`headerText${theme}`]]}>Loading...</Text>]);
 
 	useEffect(() => {
-		setInterval(() => {
-			if(navigation.isFocused()) {
-				getHoldings();
-			}
-		}, 10000);
+		// setInterval(() => {
+		// 	if(navigation.isFocused()) {
+		// 		getHoldings();
+		// 	}
+		// }, 10000);
 
 		navigation.addListener("focus", () => {
 			if(navigation.isFocused()) {
@@ -86,7 +87,7 @@ export default function Holdings({ navigation }) {
 
 	useEffect(() => {
 		setHoldingsKey(epoch());
-	}, [transactionsAffectHoldingsState]);
+	}, [theme, transactionsAffectHoldingsState, highlightPriceChangeState]);
 
 	const onRefresh = React.useCallback(() => {
 		setRefreshing(true);
@@ -713,6 +714,15 @@ export default function Holdings({ navigation }) {
 		if(transactionsAffectHoldingsState !== transactionsAffectHoldings) {
 			setTransactionsAffectHoldingsState(transactionsAffectHoldings);
 		}
+
+		let highlightPriceChange = await AsyncStorage.getItem("highlightPriceChange");
+		if(empty(highlightPriceChange)) {
+			highlightPriceChange = "disabled";
+		}
+
+		if(highlightPriceChangeState !== highlightPriceChange) {
+			setHighlightPriceChangeState(highlightPriceChange);
+		}
 		
 		let theme = empty(await AsyncStorage.getItem("theme")) ? "Light" : await AsyncStorage.getItem("theme");
 
@@ -787,6 +797,7 @@ export default function Holdings({ navigation }) {
 						let icon = coin.image;
 						let amount = coin.amount;
 						let symbol = coin.symbol;
+						let change = parseFloat(coin.change);
 						let value = separateThousands(abbreviateNumber(coin.value.toFixed(2), 2));
 
 						holdingsObject[holding] = { amount:amount, value:coin.value };
@@ -814,15 +825,27 @@ export default function Holdings({ navigation }) {
 							value = 0;
 						}
 
+						let changeType = "";
+						if(change > 0) {
+							changeType = "Positive";
+						} else if(change === 0) {
+							changeType = "None"
+						} else {
+							changeType = "Negative";
+						}
+
+						let highlightRow = `rowHighlight${capitalizeFirstLetter(highlightPriceChange)}${changeType}${theme}`;
+						let highlightText = `cellHighlight${capitalizeFirstLetter(highlightPriceChange)}${changeType}${theme}`;
+
 						if(value !== 0) {
 							data.push(
 								<TouchableOpacity onPress={() => { openModal(transactionsAffectHoldings, "update", capitalizeFirstLetter(holding), symbol.toUpperCase(), amount.toString())}} key={epoch() + holding}>
-									<View style={[styles.row, rank % 2 ? {...styles.rowOdd, ...styles[`rowOdd${theme}`]} : null]}>
-										<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellRank]} ellipsizeMode="tail">{rank}</Text>
+									<View style={[styles.row, rank % 2 ? {...styles.rowOdd, ...styles[`rowOdd${theme}`]} : null, styles[highlightRow]]}>
+										<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellRank, styles[highlightText]]} ellipsizeMode="tail">{rank}</Text>
 										<Image style={styles.cellImage} source={{uri:icon}}/>
-										<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellSymbol]} ellipsizeMode="tail">{symbol}</Text>
-										<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellAmount]} ellipsizeMode="tail">{separateThousands(amount)}</Text>
-										<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellValue]} ellipsizeMode="tail">{currencies[currency] + value}</Text>
+										<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellSymbol, styles[highlightText]]} ellipsizeMode="tail">{symbol}</Text>
+										<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellAmount, styles[highlightText]]} ellipsizeMode="tail">{separateThousands(amount)}</Text>
+										<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellValue, styles[highlightText]]} ellipsizeMode="tail">{currencies[currency] + value}</Text>
 									</View>
 								</TouchableOpacity>
 							);
@@ -1250,6 +1273,30 @@ const styles = StyleSheet.create({
 		paddingTop:8,
 		paddingBottom:8,
 		paddingLeft:20,
+	},
+	rowHighlightRowPositiveLight: {
+		backgroundColor:"rgba(0,255,150,0.1)"
+	},
+	rowHighlightRowNegativeLight: {
+		backgroundColor:"rgba(255,0,0,0.1)"
+	},
+	rowHighlightRowPositiveDark: {
+		backgroundColor:"rgba(0,255,150,0.1)"
+	},
+	rowHighlightRowNegativeDark: {
+		backgroundColor:"rgba(255,0,0,0.15)"
+	},
+	cellHighlightTextPositiveLight: {
+		color:"rgb(40,150,70)"
+	},
+	cellHighlightTextNegativeLight: {
+		color:"rgb(210,40,40)"
+	},
+	cellHighlightTextPositiveDark: {
+		color:"rgb(20,180,120)"
+	},
+	cellHighlightTextNegativeDark: {
+		color:"rgb(210,50,50)"
 	},
 	rowOdd: {
 		backgroundColor:globalColors["Light"].mainSecond,

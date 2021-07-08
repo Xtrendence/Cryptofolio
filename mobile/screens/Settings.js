@@ -21,6 +21,8 @@ export default function Settings({ navigation, route }) {
 
 	const [transactionsAffectHoldings, setTransactionsAffectHoldings] = React.useState();
 
+	const [highlightPriceChange, setHighlightPriceChange] = React.useState();
+
 	const [defaultPage, setDefaultPage] = React.useState();
 
 	const [accountMessage, setAccountMessage] = React.useState();
@@ -104,6 +106,20 @@ export default function Settings({ navigation, route }) {
 					</TouchableOpacity>
 					<TouchableOpacity style={[styles.inlineButton, styles[`inlineButton${theme}`], (transactionsAffectHoldings === "override") ? styles.inlineButtonActive : null]} onPress={() => { changeTransactionsAffectHoldings("override")}}>
 						<Text style={[styles.buttonText, styles[`buttonText${theme}`], (transactionsAffectHoldings === "override") ? styles.buttonTextActive : null]}>Override</Text>
+					</TouchableOpacity>
+				</View>
+			</View>
+			<View style={[styles.section, styles[`section${theme}`]]}>
+				<Text style={[styles.header, styles[`header${theme}`]]}>Highlight Price Change</Text>
+				<View style={styles.container}>
+					<TouchableOpacity style={[styles.inlineButton, styles[`inlineButton${theme}`], (highlightPriceChange === "disabled") ? styles.inlineButtonActive : null]} onPress={() => { changeHighlightPriceChange("disabled")}}>
+						<Text style={[styles.buttonText, styles[`buttonText${theme}`], (highlightPriceChange === "disabled") ? styles.buttonTextActive : null]}>Disabled</Text>
+					</TouchableOpacity>
+					<TouchableOpacity style={[styles.inlineButton, styles[`inlineButton${theme}`], (highlightPriceChange === "row") ? styles.inlineButtonActive : null]} onPress={() => { changeHighlightPriceChange("row")}}>
+						<Text style={[styles.buttonText, styles[`buttonText${theme}`], (highlightPriceChange === "row") ? styles.buttonTextActive : null]}>Row</Text>
+					</TouchableOpacity>
+					<TouchableOpacity style={[styles.inlineButton, styles[`inlineButton${theme}`], (highlightPriceChange === "text") ? styles.inlineButtonActive : null]} onPress={() => { changeHighlightPriceChange("text")}}>
+						<Text style={[styles.buttonText, styles[`buttonText${theme}`], (highlightPriceChange === "text") ? styles.buttonTextActive : null]}>Text</Text>
 					</TouchableOpacity>
 				</View>
 			</View>
@@ -365,6 +381,17 @@ export default function Settings({ navigation, route }) {
 		}
 	}
 
+	async function changeHighlightPriceChange(highlightPriceChange) {
+		let validOptions = ["disabled", "row", "text"];
+		if(empty(highlightPriceChange) || !validOptions.includes(highlightPriceChange)) {
+			setHighlightPriceChange("disabled");
+			await AsyncStorage.setItem("highlightPriceChange", "disabled");
+		} else {
+			setHighlightPriceChange(highlightPriceChange);
+			await AsyncStorage.setItem("highlightPriceChange", highlightPriceChange);
+		}
+	}
+
 	async function getSettings() {
 		let currency = await AsyncStorage.getItem("currency");
 		if(empty(currency)) {
@@ -377,6 +404,12 @@ export default function Settings({ navigation, route }) {
 			transactionsAffectHoldings = "disabled";
 		}
 		setTransactionsAffectHoldings(transactionsAffectHoldings);
+
+		let highlightPriceChange = await AsyncStorage.getItem("highlightPriceChange");
+		if(empty(highlightPriceChange)) {
+			highlightPriceChange = "disabled";
+		}
+		setHighlightPriceChange(highlightPriceChange);
 
 		let validPages = ["Dashboard", "Market", "Holdings", "Activity", "Settings"];
 		let page = await AsyncStorage.getItem("defaultPage");

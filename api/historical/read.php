@@ -25,7 +25,11 @@
 				}
 			}
 
-			echo json_encode($data);
+			if(!empty($_GET["background"]) && $_GET["background"] == "true") {
+				echo json_encode(array("message" => "Fetched historical data."));
+			} else {
+				echo json_encode($data);
+			}
 		} else {
 			echo json_encode(array("error" => "You need to be logged in to do that."));
 		}

@@ -574,17 +574,17 @@ input[type=number] {
 	text-align:center;
 }
 
-.market-list .coin-wrapper {
+.market-list .coin-wrapper, .holdings-list .coin-wrapper.clickable {
 	cursor:pointer;
 	transition:background 0.25s;
 }
-.market-list .coin-wrapper:hover {
+.market-list .coin-wrapper:hover, .holdings-list .coin-wrapper.clickable:hover {
 	background:var(--main-second);
 }
 
 .coin-chart-wrapper, .holdings-chart-wrapper {
 	width:calc(100% - 40px);
-	max-width:890px;
+	max-width:1100px;
 	display:block;
 	margin:0 auto 20px auto;
 }

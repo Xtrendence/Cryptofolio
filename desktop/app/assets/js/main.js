@@ -21,7 +21,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 		usd: "$",
 		gbp: "£",
 		eur: "€",
-		chf: "",
+		chf: "Fr ",
 		aud: "$",
 		jpy: "¥",
 		cad: "$"
@@ -396,6 +396,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 	divHoldingsValueCard.addEventListener("click", () => {
 		if(settings.transactionsAffectHoldings === "override" && divHoldingsList.getElementsByClassName("more").length === 0) {
 			getActivity().then(events => {
+				events = sortActivity(events);
+
 				let coins = [];
 
 				let chartData = {};
@@ -1163,6 +1165,116 @@ document.addEventListener("DOMContentLoaded", async () => {
 		let html = '<div class="holdings-popup-wrapper"><div class="holdings-chart-wrapper"></div><div class="stats-wrapper noselect">' + stats + '</div><button class="reject" id="popup-dismiss">Back</button></div>';
 
 		popup("Holdings Performance", html, "calc(100% - 40px)", "calc(100% - 40px)", { delay:1500, closeIcon:true });
+
+		generateHoldingsChart(document.getElementsByClassName("holdings-chart-wrapper")[0], "Value", labels, tooltips, values);
+
+		document.getElementById("popup-dismiss").addEventListener("click", () => {
+			hidePopup();
+		});
+	}
+
+	async function individualHoldingChartPopup(coinID, firstEvent, chartData, startDate) {
+		let today = formatDate(new Date()).replaceAll(" ", "");
+
+		delete chartData[today];
+
+		if(!(today in chartData) || empty(chartData[today]) || isNaN(chartData[today].holdingsValue)) {
+			let holdingsData = await Storage.getItem("holdingsData");
+			if(validJSON(holdingsData)) {
+				chartData[today] = { holdingsValue:0 };
+
+				let holdings = JSON.parse(holdingsData);
+				let keys = Object.keys(holdings);
+
+				keys.map(id => {
+					if(coinID === id) {
+						chartData[today][id] = parseFloat(holdings[id].amount);
+						chartData[today].holdingsValue += parseFloat(holdings[id].value);
+					}
+				});
+			}
+		}
+
+		let initialAmount = parseFloat(firstEvent.amount);
+		let initialPrice = parseFloat(firstEvent.price);
+		if(initialPrice <= 0) {
+			let initialDate = new Date(Date.parse(firstEvent.date));
+			let coinPrice = await getCoinPrice(coinID, formatDateHyphenated(initialDate));
+			initialPrice = coinPrice?.market_data?.current_price[settings.currency];
+		}
+
+		let initialValue = initialAmount * initialPrice;
+
+		let labels = [];
+		let tooltips = [];
+		let values = [initialValue];
+
+		let dates = Object.keys(chartData);
+		
+		for(let i = startDate; i < dates.length; i++) {
+			let date = dates[i];
+
+			labels.push(new Date(Date.parse(date)));
+			tooltips.push(formatDateHuman(new Date(Date.parse(date))));
+			values.push(chartData[date].holdingsValue);
+		}
+		
+		let currentValue = chartData[today].holdingsValue;
+
+		let value0d = values.length >= 1 ? values[values.length - 1] : "-";
+		let value1d = values.length >= 2 ? values[values.length - 2] : "-";
+		let value1w = values.length >= 7 ? values[values.length - 8] : "-";
+		let value1m = values.length >= 30 ? values[values.length - 31] : "-";
+		let value3m = values.length >= 90 ? values[values.length - 91] : "-";
+		let value6m = values.length >= 180 ? values[values.length - 181] : "-";
+		let value1y = values.length >= 365 ? values[values.length - 366] : "-";
+		let valueAll = values[0];
+
+		let stats = "";
+
+		if(!isNaN(value0d) && value0d > 1) {
+			value0d = separateThousands(value0d.toFixed(2));
+			stats += '<span>Current (' + currencies[settings.currency] + '): ' + value0d + '</span>';
+		}
+		if(!isNaN(value1d) && value1d > 1) {
+			let spanClass = (currentValue - value1d) === 0 ? "" : (currentValue - value1d) > 0 ? "positive" : "negative";
+			value1d = separateThousands((currentValue - value1d).toFixed(2));
+			stats += '<span class="' + spanClass + '">1D (' + currencies[settings.currency] + '): ' + value1d + '</span>';
+		}
+		if(!isNaN(value1w) && value1w > 1) {
+			let spanClass = (currentValue - value1w) === 0 ? "" : (currentValue - value1w) > 0 ? "positive" : "negative";
+			value1w = separateThousands((currentValue - value1w).toFixed(2));
+			stats += '<span class="' + spanClass + '">1W (' + currencies[settings.currency] + '): ' + value1w + '</span>';
+		}
+		if(!isNaN(value1m) && value1m > 1) {
+			let spanClass = (currentValue - value1m) === 0 ? "" : (currentValue - value1m) > 0 ? "positive" : "negative";
+			value1m = separateThousands((currentValue - value1m).toFixed(2));
+			stats += '<span class="' + spanClass + '">1M (' + currencies[settings.currency] + '): ' + value1m + '</span>';
+		}
+		if(!isNaN(value3m) && value3m > 1) {
+			let spanClass = (currentValue - value3m) === 0 ? "" : (currentValue - value3m) > 0 ? "positive" : "negative";
+			value3m = separateThousands((currentValue - value3m).toFixed(2));
+			stats += '<span class="' + spanClass + '">3M (' + currencies[settings.currency] + '): ' + value3m + '</span>';
+		}
+		if(!isNaN(value6m) && value6m > 1) {
+			let spanClass = (currentValue - value6m) === 0 ? "" : (currentValue - value6m) > 0 ? "positive" : "negative";
+			value6m = separateThousands((currentValue - value6m).toFixed(2));
+			stats += '<span class="' + spanClass + '">6M (' + currencies[settings.currency] + '): ' + value6m + '</span>';
+		}
+		if(!isNaN(value1y) && value1y > 1) {
+			let spanClass = (currentValue - value1y) === 0 ? "" : (currentValue - value1y) > 0 ? "positive" : "negative";
+			value1y = separateThousands((currentValue - value1y).toFixed(2));
+			stats += '<span class="' + spanClass + '">1Y (' + currencies[settings.currency] + '): ' + value1y + '</span>';
+		}
+		if(!isNaN(valueAll) && valueAll > 1) {
+			let spanClass = (currentValue - valueAll) === 0 ? "" : (currentValue - valueAll) > 0 ? "positive" : "negative";
+			valueAll = separateThousands((currentValue - valueAll).toFixed(2));
+			stats += '<span class="' + spanClass + '">All (' + currencies[settings.currency] + '): ' + valueAll + '</span>';
+		}
+
+		let html = '<div class="holdings-popup-wrapper"><div class="holdings-chart-wrapper"></div><div class="stats-wrapper noselect">' + stats + '</div><button class="reject" id="popup-dismiss">Back</button></div>';
+
+		popup(firstEvent.symbol + " - Holding Performance", html, "calc(100% - 40px)", "calc(100% - 40px)", { delay:1500, closeIcon:true });
 
 		generateHoldingsChart(document.getElementsByClassName("holdings-chart-wrapper")[0], "Value", labels, tooltips, values);
 
@@ -2076,6 +2188,13 @@ document.addEventListener("DOMContentLoaded", async () => {
 												div.appendChild(more);
 											}
 
+											if(settings.transactionsAffectHoldings === "override") {
+												div.classList.add("clickable");
+												div.addEventListener("click", () => {
+													individualHoldingChart(holding);
+												});
+											}
+
 											divHoldingsList.appendChild(div);
 										}
 									} catch(e) {
@@ -2135,7 +2254,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 							divActivityList.classList.remove("loading");
 						}
 
-						events = sortActivity(events);
+						events = sortActivityReverse(events);
 						Object.keys(events).map(txID => {
 							let activity = events[txID];
 			
@@ -2226,6 +2345,121 @@ document.addEventListener("DOMContentLoaded", async () => {
 			});
 
 			updateActivityListInterval = setInterval(listActivity, updateInterval);
+		}
+	}
+
+	function individualHoldingChart(coinID) {
+		if(settings.transactionsAffectHoldings === "override") {
+			let firstEvent = null;
+
+			getActivity().then(events => {
+				events = sortActivity(events);
+
+				let chartData = {};
+
+				let counter = 0;
+				let startDate = previousYear(new Date()).getTime() / 1000;
+				for(let i = 0; i < 366; i++) {
+					let time = (startDate + counter) * 1000;
+					let date = formatDate(new Date(time)).replaceAll(" ", "");
+					chartData[date] = { holdingsValue:0 };
+					counter += 86400;
+				}
+
+				let eventCount = 0;
+				let keys = Object.keys(events);
+
+				keys.map(key => {
+					let event = events[key];
+					let id = event.id;
+					if(coinID === id) {
+						let amount = parseFloat(event.amount);
+						let eventTime = parseInt(event.time) * 1000;
+						let eventDate = formatDate(new Date(eventTime)).replaceAll(" ", "");
+						let previousYearTime = previousYear(new Date());
+						if(eventTime > previousYearTime && event.type !== "transfer") {
+							if(id in chartData[eventDate]) {
+								event.type === "buy" ? chartData[eventDate][id] += amount : chartData[eventDate][id] -= amount;
+							} else {
+								event.type === "buy" ? chartData[eventDate][id] = amount : chartData[eventDate][id] = -amount;
+							}
+						}
+
+						if(eventCount === 0) {
+							firstEvent = events[key];
+						}
+
+						eventCount++;
+					}
+				});
+
+				showLoading(8000, "This might take a while... Don't touch anything.");
+				
+				getCoinMarketData(coinID, settings.currency, previousYear(new Date()), new Date()).then(data => {
+					hideLoading();
+					
+					showLoading(1400, "Generating chart...");
+
+					let keys = Object.keys(data);
+
+					let formattedPrices = {};
+
+					keys.map(coinID => {
+						if(!(coinID in formattedPrices)) {
+							formattedPrices[coinID] = {};
+						}
+
+						let prices = data[coinID].prices;
+
+						for(let i = 0; i < prices.length; i++) {
+							let time = prices[i][0];
+							let price = prices[i][1];
+							let date = formatDate(new Date(time)).replaceAll(" ", "");
+							formattedPrices[coinID][date] = price;
+						}
+					});
+
+					let dates = Object.keys(chartData);
+
+					let startDate;
+
+					for(let i = 0; i < dates.length; i++) {
+						let previousDay = chartData[dates[i - 1]];
+						let currentDay = chartData[dates[i]];
+
+						if(i - 1 >= 0 && Object.keys(previousDay).length > 1) {
+							Object.keys(previousDay).map(coin => {
+								if(coin !== "holdingsValue") {
+									if(empty(startDate)) {
+										startDate = i - 1;
+									}
+
+									if(previousDay[coin] < 0) {
+										chartData[dates[i - 1]][coin] = 0;
+									}
+
+									if(coin in currentDay) {
+										chartData[dates[i]][coin] = chartData[dates[i]][coin] + previousDay[coin];
+									} else {
+										chartData[dates[i]][coin] = previousDay[coin];
+									}
+								}
+							});
+						}
+
+						Object.keys(chartData[dates[i]]).map(coin => {
+							if(coin !== "holdingsValue") {
+								let value = chartData[dates[i]][coin] * formattedPrices[coin][dates[i]];
+								chartData[dates[i]].holdingsValue += value;
+							}
+						});
+					}
+
+					individualHoldingChartPopup(coinID, firstEvent, chartData, startDate);
+				}).catch(e => {
+					console.log(e);
+				});
+			});
 		}
 	}
 
@@ -3351,6 +3585,29 @@ document.addEventListener("DOMContentLoaded", async () => {
 		});
 	}
 
+	function getCoinPrice(id, date) {
+		return new Promise((resolve, reject) => {
+			try {
+				let xhr = new XMLHttpRequest();
+
+				xhr.addEventListener("readystatechange", () => {
+					if(xhr.readyState === XMLHttpRequest.DONE) {
+						if(validJSON(xhr.responseText)) {
+							resolve(JSON.parse(xhr.responseText));
+						} else {
+							reject("Invalid JSON.");
+						}
+					}
+				});
+
+				xhr.open("GET", "https://api.coingecko.com/api/v3/coins/" + id + "/history?date=" + date, true);
+				xhr.send();
+			} catch(e) {
+				reject(e);
+			}
+		});
+	}
+
 	function parseMarketData(data, currentTime, currentPrice) {
 		let prices = data.prices;
 
@@ -3536,6 +3793,24 @@ document.addEventListener("DOMContentLoaded", async () => {
 			return a[1] - b[1];
 		});
 
+		array.map(item => {
+			sorted[item[0]] = events[item[0]];
+		});
+
+		return sorted;
+	}
+
+	function sortActivityReverse(events) {
+		let sorted = {};
+		let array = [];
+		for(let event in events) {
+			array.push([event, events[event].time]);
+		}
+
+		array.sort(function(a, b) {
+			return a[1] - b[1];
+		});
+
 		array.reverse().map(item => {
 			sorted[item[0]] = events[item[0]];
 		});
@@ -3656,6 +3931,13 @@ function formatDateHuman(date) {
 	let month = date.getMonth() + 1;
 	let year = date.getFullYear();
 	return day + " / " + month + " / " + year;
+}
+
+function formatDateHyphenated(date) {
+	let day = date.getDate();
+	let month = date.getMonth() + 1;
+	let year = date.getFullYear();
+	return day + "-" + month + "-" + year;
 }
 
 function previousYear(date) {

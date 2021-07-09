@@ -1197,7 +1197,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 		if(initialPrice <= 0) {
 			let initialDate = new Date(Date.parse(firstEvent.date));
 			let coinPrice = await getCoinPrice(coinID, formatDateHyphenated(initialDate));
-			initialPrice = coinPrice.market_data.current_price[settings.currency];
+			initialPrice = coinPrice?.market_data?.current_price[settings.currency];
 		}
 
 		let initialValue = initialAmount * initialPrice;

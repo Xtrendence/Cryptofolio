@@ -1112,7 +1112,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 			labels.push(new Date(Date.parse(date)));
 			tooltips.push(formatDateHuman(new Date(Date.parse(date))));
-			values.push(chartData[date].holdingsValue);
+			
+			if(chartData[date].holdingsValue < 0) {
+				values.push(0);
+			} else {
+				values.push(chartData[date].holdingsValue);
+			}
 		}
 		
 		let currentValue = chartData[today].holdingsValue;
@@ -1216,7 +1221,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 			labels.push(new Date(Date.parse(date)));
 			tooltips.push(formatDateHuman(new Date(Date.parse(date))));
-			values.push(chartData[date].holdingsValue);
+			
+			if(chartData[date].holdingsValue < 0) {
+				values.push(0);
+			} else {
+				values.push(chartData[date].holdingsValue);
+			}
 		}
 		
 		let currentValue = chartData[today].holdingsValue;

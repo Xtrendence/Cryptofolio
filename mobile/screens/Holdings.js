@@ -5,11 +5,12 @@ import { StatusBar } from "expo-status-bar";
 import changeNavigationBarColor from "react-native-navigation-bar-color";
 import { Stop, LinearGradient as SVGLinearGradient } from "react-native-svg";
 import LinearGradient from "react-native-linear-gradient";
+import moment from "moment";
 import { globalColors, globalStyles } from "../styles/global";
 import { ThemeContext } from "../utils/theme";
 import { getCoinID } from "../utils/requests";
 import GradientChart from "../components/GradientChart";
-import { empty, separateThousands, abbreviateNumber, epoch, capitalizeFirstLetter, wait, currencies, validJSON, previousYear, formatDate, formatDateHuman } from "../utils/utils";
+import { empty, separateThousands, abbreviateNumber, epoch, capitalizeFirstLetter, wait, currencies, validJSON, previousYear, formatDate, formatDateHuman, formatDateHyphenated } from "../utils/utils";
 
 const screenWidth = Dimensions.get("screen").width;
 const screenHeight = Dimensions.get("screen").height;
@@ -246,13 +247,15 @@ export default function Holdings({ navigation }) {
 		setModal(false);
 	}
 
-	function openModal(transactionsAffectHoldings, action, id, symbol, amount) {
+	function openModal(transactionsAffectHoldings, action, id, symbol, amount, value) {
 		if(transactionsAffectHoldings === "disabled") {
 			setAction(action);
 			setCoinID(id);
 			setCoinSymbol(symbol);
 			setCoinAmount(amount);
 			setModal(true);
+		} else if(transactionsAffectHoldings === "override") {
+			openIndividualChartModal(id.toLowerCase(), amount, value);
 		}
 	}
 
@@ -271,6 +274,148 @@ export default function Holdings({ navigation }) {
 		}
 
 		if(transactionsAffectHoldings === "override") {
+			try {
+				setChartLabels();
+				setChartDataset();
+				setChartStats();
+
+				setChartModalMessage("Loading... This might take a while. Don't touch anything.");
+				setChartModal(true);
+
+				let currency = await AsyncStorage.getItem("currency");
+				if(empty(currency)) {
+					currency = "usd";
+				}
+
+				let chartData = await getChartData(currency);
+				let startDate = chartData.startDate;
+				chartData = chartData.chartData;
+
+				let today = formatDate(new Date()).replaceAll(" ", "");
+
+				delete chartData[today];
+
+				if(!(today in chartData) || empty(chartData[today]) || isNaN(chartData[today].holdingsValue)) {
+					if(!empty(holdingsCache)) {
+						chartData[today] = { holdingsValue:0 };
+
+						let keys = Object.keys(holdingsCache);
+
+						keys.map(id => {
+							chartData[today][id] = parseFloat(holdingsCache[id].amount);
+							chartData[today].holdingsValue += parseFloat(holdingsCache[id].value);
+						});
+					}
+				}
+
+				let labels = [];
+				let values = [];
+
+				let dates = Object.keys(chartData);
+			
+				for(let i = startDate; i < dates.length; i++) {
+					let date = dates[i];
+
+					labels.push(new Date(Date.parse(date.replaceAll("/", "-"))));
+
+					if(chartData[date].holdingsValue < 0) {
+						values.push(0);
+					} else {
+						values.push(chartData[date].holdingsValue);
+					}
+				}
+
+				labels = parseChartLabels(labels);
+
+				setChartLabels(labels);
+				setChartDataset(values);
+			
+				let currentValue = chartData[today].holdingsValue;
+
+				let value0d = values.length >= 1 ? values[values.length - 1] : "-";
+				let value1d = values.length >= 2 ? values[values.length - 2] : "-";
+				let value1w = values.length >= 7 ? values[values.length - 8] : "-";
+				let value1m = values.length >= 30 ? values[values.length - 31] : "-";
+				let value3m = values.length >= 90 ? values[values.length - 91] : "-";
+				let value6m = values.length >= 180 ? values[values.length - 181] : "-";
+				let value1y = values.length >= 365 ? values[values.length - 366] : "-";
+
+				let stats = [];
+
+				if(!isNaN(value0d) && value0d > 1) {
+					value0d = separateThousands(value0d.toFixed(2));
+					stats.push(
+						<View style={[styles.chartModalDescriptionWrapper, styles[`chartModalDescriptionWrapper${theme}`]]} key="value0d">
+							<Text style={[styles.chartModalDescription, styles[`chartModalDescription${theme}`]]}>Current ({currencies[currency]}): {value0d}</Text>
+						</View>
+					);
+				}
+				if(!isNaN(value1d) && value1d > 1) {
+					let style = (currentValue - value1d) === 0 ? "" : (currentValue - value1d) > 0 ? "Positive" : "Negative";
+					value1d = separateThousands((currentValue - value1d).toFixed(2));
+					stats.push(
+						<View style={[styles.chartModalDescriptionWrapper, styles[`chartModalDescriptionWrapper${theme}`]]} key="value1d">
+							<Text style={[styles.chartModalDescription, styles[`chartModalDescription${theme}`], styles[`chartModalDescription${style + theme}`]]}>1D ({currencies[currency]}): {value1d}</Text>
+						</View>
+					);
+				}
+				if(!isNaN(value1w) && value1w > 1) {
+					let style = (currentValue - value1w) === 0 ? "" : (currentValue - value1w) > 0 ? "Positive" : "Negative";
+					value1w = separateThousands((currentValue - value1w).toFixed(2));
+					stats.push(
+						<View style={[styles.chartModalDescriptionWrapper, styles[`chartModalDescriptionWrapper${theme}`]]} key="value1w">
+							<Text style={[styles.chartModalDescription, styles[`chartModalDescription${theme}`], styles[`chartModalDescription${style + theme}`]]}>1W ({currencies[currency]}): {value1w}</Text>
+						</View>
+					);
+				}
+				if(!isNaN(value1m) && value1m > 1) {
+					let style = (currentValue - value1m) === 0 ? "" : (currentValue - value1m) > 0 ? "Positive" : "Negative";
+					value1m = separateThousands((currentValue - value1m).toFixed(2));
+					stats.push(
+						<View style={[styles.chartModalDescriptionWrapper, styles[`chartModalDescriptionWrapper${theme}`]]} key="value1m">
+							<Text style={[styles.chartModalDescription, styles[`chartModalDescription${theme}`], styles[`chartModalDescription${style + theme}`]]}>1M ({currencies[currency]}): {value1m}</Text>
+						</View>
+					);
+				}
+				if(!isNaN(value3m) && value3m > 1) {
+					let style = (currentValue - value3m) === 0 ? "" : (currentValue - value3m) > 0 ? "Positive" : "Negative";
+					value3m = separateThousands((currentValue - value3m).toFixed(2));
+					stats.push(
+						<View style={[styles.chartModalDescriptionWrapper, styles[`chartModalDescriptionWrapper${theme}`]]} key="value3m">
+							<Text style={[styles.chartModalDescription, styles[`chartModalDescription${theme}`], styles[`chartModalDescription${style + theme}`]]}>3M ({currencies[currency]}): {value3m}</Text>
+						</View>
+					);
+				}
+				if(!isNaN(value6m) && value6m > 1) {
+					let style = (currentValue - value6m) === 0 ? "" : (currentValue - value6m) > 0 ? "Positive" : "Negative";
+					value6m = separateThousands((currentValue - value6m).toFixed(2));
+					stats.push(
+						<View style={[styles.chartModalDescriptionWrapper, styles[`chartModalDescriptionWrapper${theme}`]]} key="value6m">
+							<Text style={[styles.chartModalDescription, styles[`chartModalDescription${theme}`], styles[`chartModalDescription${style + theme}`]]}>6M ({currencies[currency]}): {value6m}</Text>
+						</View>
+					);
+				}
+				if(!isNaN(value1y) && value1y > 1) {
+					let style = (currentValue - value1y) === 0 ? "" : (currentValue - value1y) > 0 ? "Positive" : "Negative";
+					value1y = separateThousands((currentValue - value1y).toFixed(2));
+					stats.push(
+						<View style={[styles.chartModalDescriptionWrapper, styles[`chartModalDescriptionWrapper${theme}`]]} key="value1y">
+							<Text style={[styles.chartModalDescription, styles[`chartModalDescription${theme}`], styles[`chartModalDescription${style + theme}`]]}>1Y ({currencies[currency]}): {value1y}</Text>
+						</View>
+					);
+				}
+
+				setChartStats(stats);
+				setChartModalMessage();
+			} catch(error) {
+				console.log(error);
+				setChartModalMessage("Failed to process data. Please try again.");
+			}
+		}
+	}
+
+	async function openIndividualChartModal(coinID, amount, value) {
+		try {
 			setChartLabels();
 			setChartDataset();
 			setChartStats();
@@ -283,7 +428,8 @@ export default function Holdings({ navigation }) {
 				currency = "usd";
 			}
 
-			let chartData = await getChartData(currency);
+			let chartData = await getIndividualChartData(coinID, currency);
+			let firstEvent = chartData.firstEvent;
 			let startDate = chartData.startDate;
 			chartData = chartData.chartData;
 
@@ -292,20 +438,24 @@ export default function Holdings({ navigation }) {
 			delete chartData[today];
 
 			if(!(today in chartData) || empty(chartData[today]) || isNaN(chartData[today].holdingsValue)) {
-				if(!empty(holdingsCache)) {
-					chartData[today] = { holdingsValue:0 };
+				chartData[today] = { holdingsValue:0 };
 
-					let keys = Object.keys(holdingsCache);
-
-					keys.map(id => {
-						chartData[today][id] = parseFloat(holdingsCache[id].amount);
-						chartData[today].holdingsValue += parseFloat(holdingsCache[id].value);
-					});
-				}
+				chartData[today][coinID] = parseFloat(amount);
+				chartData[today].holdingsValue += parseFloat(value);
 			}
 
+			let initialAmount = parseFloat(firstEvent.amount);
+			let initialPrice = parseFloat(firstEvent.price);
+			if(initialPrice <= 0) {
+				let initialDate = moment(firstEvent.date.replaceAll(" / ", "-").replaceAll("/", "-")).format("DD-MM-YYYY");
+				let coinPrice = await getCoinPrice(coinID, initialDate);
+				initialPrice = coinPrice?.market_data?.current_price[currency];
+			}
+
+			let initialValue = initialAmount * initialPrice;
+
 			let labels = [];
-			let values = [];
+			let values = [initialValue];
 
 			let dates = Object.keys(chartData);
 		
@@ -313,7 +463,12 @@ export default function Holdings({ navigation }) {
 				let date = dates[i];
 
 				labels.push(new Date(Date.parse(date.replaceAll("/", "-"))));
-				values.push(chartData[date].holdingsValue);
+
+				if(chartData[date]?.holdingsValue < 0) {
+					values.push(0);
+				} else {
+					values.push(chartData[date]?.holdingsValue);
+				}
 			}
 
 			labels = parseChartLabels(labels);
@@ -321,7 +476,7 @@ export default function Holdings({ navigation }) {
 			setChartLabels(labels);
 			setChartDataset(values);
 		
-			let currentValue = chartData[today].holdingsValue;
+			let currentValue = chartData[today]?.holdingsValue;
 
 			let value0d = values.length >= 1 ? values[values.length - 1] : "-";
 			let value1d = values.length >= 2 ? values[values.length - 2] : "-";
@@ -330,6 +485,7 @@ export default function Holdings({ navigation }) {
 			let value3m = values.length >= 90 ? values[values.length - 91] : "-";
 			let value6m = values.length >= 180 ? values[values.length - 181] : "-";
 			let value1y = values.length >= 365 ? values[values.length - 366] : "-";
+			let valueAll = values[0];
 
 			let stats = [];
 
@@ -395,9 +551,21 @@ export default function Holdings({ navigation }) {
 					</View>
 				);
 			}
+			if(!isNaN(valueAll) && valueAll > 1) {
+				let style = (currentValue - valueAll) === 0 ? "" : (currentValue - valueAll) > 0 ? "Positive" : "Negative";
+				valueAll = separateThousands((currentValue - valueAll).toFixed(2));
+				stats.push(
+					<View style={[styles.chartModalDescriptionWrapper, styles[`chartModalDescriptionWrapper${theme}`]]} key="value1y">
+						<Text style={[styles.chartModalDescription, styles[`chartModalDescription${theme}`], styles[`chartModalDescription${style + theme}`]]}>All ({currencies[currency]}): {valueAll}</Text>
+					</View>
+				);
+			}
 
 			setChartStats(stats);
 			setChartModalMessage();
+		} catch(error) {
+			console.log(error);
+			setChartModalMessage("Failed to process data. Please try again.");
 		}
 	}
 
@@ -534,12 +702,149 @@ export default function Holdings({ navigation }) {
 		});
 	}
 
+	async function getIndividualChartData(coinID, currency) {
+		return new Promise((resolve, reject) => {
+			let firstEvent = null;
+
+			getActivity().then(events => {
+				events = sortActivity(events);
+
+				let chartData = {};
+
+				let counter = 0;
+				let startDate = previousYear(new Date()).getTime() / 1000;
+				for(let i = 0; i < 366; i++) {
+					let time = (startDate + counter) * 1000;
+					let date = formatDate(new Date(time)).replaceAll(" ", "");
+					chartData[date] = { holdingsValue:0 };
+					counter += 86400;
+				}
+
+				let eventCount = 0;
+				let keys = Object.keys(events);
+
+				keys.map(key => {
+					let event = events[key];
+					let id = event.id;
+					if(coinID === id) {
+						let amount = parseFloat(event.amount);
+						let eventTime = parseInt(event.time) * 1000;
+						let eventDate = formatDate(new Date(eventTime)).replaceAll(" ", "");
+						let previousYearTime = previousYear(new Date());
+						if(eventTime > previousYearTime && event.type !== "transfer") {
+							if(id in chartData[eventDate]) {
+								event.type === "buy" ? chartData[eventDate][id] += amount : chartData[eventDate][id] -= amount;
+							} else {
+								event.type === "buy" ? chartData[eventDate][id] = amount : chartData[eventDate][id] = -amount;
+							}
+						}
+
+						if(eventCount === 0) {
+							firstEvent = events[key];
+						}
+
+						eventCount++;
+					}
+				});
+				
+				getCoinMarketData(coinID, currency, previousYear(new Date()), new Date()).then(data => {
+					setChartSegments(4);
+
+					let keys = Object.keys(data);
+
+					let formattedPrices = {};
+
+					keys.map(coinID => {
+						if(!(coinID in formattedPrices)) {
+							formattedPrices[coinID] = {};
+						}
+
+						let prices = data[coinID].prices;
+
+						for(let i = 0; i < prices.length; i++) {
+							let time = prices[i][0];
+							let price = prices[i][1];
+							let date = formatDate(new Date(time)).replaceAll(" ", "");
+							formattedPrices[coinID][date] = price;
+						}
+					});
+
+					let dates = Object.keys(chartData);
+
+					startDate = null;
+
+					for(let i = 0; i < dates.length; i++) {
+						let previousDay = chartData[dates[i - 1]];
+						let currentDay = chartData[dates[i]];
+
+						if(i - 1 >= 0 && Object.keys(previousDay).length > 1) {
+							Object.keys(previousDay).map(coin => {
+								if(coin !== "holdingsValue") {
+									if(empty(startDate)) {
+										startDate = i - 1;
+									}
+
+									if(previousDay[coin] < 0) {
+										chartData[dates[i - 1]][coin] = 0;
+									}
+
+									if(coin in currentDay) {
+										chartData[dates[i]][coin] = chartData[dates[i]][coin] + previousDay[coin];
+									} else {
+										chartData[dates[i]][coin] = previousDay[coin];
+									}
+								}
+							});
+						}
+
+						Object.keys(chartData[dates[i]]).map(coin => {
+							if(coin !== "holdingsValue") {
+								let value = chartData[dates[i]][coin] * formattedPrices[coin][dates[i]];
+								chartData[dates[i]].holdingsValue += value;
+							}
+						});
+					}
+
+					resolve({ chartData:chartData, startDate:startDate, firstEvent:firstEvent });
+				}).catch(error => {
+					console.log(error);
+					reject(error);
+				});
+			});
+		});
+	}
+
 	function getCoinMarketData(ids, currency, from, to) {
 		return new Promise(async (resolve, reject) => {
 			let api = await AsyncStorage.getItem("api");
 			let token = await AsyncStorage.getItem("token");
 
 			let endpoint = api + "historical/read.php?token=" + token + "&ids=" + ids + "&currency=" + currency + "&from=" + new Date(Date.parse(from)).getTime() / 1000 + "&to=" + new Date(Date.parse(to)).getTime() / 1000;
+
+			fetch(endpoint, {
+				method: "GET",
+				headers: {
+					Accept: "application/json", "Content-Type": "application/json"
+				}
+			})
+			.then((json) => {
+				return json.json();
+			})
+			.then(async (response) => {
+				resolve(response);
+			}).catch(error => {
+				console.log(arguments.callee.name + " - " + error);
+				reject(error);
+			});
+		});
+	}
+
+	function getCoinPrice(id, date) {
+		return new Promise(async (resolve, reject) => {
+			let api = await AsyncStorage.getItem("api");
+			let token = await AsyncStorage.getItem("token");
+
+			let endpoint = "https://api.coingecko.com/api/v3/coins/" + id + "/history?date=" + date;
 
 			fetch(endpoint, {
 				method: "GET",
@@ -771,6 +1076,8 @@ export default function Holdings({ navigation }) {
 					});
 				}
 
+				let holdingsObject = {};
+
 				parseHoldings(coins).then(async holdings => {
 					let data = [];
 
@@ -786,8 +1093,6 @@ export default function Holdings({ navigation }) {
 					let rank = 0;
 
 					let mixedValue = 0;
-
-					let holdingsObject = {};
 
 					Object.keys(holdings).map(holding => {
 						rank += 1;
@@ -839,7 +1144,7 @@ export default function Holdings({ navigation }) {
 
 						if(value !== 0) {
 							data.push(
-								<TouchableOpacity onPress={() => { openModal(transactionsAffectHoldings, "update", capitalizeFirstLetter(holding), symbol.toUpperCase(), amount.toString())}} key={epoch() + holding}>
+								<TouchableOpacity onPress={() => { openModal(transactionsAffectHoldings, "update", capitalizeFirstLetter(holding), symbol.toUpperCase(), amount.toString(), coin.value)}} key={epoch() + holding}>
 									<View style={[styles.row, rank % 2 ? {...styles.rowOdd, ...styles[`rowOdd${theme}`]} : null, styles[highlightRow]]}>
 										<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellRank, styles[highlightText]]} ellipsizeMode="tail">{rank}</Text>
 										<Image style={styles.cellImage} source={{uri:icon}}/>
@@ -1015,6 +1320,24 @@ export default function Holdings({ navigation }) {
 			} else if(type === "buy") {
 				sorted[id].amount = parseFloat(sorted[id].amount) + amount;
 			}
+		});
+
+		return sorted;
+	}
+
+	function sortActivity(events) {
+		let sorted = {};
+		let array = [];
+		for(let event in events) {
+			array.push([event, events[event].time]);
+		}
+
+		array.sort(function(a, b) {
+			return a[1] - b[1];
+		});
+
+		array.map(item => {
+			sorted[item[0]] = events[item[0]];
 		});
 
 		return sorted;

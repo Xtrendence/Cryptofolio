@@ -815,6 +815,8 @@ export default function Holdings({ navigation }) {
 	}
 
 	function getCoinMarketData(ids, currency, from, to) {
+		console.log("Holdings - Getting Coin Market Data - " + epoch());
+
 		return new Promise(async (resolve, reject) => {
 			let api = await AsyncStorage.getItem("api");
 			let token = await AsyncStorage.getItem("token");
@@ -840,10 +842,9 @@ export default function Holdings({ navigation }) {
 	}
 
 	function getCoinPrice(id, date) {
-		return new Promise(async (resolve, reject) => {
-			let api = await AsyncStorage.getItem("api");
-			let token = await AsyncStorage.getItem("token");
+		console.log("Holdings - Getting Coin Price - " + epoch());
 
+		return new Promise(async (resolve, reject) => {
 			let endpoint = "https://api.coingecko.com/api/v3/coins/" + id + "/history?date=" + date;
 
 			fetch(endpoint, {
@@ -1684,6 +1685,7 @@ const styles = StyleSheet.create({
 		height:60,
 	},
 	cardText: {
+		width:screenWidth - 40,
 		lineHeight:56,
 		paddingBottom:4,
 		fontSize:20,

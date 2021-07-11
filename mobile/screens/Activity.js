@@ -716,6 +716,7 @@ const styles = StyleSheet.create({
 		height:60,
 	},
 	cardText: {
+		width:screenWidth - 40,
 		lineHeight:56,
 		paddingBottom:4,
 		fontSize:20,

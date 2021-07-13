@@ -1245,43 +1245,50 @@ document.addEventListener("DOMContentLoaded", async () => {
 		}
 		if(!isNaN(value1d) && value1d > 1) {
 			let spanClass = (currentValue - value1d) === 0 ? "" : (currentValue - value1d) > 0 ? "positive" : "negative";
+			let percentage1d = (((currentValue - value1d) / currentValue) * 100).toFixed(2);
 			value1d = separateThousands((currentValue - value1d).toFixed(2));
-			stats += '<span class="' + spanClass + '">1D (' + currencies[settings.currency] + '): ' + value1d + '</span>';
+			stats += '<span class="' + spanClass + '">1D (' + currencies[settings.currency] + '): ' + value1d + ' (' + percentage1d + '%)</span>';
 		}
 		if(!isNaN(value1w) && value1w > 1) {
 			let spanClass = (currentValue - value1w) === 0 ? "" : (currentValue - value1w) > 0 ? "positive" : "negative";
+			let percentage1w = (((currentValue - value1w) / currentValue) * 100).toFixed(2);
 			value1w = separateThousands((currentValue - value1w).toFixed(2));
-			stats += '<span class="' + spanClass + '">1W (' + currencies[settings.currency] + '): ' + value1w + '</span>';
+			stats += '<span class="' + spanClass + '">1W (' + currencies[settings.currency] + '): ' + value1w + ' (' + percentage1w + '%)</span>';
 		}
 		if(!isNaN(value1m) && value1m > 1) {
 			let spanClass = (currentValue - value1m) === 0 ? "" : (currentValue - value1m) > 0 ? "positive" : "negative";
+			let percentage1m = (((currentValue - value1m) / currentValue) * 100).toFixed(2);
 			value1m = separateThousands((currentValue - value1m).toFixed(2));
-			stats += '<span class="' + spanClass + '">1M (' + currencies[settings.currency] + '): ' + value1m + '</span>';
+			stats += '<span class="' + spanClass + '">1M (' + currencies[settings.currency] + '): ' + value1m + ' (' + percentage1m + '%)</span>';
 		}
 		if(!isNaN(value3m) && value3m > 1) {
 			let spanClass = (currentValue - value3m) === 0 ? "" : (currentValue - value3m) > 0 ? "positive" : "negative";
+			let percentage3m = (((currentValue - value3m) / currentValue) * 100).toFixed(2);
 			value3m = separateThousands((currentValue - value3m).toFixed(2));
-			stats += '<span class="' + spanClass + '">3M (' + currencies[settings.currency] + '): ' + value3m + '</span>';
+			stats += '<span class="' + spanClass + '">3M (' + currencies[settings.currency] + '): ' + value3m + ' (' + percentage3m + '%)</span>';
 		}
 		if(!isNaN(value6m) && value6m > 1) {
 			let spanClass = (currentValue - value6m) === 0 ? "" : (currentValue - value6m) > 0 ? "positive" : "negative";
+			let percentage6m = (((currentValue - value6m) / currentValue) * 100).toFixed(2);
 			value6m = separateThousands((currentValue - value6m).toFixed(2));
-			stats += '<span class="' + spanClass + '">6M (' + currencies[settings.currency] + '): ' + value6m + '</span>';
+			stats += '<span class="' + spanClass + '">6M (' + currencies[settings.currency] + '): ' + value6m + ' (' + percentage6m + '%)</span>';
 		}
 		if(!isNaN(value1y) && value1y > 1) {
 			let spanClass = (currentValue - value1y) === 0 ? "" : (currentValue - value1y) > 0 ? "positive" : "negative";
+			let percentage1y = (((currentValue - value1y) / currentValue) * 100).toFixed(2);
 			value1y = separateThousands((currentValue - value1y).toFixed(2));
-			stats += '<span class="' + spanClass + '">1Y (' + currencies[settings.currency] + '): ' + value1y + '</span>';
+			stats += '<span class="' + spanClass + '">1Y (' + currencies[settings.currency] + '): ' + value1y + ' (' + percentage1y + '%)</span>';
 		}
 		if(!isNaN(valueAll) && valueAll > 1) {
 			let spanClass = (currentValue - valueAll) === 0 ? "" : (currentValue - valueAll) > 0 ? "positive" : "negative";
+			let percentageAll = (((currentValue - valueAll) / currentValue) * 100).toFixed(2);
 			valueAll = separateThousands((currentValue - valueAll).toFixed(2));
-			stats += '<span class="' + spanClass + '">All (' + currencies[settings.currency] + '): ' + valueAll + '</span>';
+			stats += '<span class="' + spanClass + '">All (' + currencies[settings.currency] + '): ' + valueAll + ' (' + percentageAll + '%)</span>';
 		}
 
 		let html = '<div class="holdings-popup-wrapper"><div class="holdings-chart-wrapper"></div><div class="stats-wrapper noselect">' + stats + '</div><button class="reject" id="popup-dismiss">Back</button></div>';
 
-		popup(firstEvent.symbol + " - Holding Performance", html, "calc(100% - 40px)", "calc(100% - 40px)", { delay:1500, closeIcon:true });
+		popup(firstEvent.symbol.toUpperCase() + " - Holding Performance", html, "calc(100% - 40px)", "calc(100% - 40px)", { delay:1500, closeIcon:true });
 
 		generateHoldingsChart(document.getElementsByClassName("holdings-chart-wrapper")[0], "Value", labels, tooltips, values);
 

@@ -500,64 +500,71 @@ export default function Holdings({ navigation }) {
 			}
 			if(!isNaN(value1d) && value1d > 1) {
 				let style = (currentValue - value1d) === 0 ? "" : (currentValue - value1d) > 0 ? "Positive" : "Negative";
+				let percentage1d = (((currentValue - value1d) / currentValue) * 100).toFixed(2);
 				value1d = separateThousands((currentValue - value1d).toFixed(2));
 				stats.push(
 					<View style={[styles.chartModalDescriptionWrapper, styles[`chartModalDescriptionWrapper${theme}`]]} key="value1d">
-						<Text style={[styles.chartModalDescription, styles[`chartModalDescription${theme}`], styles[`chartModalDescription${style + theme}`]]}>1D ({currencies[currency]}): {value1d}</Text>
+						<Text style={[styles.chartModalDescription, styles[`chartModalDescription${theme}`], styles[`chartModalDescription${style + theme}`]]}>1D ({currencies[currency]}): {value1d} ({percentage1d}%)</Text>
 					</View>
 				);
 			}
 			if(!isNaN(value1w) && value1w > 1) {
 				let style = (currentValue - value1w) === 0 ? "" : (currentValue - value1w) > 0 ? "Positive" : "Negative";
+				let percentage1w = (((currentValue - value1w) / currentValue) * 100).toFixed(2);
 				value1w = separateThousands((currentValue - value1w).toFixed(2));
 				stats.push(
 					<View style={[styles.chartModalDescriptionWrapper, styles[`chartModalDescriptionWrapper${theme}`]]} key="value1w">
-						<Text style={[styles.chartModalDescription, styles[`chartModalDescription${theme}`], styles[`chartModalDescription${style + theme}`]]}>1W ({currencies[currency]}): {value1w}</Text>
+						<Text style={[styles.chartModalDescription, styles[`chartModalDescription${theme}`], styles[`chartModalDescription${style + theme}`]]}>1W ({currencies[currency]}): {value1w} ({percentage1w}%)</Text>
 					</View>
 				);
 			}
 			if(!isNaN(value1m) && value1m > 1) {
 				let style = (currentValue - value1m) === 0 ? "" : (currentValue - value1m) > 0 ? "Positive" : "Negative";
+				let percentage1m = (((currentValue - value1m) / currentValue) * 100).toFixed(2);
 				value1m = separateThousands((currentValue - value1m).toFixed(2));
 				stats.push(
 					<View style={[styles.chartModalDescriptionWrapper, styles[`chartModalDescriptionWrapper${theme}`]]} key="value1m">
-						<Text style={[styles.chartModalDescription, styles[`chartModalDescription${theme}`], styles[`chartModalDescription${style + theme}`]]}>1M ({currencies[currency]}): {value1m}</Text>
+						<Text style={[styles.chartModalDescription, styles[`chartModalDescription${theme}`], styles[`chartModalDescription${style + theme}`]]}>1M ({currencies[currency]}): {value1m} ({percentage1m}%)</Text>
 					</View>
 				);
 			}
 			if(!isNaN(value3m) && value3m > 1) {
 				let style = (currentValue - value3m) === 0 ? "" : (currentValue - value3m) > 0 ? "Positive" : "Negative";
+				let percentage3m = (((currentValue - value3m) / currentValue) * 100).toFixed(2);
 				value3m = separateThousands((currentValue - value3m).toFixed(2));
 				stats.push(
 					<View style={[styles.chartModalDescriptionWrapper, styles[`chartModalDescriptionWrapper${theme}`]]} key="value3m">
-						<Text style={[styles.chartModalDescription, styles[`chartModalDescription${theme}`], styles[`chartModalDescription${style + theme}`]]}>3M ({currencies[currency]}): {value3m}</Text>
+						<Text style={[styles.chartModalDescription, styles[`chartModalDescription${theme}`], styles[`chartModalDescription${style + theme}`]]}>3M ({currencies[currency]}): {value3m} ({percentage3m}%)</Text>
 					</View>
 				);
 			}
 			if(!isNaN(value6m) && value6m > 1) {
 				let style = (currentValue - value6m) === 0 ? "" : (currentValue - value6m) > 0 ? "Positive" : "Negative";
+				let percentage6m = (((currentValue - value6m) / currentValue) * 100).toFixed(2);
 				value6m = separateThousands((currentValue - value6m).toFixed(2));
 				stats.push(
 					<View style={[styles.chartModalDescriptionWrapper, styles[`chartModalDescriptionWrapper${theme}`]]} key="value6m">
-						<Text style={[styles.chartModalDescription, styles[`chartModalDescription${theme}`], styles[`chartModalDescription${style + theme}`]]}>6M ({currencies[currency]}): {value6m}</Text>
+						<Text style={[styles.chartModalDescription, styles[`chartModalDescription${theme}`], styles[`chartModalDescription${style + theme}`]]}>6M ({currencies[currency]}): {value6m} ({percentage6m}%)</Text>
 					</View>
 				);
 			}
 			if(!isNaN(value1y) && value1y > 1) {
 				let style = (currentValue - value1y) === 0 ? "" : (currentValue - value1y) > 0 ? "Positive" : "Negative";
+				let percentage1y = (((currentValue - value1y) / currentValue) * 100).toFixed(2);
 				value1y = separateThousands((currentValue - value1y).toFixed(2));
 				stats.push(
 					<View style={[styles.chartModalDescriptionWrapper, styles[`chartModalDescriptionWrapper${theme}`]]} key="value1y">
-						<Text style={[styles.chartModalDescription, styles[`chartModalDescription${theme}`], styles[`chartModalDescription${style + theme}`]]}>1Y ({currencies[currency]}): {value1y}</Text>
+						<Text style={[styles.chartModalDescription, styles[`chartModalDescription${theme}`], styles[`chartModalDescription${style + theme}`]]}>1Y ({currencies[currency]}): {value1y} ({percentage1y}%)</Text>
 					</View>
 				);
 			}
 			if(!isNaN(valueAll) && valueAll > 1) {
 				let style = (currentValue - valueAll) === 0 ? "" : (currentValue - valueAll) > 0 ? "Positive" : "Negative";
+				let percentageAll = (((currentValue - valueAll) / currentValue) * 100).toFixed(2);
 				valueAll = separateThousands((currentValue - valueAll).toFixed(2));
 				stats.push(
 					<View style={[styles.chartModalDescriptionWrapper, styles[`chartModalDescriptionWrapper${theme}`]]} key="value1y">
-						<Text style={[styles.chartModalDescription, styles[`chartModalDescription${theme}`], styles[`chartModalDescription${style + theme}`]]}>All ({currencies[currency]}): {valueAll}</Text>
+						<Text style={[styles.chartModalDescription, styles[`chartModalDescription${theme}`], styles[`chartModalDescription${style + theme}`]]}>All ({currencies[currency]}): {valueAll} ({percentageAll}%)</Text>
 					</View>
 				);
 			}

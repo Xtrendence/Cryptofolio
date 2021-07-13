@@ -465,7 +465,11 @@ export default function Dashboard({ navigation }) {
 					}
 			
 					if(type === "sell") {
-						sorted[id].amount = parseFloat(sorted[id].amount) - amount;
+						let subtracted = parseFloat(sorted[id].amount) - amount;
+						if(subtracted < 0) {
+							subtracted = 0;
+						}
+						sorted[id].amount = subtracted;
 					} else if(type === "buy") {
 						sorted[id].amount = parseFloat(sorted[id].amount) + amount;
 					}

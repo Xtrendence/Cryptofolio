@@ -4,6 +4,7 @@
 		public $holdingsFile = "../data/holdings.json";
 		public $activityFile = "../data/activity.json";
 		public $settingsFile = "../data/settings.json";
+		public $watchlistFile = "../data/watchlist.json";
 		public $coinsFile = "../data/coins.json";
 
 		function verifyPassword($password) {
@@ -51,6 +52,10 @@
 
 			if(!file_exists($this->activityFile)) {
 				file_put_contents($this->activityFile, "{}");
+			}
+
+			if(!file_exists($this->watchlistFile)) {
+				file_put_contents($this->watchlistFile, "{}");
 			}
 		}
 

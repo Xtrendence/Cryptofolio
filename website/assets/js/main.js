@@ -2705,6 +2705,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 				settings.highlightPriceChange = empty(localStorage.getItem("highlightPriceChange")) ? "disabled" : localStorage.getItem("highlightPriceChange");
 
+				settings.dashboardWatchlist = empty(localStorage.getItem("dashboardWatchlist")) ? "disabled" : localStorage.getItem("dashboardWatchlist");
+
 				settings.defaultPage = empty(localStorage.getItem("defaultPage")) ? "market" : localStorage.getItem("defaultPage");
 
 				switchTheme(settings.theme);

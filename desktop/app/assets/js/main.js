@@ -7,7 +7,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 	let api = await Storage.getItem("api");
 	let sessionToken = await Storage.getItem("token");
 
-	// Begin Changeable Variables
 	const updateInterval = 30000; // Default: 30000
 	
 	const Notify = new XNotify("BottomRight");
@@ -705,10 +704,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 				});
 			} else {
 				if(divThemeToggle.classList.contains("active")) {
-					// Switch to dark mode.
 					switchTheme("dark");
 				} else {
-					// Switch to light mode.
 					switchTheme("light");
 				}
 
@@ -3997,7 +3994,6 @@ function validJSON(json) {
 	return false;
 }
 
-// Separate number by thousands.
 function separateThousands(number) {
 	let parts = number.toString().split(".");
 	parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");

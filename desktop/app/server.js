@@ -50,7 +50,7 @@ app.on("ready", function() {
 		}
 	});
 
-	// macOS apps behave differently that Windows when it comes to closing an application.
+	// macOS apps behave differently than Windows when it comes to closing an application.
 	if(process.platform === "darwin") {
 		let quit = true;
 

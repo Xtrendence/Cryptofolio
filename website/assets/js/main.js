@@ -1,5 +1,4 @@
 document.addEventListener("DOMContentLoaded", async () => {
-	// Begin Changeable Variables
 	const api = "../api/"; // Default: "../api/"
 	const updateInterval = 30000; // Default: 30000
 	
@@ -684,10 +683,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 				});
 			} else {
 				if(divThemeToggle.classList.contains("active")) {
-					// Switch to dark mode.
 					switchTheme("dark");
 				} else {
-					// Switch to light mode.
 					switchTheme("light");
 				}
 
@@ -3957,7 +3954,6 @@ function validJSON(json) {
 	return false;
 }
 
-// Separate number by thousands.
 function separateThousands(number) {
 	let parts = number.toString().split(".");
 	parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");

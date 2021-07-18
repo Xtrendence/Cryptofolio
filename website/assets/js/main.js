@@ -437,7 +437,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 					}
 				}
 				
-				getCoinMarketData(ids, settings.currency, previousYear(new Date()), new Date()).then(data => {
+				getCoinHistoricalMarketData(ids, settings.currency, previousYear(new Date()), new Date()).then(data => {
 					hideLoading();
 					
 					showLoading(1400, "Generating chart...");
@@ -1039,7 +1039,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 		showLoading(10000);
 
 		getCoinInfo(coinID).then(info => {
-			getCoinMarketData(coinID, settings.currency, previousYear(new Date()), new Date()).then(data => {
+			getCoinHistoricalMarketData(coinID, settings.currency, previousYear(new Date()), new Date()).then(data => {
 				data = parseMarketData(data[coinID], new Date().getTime(), currentPrice);
 
 				if(empty(info.description.en)) {
@@ -1089,6 +1089,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 								});
 								buttonWatchlist.classList.remove("active");
 							}
+							clearDashboard();
+							listDashboard();
 						}).catch(e => {
 							Notify.error({
 								title:"Error",
@@ -1110,6 +1112,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 								});
 								buttonWatchlist.classList.add("active");
 							}
+							clearDashboard();
+							listDashboard();
 						}).catch(e => {
 							Notify.error({
 								title:"Error",
@@ -1702,6 +1706,78 @@ document.addEventListener("DOMContentLoaded", async () => {
 		spanHoldingsTotalValue.textContent = "...";
 	}
 
+	async function populateDashboardMarketList(coins) {
+		if(divDashboardMarketList.getElementsByClassName("coin-wrapper loading").length > 0) {
+			divDashboardMarketList.getElementsByClassName("coin-wrapper loading")[0].remove();
+			divDashboardMarketList.classList.remove("loading");
+		}
+
+		let keys = Object.keys(coins);
+		keys.sort((a, b) => {
+			return coins[keys[b]].market_cap - coins[keys[a]].market_cap;
+		});
+
+		keys.map(key => {
+			let coin = coins[key];
+			let price = parseFloat(coin.current_price);
+
+			if(price > 1) {
+				price = separateThousands(price);
+			}
+
+			let id = "dashboard-market-coin-" + coin.id;
+
+			let name = coin.name;
+			let icon = coin.image;
+			let priceChangeDay = coin.price_change_percentage_24h;
+
+			if(!empty(priceChangeDay)) {
+				priceChangeDay = priceChangeDay.toFixed(2).includes("-") ? priceChangeDay.toFixed(2) : "+" + priceChangeDay.toFixed(2);
+			} else {
+				priceChangeDay = "-";
+			}
+
+			let symbol = coin.symbol;
+
+			let div;
+
+			try {
+				if(document.getElementById(id)) {
+					div = document.getElementById(id);
+					div.getElementsByClassName("price")[0].textContent = currencies[settings.currency] + price;
+					div.getElementsByClassName("day")[0].textContent = priceChangeDay + "%";
+
+					if(priceChangeDay.includes("+")) {
+						div.classList.add("positive");
+						div.classList.remove("negative");
+					} else if(priceChangeDay.includes("-")) {
+						div.classList.remove("positive");
+						div.classList.add("negative");
+					} else {
+						div.classList.remove("positive");
+						div.classList.remove("negative");
+					}
+				} else {
+					div = document.createElement("div");
+					div.id = id;
+					div.classList.add("coin-wrapper");
+
+					if(priceChangeDay.includes("+")) {
+						div.classList.add("positive");
+					} else if(priceChangeDay.includes("-")) {
+						div.classList.add("negative");
+					}
+
+					div.innerHTML = '<img draggable="false" src="' + icon + '" title="' + name + '"><span class="coin" title="' + name + '">' + symbol.toUpperCase() + '</span><span class="price">' + currencies[settings.currency] + price + '</span><span class="day">' + priceChangeDay + '%</span>';
+
+					divDashboardMarketList.appendChild(div);
+				}
+			} catch(e) {
+				console.log(e);
+			}
+		});
+	}
+
 	async function listDashboard() {
 		if(!divLoginWrapper.classList.contains("active") && divNavbarDashboard.classList.contains("active")) {
 			clearInterval(updateDashboardListInterval);
@@ -1712,97 +1788,41 @@ document.addEventListener("DOMContentLoaded", async () => {
 				}
 			}, 5000);
 
-			getMarket(1, 10).then(coins => {
-				if(divDashboardMarketList.getElementsByClassName("coin-wrapper loading").length > 0) {
-					divDashboardMarketList.getElementsByClassName("coin-wrapper loading")[0].remove();
-					divDashboardMarketList.classList.remove("loading");
-				}
-
-				let keys = Object.keys(coins);
-				keys.sort((a, b) => {
-					return coins[keys[b]].market_cap - coins[keys[a]].market_cap;
-				});
-
-				keys.map(key => {
-					let coin = coins[key];
-					let price = parseFloat(coin.current_price);
-
-					if(price > 1) {
-						price = separateThousands(price);
-					}
-
-					let id = "dashboard-market-coin-" + coin.id;
-
-					let name = coin.name;
-					let icon = coin.image;
-					let priceChangeDay = coin.price_change_percentage_24h;
-
-					if(!empty(priceChangeDay)) {
-						priceChangeDay = priceChangeDay.toFixed(2).includes("-") ? priceChangeDay.toFixed(2) : "+" + priceChangeDay.toFixed(2);
-					} else {
-						priceChangeDay = "-";
-					}
-
-					let symbol = coin.symbol;
-
-					let div;
-
-					try {
-						if(document.getElementById(id)) {
-							div = document.getElementById(id);
-							div.getElementsByClassName("price")[0].textContent = currencies[settings.currency] + price;
-							div.getElementsByClassName("day")[0].textContent = priceChangeDay + "%";
-
-							if(priceChangeDay.includes("+")) {
-								div.classList.add("positive");
-								div.classList.remove("negative");
-							} else if(priceChangeDay.includes("-")) {
-								div.classList.remove("positive");
-								div.classList.add("negative");
-							} else {
-								div.classList.remove("positive");
-								div.classList.remove("negative");
-							}
-						} else {
-							div = document.createElement("div");
-							div.id = id;
-							div.classList.add("coin-wrapper");
-
-							if(priceChangeDay.includes("+")) {
-								div.classList.add("positive");
-							} else if(priceChangeDay.includes("-")) {
-								div.classList.add("negative");
-							}
-
-							div.innerHTML = '<img draggable="false" src="' + icon + '" title="' + name + '"><span class="coin" title="' + name + '">' + symbol.toUpperCase() + '</span><span class="price">' + currencies[settings.currency] + price + '</span><span class="day">' + priceChangeDay + '%</span>';
-
-							divDashboardMarketList.appendChild(div);
-						}
-					} catch(e) {
+			if(settings.dashboardWatchlist === "enabled") {
+				getWatchlist().then(watchlist => {
+					getCoinMarketData(Object.keys(watchlist).join("%2c")).then(coins => {
+						populateDashboardMarketList(coins);
+					}).catch(e => {
 						console.log(e);
-					}
-				});
-
-				getGlobal().then(global => {
-					globalData = global.data;
-
-					let marketCap = (global.data.total_market_cap[settings.currency]).toFixed(0);
-					let marketChange = (global.data.market_cap_change_percentage_24h_usd).toFixed(1);
-
-					if(window.innerWidth <= 1020) {
-						marketCap = abbreviateNumber(marketCap, 3);
-					}
-
-					spanDashboardMarketCap.textContent = currencies[settings.currency] + separateThousands(marketCap);
-					spanDashboardMarketChange.textContent = marketChange + "%";
+					});
 				}).catch(e => {
 					console.log(e);
 				});
+			} else {
+				getMarket(1, 10).then(coins => {
+					populateDashboardMarketList(coins);
+				}).catch(e => {
+					console.log(e);
+				});
+			}
 
-				updateDashboardListInterval = setInterval(listDashboard, updateInterval);
+			getGlobal().then(global => {
+				globalData = global.data;
+
+				let marketCap = (global.data.total_market_cap[settings.currency]).toFixed(0);
+				let marketChange = (global.data.market_cap_change_percentage_24h_usd).toFixed(1);
+
+				if(window.innerWidth <= 1020) {
+					marketCap = abbreviateNumber(marketCap, 3);
+				}
+
+				spanDashboardMarketCap.textContent = currencies[settings.currency] + separateThousands(marketCap);
+				spanDashboardMarketChange.textContent = marketChange + "%";
 			}).catch(e => {
 				console.log(e);
 			});
+
+			updateDashboardListInterval = setInterval(listDashboard, updateInterval);
 
 			getHoldings().then(async coins => {
 				try {
@@ -2423,7 +2443,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 				showLoading(8000, "This might take a while... Don't touch anything.");
 				
-				getCoinMarketData(coinID, settings.currency, previousYear(new Date()), new Date()).then(data => {
+				getCoinHistoricalMarketData(coinID, settings.currency, previousYear(new Date()), new Date()).then(data => {
 					hideLoading();
 					
 					showLoading(1400, "Generating chart...");
@@ -2746,6 +2766,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 			case "transactionsAffectHoldings":
 				clearDashboard();
 				clearHoldingsList();
+				break;
+			case "dashboardWatchlist":
+				clearDashboard();
 				break;
 		}
 	}
@@ -3665,7 +3688,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 		});
 	}
 
-	function getCoinMarketData(ids, currency, from, to) {
+	function getCoinHistoricalMarketData(ids, currency, from, to) {
 		return new Promise((resolve, reject) => {
 			try {
 				let xhr = new XMLHttpRequest();
@@ -3681,6 +3704,29 @@ document.addEventListener("DOMContentLoaded", async () => {
 				});
 
 				xhr.open("GET", api + "historical/read.php?token=" + sessionToken + "&ids=" + ids + "&currency=" + currency + "&from=" + new Date(Date.parse(from)).getTime() / 1000 + "&to=" + new Date(Date.parse(to)).getTime() / 1000, true);
+				xhr.send();
+			} catch(e) {
+				reject(e);
+			}
+		});
+	}
+
+	function getCoinMarketData(ids) {
+		return new Promise((resolve, reject) => {
+			try {
+				let xhr = new XMLHttpRequest();
+
+				xhr.addEventListener("readystatechange", () => {
+					if(xhr.readyState === XMLHttpRequest.DONE) {
+						if(validJSON(xhr.responseText)) {
+							resolve(JSON.parse(xhr.responseText));
+						} else {
+							reject("Invalid JSON.");
+						}
+					}
+				});
+
+				xhr.open("GET", "https://api.coingecko.com/api/v3/coins/markets?vs_currency=" + settings.currency + "&ids=" + ids + "&order=market_cap_desc&per_page=250&page=1&sparkline=false", true);
 				xhr.send();
 			} catch(e) {
 				reject(e);

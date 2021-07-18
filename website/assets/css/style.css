@@ -523,7 +523,29 @@ input[type=number] {
 	margin:10px 5px 0 5px;
 	background:var(--main-third);
 	display:inline-block;
+	vertical-align:top;
 	box-shadow:var(--shadow-smooth);
+	line-height:20px;
+}
+.popup-wrapper .coin-popup-wrapper .stats-wrapper .stats-icon-wrapper {
+	padding:8px;
+	cursor:pointer;
+	transition:transform 0.25s;
+}
+#desktop .popup-wrapper .coin-popup-wrapper .stats-wrapper .stats-icon-wrapper:hover {
+	transform:scale(0.95);
+}
+#desktop .popup-wrapper .coin-popup-wrapper .stats-wrapper .stats-icon-wrapper:hover svg {
+	opacity:0.5;
+}
+.popup-wrapper .coin-popup-wrapper .stats-wrapper .stats-icon-wrapper svg {
+	fill:var(--main-contrast);
+	width:20px;
+	height:20px;
+	transition:opacity 0.25s;
+}
+.popup-wrapper .coin-popup-wrapper .stats-wrapper .stats-icon-wrapper.active svg {
+	fill:var(--accent-fifth);
 }
 html.light .popup-wrapper .holdings-popup-wrapper .stats-wrapper span.positive {
 	color:rgb(40,150,70);

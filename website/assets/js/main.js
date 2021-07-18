@@ -1046,7 +1046,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 					info.description.en = "No description found for " + symbol.toUpperCase() + ".";
 				}
 
-				let html = '<div class="coin-popup-wrapper"><div class="coin-chart-wrapper"></div><div class="stats-wrapper noselect"><span id="coin-popup-ath">All-Time High: ...</span></div><span class="message">' + info.description.en + '</span><button class="reject" id="popup-dismiss">Back</button></div>';
+				let html = '<div class="coin-popup-wrapper"><div class="coin-chart-wrapper"></div><div class="stats-wrapper noselect"><span class="stats-icon-wrapper" id="coin-popup-watchlist"><svg width="1792" height="1792" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1728 647q0 22-26 48l-363 354 86 500q1 7 1 20 0 21-10.5 35.5t-30.5 14.5q-19 0-40-12l-449-236-449 236q-22 12-40 12-21 0-31.5-14.5t-10.5-35.5q0-6 2-20l86-500-364-354q-25-27-25-48 0-37 56-46l502-73 225-455q19-41 49-41t49 41l225 455 502 73q56 9 56 46z"/></svg></span><span id="coin-popup-ath">All-Time High: ...</span></div><span class="message">' + info.description.en + '</span><button class="reject" id="popup-dismiss">Back</button></div>';
 
 				popup(symbol.toUpperCase() + " / " + settings.currency.toUpperCase() + " - " + info.name, html, "calc(100% - 40px)", "calc(100% - 40px)", { delay:1500, closeIcon:true });
 										
@@ -1059,6 +1059,66 @@ document.addEventListener("DOMContentLoaded", async () => {
 				}
 
 				document.getElementById("coin-popup-ath").textContent = "All-Time High: " + currencies[settings.currency] + ath + " (" + formatDateHuman(new Date(Date.parse(info.market_data.ath_date[settings.currency]))).replaceAll(" ", "") + ")";
+
+				let buttonWatchlist = document.getElementById("coin-popup-watchlist");
+
+				getWatchlist().then(watchlist => {
+					if(Object.keys(watchlist).includes(coinID)) {
+						buttonWatchlist.classList.add("active");
+					}
+				}).catch(e => {
+					Notify.error({
+						title:"Error",
+						description:"Couldn't fetch watchlist."
+					});
+					console.log(e);
+				});
+
+				buttonWatchlist.addEventListener("click", () => {
+					if(buttonWatchlist.classList.contains("active")) {
+						deleteWatchlist(coinID).then(response => {
+							if("error" in response) {
+								Notify.error({
+									title:"Error",
+									description:response.error
+								});
+							} else {
+								Notify.success({
+									title:"Removed from Watchlist",
+									description:response.message
+								});
+								buttonWatchlist.classList.remove("active");
+							}
+						}).catch(e => {
+							Notify.error({
+								title:"Error",
+								description:"Couldn't remove coin from watchlist."
+							});
+							console.log(e);
+						});
+					} else {
+						createWatchlist(coinID, symbol).then(response => {
+							if("error" in response) {
+								Notify.error({
+									title:"Error",
+									description:response.error
+								});
+							} else {
+								Notify.success({
+									title:"Added to Watchlist",
+									description:response.message
+								});
+								buttonWatchlist.classList.add("active");
+							}
+						}).catch(e => {
+							Notify.error({
+								title:"Error",
+								description:"Couldn't add coin to watchlist."
+							});
+							console.log(e);
+						});
+					}
+				});
 
 				document.getElementById("popup-dismiss").addEventListener("click", () => {
 					hidePopup();
@@ -3305,6 +3365,75 @@ document.addEventListener("DOMContentLoaded", async () => {
 				}).catch(e => {
 					console.log(e);
 				});
+			}
+		});
+	}
+
+	function getWatchlist() {
+		return new Promise((resolve, reject) => {
+			try {
+				let xhr = new XMLHttpRequest();
+
+				xhr.addEventListener("readystatechange", () => {
+					if(xhr.readyState === XMLHttpRequest.DONE) {
+						if(validJSON(xhr.responseText)) {
+							resolve(JSON.parse(xhr.responseText));
+						} else {
+							reject("Invalid JSON.");
+						}
+					}
+				});
+
+				xhr.open("GET", api + "watchlist/read.php?token=" + sessionToken, true);
+				xhr.send();
+			} catch(e) {
+				reject(e);
+			}
+		});
+	}
+
+	function createWatchlist(id, symbol) {
+		return new Promise((resolve, reject) => {
+			try {
+				let xhr = new XMLHttpRequest();
+
+				xhr.addEventListener("readystatechange", () => {
+					if(xhr.readyState === XMLHttpRequest.DONE) {
+						if(validJSON(xhr.responseText)) {
+							resolve(JSON.parse(xhr.responseText));
+						} else {
+							reject("Invalid JSON.");
+						}
+					}
+				});
+
+				xhr.open("POST", api + "watchlist/create.php", true);
+				xhr.send(JSON.stringify({ token:sessionToken, id:id, symbol:symbol }));
+			} catch(e) {
+				reject(e);
+			}
+		});
+	}
+
+	function deleteWatchlist(id) {
+		return new Promise((resolve, reject) => {
+			try {
+				let xhr = new XMLHttpRequest();
+
+				xhr.addEventListener("readystatechange", () => {
+					if(xhr.readyState === XMLHttpRequest.DONE) {
+						if(validJSON(xhr.responseText)) {
+							resolve(JSON.parse(xhr.responseText));
+						} else {
+							reject("Invalid JSON.");
+						}
+					}
+				});
+
+				xhr.open("DELETE", api + "watchlist/delete.php", true);
+				xhr.send(JSON.stringify({ token:sessionToken, id:id }));
+			} catch(e) {
+				reject(e);
 			}
 		});
 	}

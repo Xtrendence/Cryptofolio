@@ -1035,6 +1035,117 @@ document.addEventListener("DOMContentLoaded", async () => {
 		});
 	}
 
+	function watchlistPopup() {
+		let html = '<input id="popup-coin" placeholder="Coin Symbol... (e.g. BTC)"><button class="reject" id="popup-cancel">Cancel</button><button class="resolve" id="popup-confirm">Confirm</button>';
+
+		let popupHeight = 180;
+
+		popup("Adding to Watchlist", html, "300px", popupHeight + "px");
+
+		document.getElementById("popup-cancel").addEventListener("click", () => {
+			hidePopup();
+		});
+
+		document.getElementById("popup-confirm").addEventListener("click", () => {
+			let inputCoin = document.getElementById("popup-coin");
+			let id = inputCoin.value;
+
+			if(empty(id)) {
+				Notify.error({
+					title:"Error",
+					description:"Please provide the ticker/symbol or ID of the coin."
+				});
+			} else {
+				let symbol = id.trim().toLowerCase();
+				getCoinID("symbol", symbol).then(response => {
+					Notify.alert({
+						title:"Checking...",
+						description:"Checking whether or not that coin exists."
+					});
+
+					for(let i = 0; i < document.getElementsByClassName("popup-list").length; i++) {
+						document.getElementsByClassName("popup-list")[i].remove();
+					}
+
+					if("id" in response) {
+						addWatchlist(response.id, response.symbol);
+					} else if("matches" in response) {
+						Notify.info({
+							title:"Multiple Results",
+							description:"There are " + response.matches.length + " coins with that symbol. Please choose one from the list.",
+							duration:8000
+						});
+
+						let wrapper = document.createElement("div");
+						wrapper.classList.add("popup-list");
+
+						let matches = response.matches;
+						Object.keys(matches).map(key => {
+							let match = matches[key];
+							let symbol = Object.keys(match)[0];
+							let id = match[symbol];
+
+							let row = document.createElement("div");
+							row.innerHTML = '<span class="title">' + symbol.toUpperCase() + '</span><span class="subtitle">' + capitalizeFirstLetter(id) + '</span>';
+
+							row.addEventListener("click", () => {
+								addWatchlist(id, symbol);
+							});
+
+							wrapper.appendChild(row);
+						});
+
+						let addedHeight = matches * 40;
+
+						if(matches.length >= 3) {
+							addedHeight = 120;
+						}
+
+						let adjustedHeight = (popupHeight + addedHeight) + 20;
+
+						divPopupWrapper.style.height = adjustedHeight + "px";
+						divPopupWrapper.style.top = "calc(50% - " + adjustedHeight + "px / 2)";
+
+						insertAfter(wrapper, inputCoin);
+					} else {
+						Notify.error({
+							title:"Error",
+							description:"Couldn't add coin. Try adding by ID."
+						});
+					}
+				}).catch(e => {
+					console.log(e);
+				});
+			}
+		});
+
+		function addWatchlist(id, symbol) {
+			createWatchlist(id, symbol).then(response => {
+				hidePopup();
+				
+				if("error" in response) {
+					Notify.error({
+						title:"Error",
+						description:response.error
+					});
+				} else {
+					Notify.success({
+						title:"Added to Watchlist",
+						description:response.message
+					});
+				}
+				clearDashboard();
+				listDashboard();
+			}).catch(e => {
+				Notify.error({
+					title:"Error",
+					description:"Couldn't add coin to watchlist."
+				});
+				console.log(e);
+			});
+		}
+	}
+
 	function marketChartPopup(coinID, symbol, currentPrice) {
 		showLoading(10000);
 
@@ -1710,6 +1821,19 @@ document.addEventListener("DOMContentLoaded", async () => {
 		if(divDashboardMarketList.getElementsByClassName("coin-wrapper loading").length > 0) {
 			divDashboardMarketList.getElementsByClassName("coin-wrapper loading")[0].remove();
 			divDashboardMarketList.classList.remove("loading");
+
+			if(settings.dashboardWatchlist === "enabled") {
+				let divAdd = document.createElement("div");
+				divAdd.classList.add("coin-wrapper");
+				divAdd.classList.add("add");
+				divAdd.innerHTML = '<svg width="1792" height="1792" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1600 736v192q0 40-28 68t-68 28h-416v416q0 40-28 68t-68 28h-192q-40 0-68-28t-28-68v-416h-416q-40 0-68-28t-28-68v-192q0-40 28-68t68-28h416v-416q0-40 28-68t68-28h192q40 0 68 28t28 68v416h416q40 0 68 28t28 68z"/></svg><span class="add-text">Add Coin...';
+
+				divAdd.addEventListener("click", () => {
+					watchlistPopup();
+				});
+
+				divDashboardMarketList.appendChild(divAdd);
+			}
 		}
 
 		let keys = Object.keys(coins);
@@ -1825,11 +1949,15 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 			if(settings.dashboardWatchlist === "enabled") {
 				getWatchlist().then(watchlist => {
-					getCoinMarketData(Object.keys(watchlist).join("%2c")).then(coins => {
-						populateDashboardMarketList(coins);
-					}).catch(e => {
-						console.log(e);
-					});
+					if(empty(watchlist)) {
+						populateDashboardMarketList({});
+					} else {
+						getCoinMarketData(Object.keys(watchlist).join("%2c")).then(coins => {
+							populateDashboardMarketList(coins);
+						}).catch(e => {
+							console.log(e);
+						});
+					}
 				}).catch(e => {
 					console.log(e);
 				});

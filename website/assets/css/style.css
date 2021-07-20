@@ -622,6 +622,26 @@ html.dark .highlight-text .coin-wrapper.negative span {
 .dashboard-market-list-wrapper .coin-wrapper .day {
 	width:120px;
 }
+.dashboard-market-list-wrapper .coin-wrapper.add {
+	cursor:pointer;
+	transition:background 0.25s;
+	position:relative;
+}
+#desktop .dashboard-market-list-wrapper .coin-wrapper.add:hover {
+	background:var(--main-second);
+}
+.dashboard-market-list-wrapper .coin-wrapper.add span {
+	margin-left:0;
+	padding-left:10px;
+}
+.dashboard-market-list-wrapper .coin-wrapper.add svg {
+	width:28px;
+	height:28px;
+	display:inline-block;
+	fill:var(--main-contrast);
+	vertical-align:middle;
+	margin-left:10px;
+}
 .dashboard-market-list-wrapper .coin-wrapper:hover .watchlist-button {
 	display:block;
 }
@@ -643,9 +663,9 @@ html.dark .highlight-text .coin-wrapper.negative span {
 	transform:scale(0.95);
 }
 .dashboard-market-list-wrapper .coin-wrapper .watchlist-button svg {
-	width:28px;
-	height:28px;
-	fill:var(--accent-fifth);
+	width:20px;
+	height:20px;
+	fill:var(--accent-third);
 }
 
 .dashboard-holdings-list-wrapper .header.coin {

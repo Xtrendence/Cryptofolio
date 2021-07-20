@@ -37,7 +37,7 @@
 		}
 
 		if(count($matches) == 1) {
-			echo json_encode(array("id" => $matches[0][$symbol]));
+			echo json_encode(array("id" => $matches[0][$symbol], "symbol" => $symbol));
 		} elseif(empty($matches)) {
 			if($retry) {
 				findByID($coins, $symbol, false);
@@ -51,14 +51,16 @@
 
 	function findByID($coins, $id, $retry) {
 		$values = array_values($coins);
+		$symbols = array();
 		$ids = array();
 
 		foreach($values as $value) {
 			array_push($ids, $value[array_keys($value)[0]]);
+			$symbols[$value[array_keys($value)[0]]] = array_keys($value)[0];
 		}
 
 		if(in_array($id, $ids)) {
-			echo json_encode(array("id" => $id));
+			echo json_encode(array("id" => $id, "symbol" => $symbols[$id]));
 		} else {
 			if($retry) {
 				findBySymbol($coins, $id, false);

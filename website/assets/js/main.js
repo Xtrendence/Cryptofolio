@@ -183,6 +183,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 		clearTimeout(window.resizedFinished);
 		window.resizedFinished = setTimeout(() => {
+			if(divNavbarDashboard.classList.contains("active")) {
+				listDashboard();
+			}
 			if(divNavbarMarket.classList.contains("active")) {
 				listMarket();
 			}
@@ -376,18 +379,20 @@ document.addEventListener("DOMContentLoaded", async () => {
 	for(let i = 0; i < divHeaderWrappers.length; i++) {
 		let wrapper = divHeaderWrappers[i];
 		let list = wrapper.getAttribute("data-list");
-		let headers = wrapper.getElementsByClassName("header");
-		for(let j = 0; j < headers.length; j++) {
-			let header = headers[j];
-			let item = header.getAttribute("data-item");
-			header.addEventListener("click", () => {
-				let order = "ascending";
-				let currentOrder = localStorage.getItem(list + "SortOrder");
-				if(currentOrder === "ascending") {
-					order = "descending";
-				}
-				changeSortOrder(list, item, order);
-			});
+		if(list !== "market") {
+			let headers = wrapper.getElementsByClassName("header");
+			for(let j = 0; j < headers.length; j++) {
+				let header = headers[j];
+				let item = header.getAttribute("data-item");
+				header.addEventListener("click", () => {
+					let order = "ascending";
+					let currentOrder = localStorage.getItem(list + "SortOrder");
+					if(currentOrder === "ascending") {
+						order = "descending";
+					}
+					changeSortOrder(list, item, order);
+				});
+			}
 		}
 	}
 
@@ -1870,11 +1875,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 		let keys = Object.keys(coins);
 
 		switch(sortItem) {
-			case "marketCap":
-				keys.sort((a, b) => {
-					return coins[keys[b]].market_cap - coins[keys[a]].market_cap;
-				});
-				break;
 			case "coin":
 				keys.sort((a, b) => {
 					return coins[keys[b]].symbol - coins[keys[a]].symbol;
@@ -1883,6 +1883,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 			case "price":
 				keys.sort((a, b) => {
 					return coins[keys[b]].current_price - coins[keys[a]].current_price;
+				});
+				break;
+			case "marketCap":
+				keys.sort((a, b) => {
+					return coins[keys[b]].market_cap - coins[keys[a]].market_cap;
 				});
 				break;
 			case "change":
@@ -1906,6 +1911,15 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 			let id = "dashboard-market-coin-" + coin.id;
 
+			let marketCap = coin.market_cap;
+
+			if(window.innerWidth <= 1100 && window.innerWidth > 440) {
+				marketCap = abbreviateNumber(marketCap, 2);
+			}
+			else if(window.innerWidth <= 440) {
+				marketCap = abbreviateNumber(marketCap, 0);
+			}
+
 			let name = coin.name;
 			let icon = coin.image;
 			let priceChangeDay = coin.price_change_percentage_24h;
@@ -1924,6 +1938,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 				if(document.getElementById(id)) {
 					div = document.getElementById(id);
 					div.getElementsByClassName("price")[0].textContent = currencies[settings.currency] + price;
+					div.getElementsByClassName("market-cap")[0].textContent = currencies[settings.currency] + separateThousands(marketCap);
 					div.getElementsByClassName("day")[0].textContent = priceChangeDay + "%";
 
 					if(priceChangeDay.includes("+")) {
@@ -1947,7 +1962,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 						div.classList.add("negative");
 					}
 
-					div.innerHTML = '<img draggable="false" src="' + icon + '" title="' + name + '"><span class="coin" title="' + name + '">' + symbol.toUpperCase() + '</span><span class="price">' + currencies[settings.currency] + price + '</span><span class="day">' + priceChangeDay + '%</span>';
+					div.innerHTML = '<img draggable="false" src="' + icon + '" title="' + name + '"><span class="coin" title="' + name + '">' + symbol.toUpperCase() + '</span><span class="price">' + currencies[settings.currency] + price + '</span><span class="market-cap">' + currencies[settings.currency] + separateThousands(marketCap) + '</span><span class="day">' + priceChangeDay + '%</span>';
 
 					if(settings.dashboardWatchlist === "enabled") {
 						div.classList.add("watchlist-row");
@@ -2001,7 +2016,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 			switch(list) {
 				case "dashboardMarket":
 					clearDashboard();
-					items = ["coin", "price", "change"];
+					items = ["coin", "price", "marketCap", "change"];
 					if(!items.includes(item)) {
 						valid = false;
 						console.error("Sort order item not found.");
@@ -2009,7 +2024,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 					break;
 				case "dashboardHoldings":
 					clearDashboard();
-					items = ["coin", "amount"];
+					items = ["coin", "amount", "value", "change"];
 					if(!items.includes(item)) {
 						valid = false;
 						console.error("Sort order item not found.");
@@ -2071,6 +2086,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 					listDashboard();
 				}
 			}, 5000);
+
+			if(settings.additionalDashboardColumns === "enabled") {
+				divPageDashboard.classList.add("additional-columns");
+			} else {
+				divPageDashboard.classList.remove("additional-columns");
+			}
 
 			if(settings.dashboardWatchlist === "enabled") {
 				getWatchlist().then(watchlist => {
@@ -2174,6 +2195,16 @@ document.addEventListener("DOMContentLoaded", async () => {
 										return holdings[b].amount - holdings[a].amount;
 									});
 									break;
+								case "value":
+									keys.sort((a, b) => {
+										return holdings[b].value - holdings[a].value;
+									});
+									break;
+								case "change":
+									keys.sort((a, b) => {
+										return parseFloat(holdings[b].change) - parseFloat(holdings[a].change);
+									});
+									break;
 							}
 
 							if(sortOrder !== "descending") {
@@ -2187,7 +2218,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 								let icon = coin.image;
 								let amount = coin.amount;
 								let symbol = coin.symbol;
-								let value = parseFloat(coin.value);
+								let value = coin.value.toFixed(2);
 
 								if(!empty(transactionsBySymbol)) {
 									if(settings.transactionsAffectHoldings === "mixed") {
@@ -2198,6 +2229,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 										}
 									}
 								}
+
+								if(window.innerWidth <= 600 && window.innerWidth > 440) {
+									value = abbreviateNumber(parseFloat(value), 2);
+								} else if(window.innerWidth <= 440) {
+									value = abbreviateNumber(parseFloat(value), 0);
+								}
+
+								let day = coin.change.includes("-") ? coin.change + "%" : "+" + coin.change + "%";
 
 								if(amount < 0) {
 									amount = 0;
@@ -2214,12 +2253,30 @@ document.addEventListener("DOMContentLoaded", async () => {
 										if(document.getElementById(id)) {
 											div = document.getElementById(id);
 											div.getElementsByClassName("amount")[0].textContent = separateThousands(amount);
+											div.getElementsByClassName("value")[0].textContent = currencies[settings.currency] + separateThousands(value);
+
+											if(day.includes("+")) {
+												div.classList.add("positive");
+												div.classList.remove("negative");
+											} else if(day.includes("-")) {
+												div.classList.remove("positive");
+												div.classList.add("negative");
+											} else {
+												div.classList.remove("positive");
+												div.classList.remove("negative");
+											}
 										} else {
 											div = document.createElement("div");
 											div.id = id;
 											div.classList.add("coin-wrapper");
 
-											div.innerHTML = '<img draggable="false" src="' + icon + '"><span class="coin">' + symbol.toUpperCase() + '</span><span class="amount">' + separateThousands(amount) + '</span>';
+											if(day.includes("+")) {
+												div.classList.add("positive");
+											} else if(day.includes("-")) {
+												div.classList.add("negative");
+											}
+
+											div.innerHTML = '<img draggable="false" src="' + icon + '"><span class="coin">' + symbol.toUpperCase() + '</span><span class="amount">' + separateThousands(amount) + '</span><span class="value">' + currencies[settings.currency] + separateThousands(value) + '</span><span class="day">' + day + '</span>';
 
 											divDashboardHoldingsList.appendChild(div);
 										}
@@ -3088,6 +3145,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 			case "dashboardWatchlist":
 				clearDashboard();
 				break;
+			case "additionalDashboardColumns":
+				clearDashboard();
+				break;
 		}
 	}
 
@@ -3113,6 +3173,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 				settings.dashboardWatchlist = empty(localStorage.getItem("dashboardWatchlist")) ? "disabled" : localStorage.getItem("dashboardWatchlist");
 
 				settings.sortOrderNotification = empty(localStorage.getItem("sortOrderNotification")) ? "disabled" : localStorage.getItem("sortOrderNotification");
+
+				settings.additionalDashboardColumns = empty(localStorage.getItem("additionalDashboardColumns")) ? "disabled" : localStorage.getItem("additionalDashboardColumns");
 
 				settings.defaultPage = empty(localStorage.getItem("defaultPage")) ? "market" : localStorage.getItem("defaultPage");
 

@@ -90,6 +90,7 @@
 				<div class="headers-wrapper" data-list="dashboardMarket">
 					<span class="header coin" data-item="coin">Coin</span>
 					<span class="header price" data-item="price">Price</span>
+					<span class="header market-cap" data-item="marketCap">Market Cap</span>
 					<span class="header day" data-item="change">24h Change</span>
 				</div>
 				<div class="dashboard-market-list loading" id="dashboard-market-list">
@@ -108,6 +109,8 @@
 				<div class="headers-wrapper" data-list="dashboardHoldings">
 					<span class="header coin" data-item="coin">Coin</span>
 					<span class="header amount" data-item="amount">Amount</span>
+					<span class="header value" data-item="value">Value</span>
+					<span class="header day" data-item="change">24h Change</span>
 				</div>
 				<div class="dashboard-holdings-list loading" id="dashboard-holdings-list">
 					<div class="coin-wrapper loading">
@@ -335,6 +338,15 @@
 					<span class="title">Sort Order Notification</span>
 				</div>
 				<div class="bottom settings-choices-wrapper" data-key="sortOrderNotification">
+					<button class="choice" data-value="disabled">Disabled</button>
+					<button class="choice" data-value="enabled">Enabled</button>
+				</div>
+			</div>
+			<div class="section">
+				<div class="top noselect">
+					<span class="title">Additional Dashboard Columns</span>
+				</div>
+				<div class="bottom settings-choices-wrapper" data-key="additionalDashboardColumns">
 					<button class="choice" data-value="disabled">Disabled</button>
 					<button class="choice" data-value="enabled">Enabled</button>
 				</div>

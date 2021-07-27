@@ -477,6 +477,14 @@ input[type=number] {
 	overflow:hidden;
 }
 
+.dashboard-market-list-wrapper .header, .dashboard-holdings-list-wrapper .header {
+	cursor:pointer;
+	transition:opacity 0.25s;
+}
+#desktop .dashboard-market-list-wrapper .header:hover, #desktop .dashboard-holdings-list-wrapper .header:hover {
+	opacity:0.8;
+}
+
 .dashboard-market-list-wrapper .header.coin {
 	width:110px;
 	margin-left:10px;

@@ -56,6 +56,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 	let divPageActivity = document.getElementById("page-activity");
 	let divPageSettings = document.getElementById("page-settings");
 
+	let divHeaderWrappers = document.getElementsByClassName("headers-wrapper");
+
 	let divDashboardMarketList = document.getElementById("dashboard-market-list");
 	let divDashboardHoldingsList = document.getElementById("dashboard-holdings-list");
 
@@ -370,6 +372,24 @@ document.addEventListener("DOMContentLoaded", async () => {
 	buttonNextPage.addEventListener("click", () => {
 		nextPage();
 	});
+
+	for(let i = 0; i < divHeaderWrappers.length; i++) {
+		let wrapper = divHeaderWrappers[i];
+		let list = wrapper.getAttribute("data-list");
+		let headers = wrapper.getElementsByClassName("header");
+		for(let j = 0; j < headers.length; j++) {
+			let header = headers[j];
+			let item = header.getAttribute("data-item");
+			header.addEventListener("click", () => {
+				let order = "ascending";
+				let currentOrder = localStorage.getItem(list + "SortOrder");
+				if(currentOrder === "ascending") {
+					order = "descending";
+				}
+				changeSortOrder(list, item, order);
+			});
+		}
+	}
 
 	divHoldingsValueCard.addEventListener("click", () => {
 		if(settings.transactionsAffectHoldings === "override" && divHoldingsList.getElementsByClassName("more").length === 0) {
@@ -1836,10 +1856,45 @@ document.addEventListener("DOMContentLoaded", async () => {
 			}
 		}
 
+		let sortItem = localStorage.getItem("dashboardMarketSortItem");
+		let sortOrder = localStorage.getItem("dashboardMarketSortOrder");
+
+		if(empty(sortItem) || settings.dashboardWatchlist !== "enabled") {
+			sortItem = "marketCap";
+		}
+
+		if(empty(sortOrder)) {
+			sortOrder = "descending";
+		}
+
 		let keys = Object.keys(coins);
-		keys.sort((a, b) => {
-			return coins[keys[b]].market_cap - coins[keys[a]].market_cap;
-		});
+
+		switch(sortItem) {
+			case "marketCap":
+				keys.sort((a, b) => {
+					return coins[keys[b]].market_cap - coins[keys[a]].market_cap;
+				});
+				break;
+			case "coin":
+				keys.sort((a, b) => {
+					return coins[keys[b]].symbol - coins[keys[a]].symbol;
+				});
+				break;
+			case "price":
+				keys.sort((a, b) => {
+					return coins[keys[b]].current_price - coins[keys[a]].current_price;
+				});
+				break;
+			case "change":
+				keys.sort((a, b) => {
+					return coins[keys[b]].price_change_percentage_24h - coins[keys[a]].price_change_percentage_24h;
+				});
+				break;
+		}
+
+		if(sortOrder !== "descending") {
+			keys.reverse();
+		}
 
 		keys.map(key => {
 			let coin = coins[key];
@@ -1937,6 +1992,76 @@ document.addEventListener("DOMContentLoaded", async () => {
 		});
 	}
 
+	function changeSortOrder(list, item, order) {
+		let orders = ["ascending", "descending"];
+		let lists = { "dashboardMarket":"Dashboard Market", "dashboardHoldings":"Dashboard Holdings", "market":"Market", "holdings":"Holdings", "activity":"Activity" };
+		let items = [];
+		if(orders.includes(order) && Object.keys(lists).includes(list)) {
+			let valid = true;
+			switch(list) {
+				case "dashboardMarket":
+					clearDashboard();
+					items = ["coin", "price", "change"];
+					if(!items.includes(item)) {
+						valid = false;
+						console.error("Sort order item not found.");
+					}
+					break;
+				case "dashboardHoldings":
+					clearDashboard();
+					items = ["coin", "amount"];
+					if(!items.includes(item)) {
+						valid = false;
+						console.error("Sort order item not found.");
+					}
+					break;
+				case "market":
+					clearMarketList();
+					items = ["rank", "coin", "price", "marketCap", "change"];
+					if(!items.includes(item)) {
+						valid = false;
+						console.error("Sort order item not found.");
+					}
+					break;
+				case "holdings":
+					clearHoldingsList();
+					items = ["coin", "amount", "value", "change"];
+					if(!items.includes(item)) {
+						valid = false;
+						console.error("Sort order item not found.");
+					}
+					break;
+				case "activity":
+					clearActivityList();
+					items = ["date", "coin", "amount", "type", "notes"];
+					if(!items.includes(item)) {
+						valid = false;
+						console.error("Sort order item not found.");
+					}
+					break;
+			}
+
+			if(valid) {
+				localStorage.setItem(list + "SortOrder", order);
+				localStorage.setItem(list + "SortItem", item);
+
+				if(settings.sortOrderNotification === "enabled") {
+					Notify.success({
+						title:"Changed Sort Order",
+						description:"\"" + lists[list] + "\" list is now sorted by " + capitalizeFirstLetter(item) + " (" + capitalizeFirstLetter(order) + ")."
+					});
+				}
+			}
+
+			listDashboard();
+			listMarket();
+			listHoldings();
+			listActivity();
+		} else {
+			console.error("Sort order invalid, or list not found.");
+		}
+	}
+
 	async function listDashboard() {
 		if(!divLoginWrapper.classList.contains("active") && divNavbarDashboard.classList.contains("active")) {
 			clearInterval(updateDashboardListInterval);
@@ -2025,7 +2150,37 @@ document.addEventListener("DOMContentLoaded", async () => {
 								divDashboardHoldingsList.classList.remove("loading");
 							}
 
-							Object.keys(holdings).map(holding => {
+							let sortItem = localStorage.getItem("dashboardHoldingsSortItem");
+							let sortOrder = localStorage.getItem("dashboardHoldingsSortOrder");
+
+							if(empty(sortItem)) {
+								sortItem = "coin";
+							}
+
+							if(empty(sortOrder)) {
+								sortOrder = "descending";
+							}
+
+							let keys = Object.keys(holdings);
+
+							switch(sortItem) {
+								case "coin":
+									keys.sort((a, b) => {
+										return holdings[b].symbol - holdings[a].symbol;
+									});
+									break;
+								case "amount":
+									keys.sort((a, b) => {
+										return holdings[b].amount - holdings[a].amount;
+									});
+									break;
+							}
+
+							if(sortOrder !== "descending") {
+								keys.reverse();
+							}
+
+							keys.map(holding => {
 								let coin = holdings[holding];
 				
 								let id = "dashboard-holdings-coin-" + holding;
@@ -2956,6 +3111,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 				settings.highlightPriceChange = empty(localStorage.getItem("highlightPriceChange")) ? "disabled" : localStorage.getItem("highlightPriceChange");
 
 				settings.dashboardWatchlist = empty(localStorage.getItem("dashboardWatchlist")) ? "disabled" : localStorage.getItem("dashboardWatchlist");
+
+				settings.sortOrderNotification = empty(localStorage.getItem("sortOrderNotification")) ? "disabled" : localStorage.getItem("sortOrderNotification");
 
 				settings.defaultPage = empty(localStorage.getItem("defaultPage")) ? "market" : localStorage.getItem("defaultPage");
 

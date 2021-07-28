@@ -70,6 +70,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 	let divPageActivity = document.getElementById("page-activity");
 	let divPageSettings = document.getElementById("page-settings");
 
+	let divHeaderWrappers = document.getElementsByClassName("headers-wrapper");
+
 	let divDashboardMarketList = document.getElementById("dashboard-market-list");
 	let divDashboardHoldingsList = document.getElementById("dashboard-holdings-list");
 
@@ -195,6 +197,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 		clearTimeout(window.resizedFinished);
 		window.resizedFinished = setTimeout(() => {
+			if(divNavbarDashboard.classList.contains("active")) {
+				listDashboard();
+			}
 			if(divNavbarMarket.classList.contains("active")) {
 				listMarket();
 			}
@@ -392,6 +397,26 @@ document.addEventListener("DOMContentLoaded", async () => {
 		nextPage();
 	});
 
+	for(let i = 0; i < divHeaderWrappers.length; i++) {
+		let wrapper = divHeaderWrappers[i];
+		let list = wrapper.getAttribute("data-list");
+		if(list !== "market") {
+			let headers = wrapper.getElementsByClassName("header");
+			for(let j = 0; j < headers.length; j++) {
+				let header = headers[j];
+				let item = header.getAttribute("data-item");
+				header.addEventListener("click", async () => {
+					let order = "ascending";
+					let currentOrder = await Storage.getItem(list + "SortOrder");
+					if(currentOrder === "ascending") {
+						order = "descending";
+					}
+					changeSortOrder(list, item, order);
+				});
+			}
+		}
+	}
+
 	divHoldingsValueCard.addEventListener("click", () => {
 		if(settings.transactionsAffectHoldings === "override" && divHoldingsList.getElementsByClassName("more").length === 0) {
 			getActivity().then(events => {
@@ -458,7 +483,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 					}
 				}
 				
-				getCoinMarketData(ids, settings.currency, previousYear(new Date()), new Date()).then(data => {
+				getCoinHistoricalMarketData(ids, settings.currency, previousYear(new Date()), new Date()).then(data => {
 					hideLoading();
 					
 					showLoading(1400, "Generating chart...");
@@ -1038,21 +1063,132 @@ document.addEventListener("DOMContentLoaded", async () => {
 		});
 	}
 
+	function watchlistPopup() {
+		let html = '<input id="popup-coin" placeholder="Coin Symbol... (e.g. BTC)"><button class="reject" id="popup-cancel">Cancel</button><button class="resolve" id="popup-confirm">Confirm</button>';
+
+		let popupHeight = 180;
+
+		popup("Adding to Watchlist", html, "300px", popupHeight + "px");
+
+		document.getElementById("popup-cancel").addEventListener("click", () => {
+			hidePopup();
+		});
+
+		document.getElementById("popup-confirm").addEventListener("click", () => {
+			let inputCoin = document.getElementById("popup-coin");
+			let id = inputCoin.value;
+
+			if(empty(id)) {
+				Notify.error({
+					title:"Error",
+					description:"Please provide the ticker/symbol or ID of the coin."
+				});
+			} else {
+				let symbol = id.trim().toLowerCase();
+				getCoinID("symbol", symbol).then(response => {
+					Notify.alert({
+						title:"Checking...",
+						description:"Checking whether or not that coin exists."
+					});
+
+					for(let i = 0; i < document.getElementsByClassName("popup-list").length; i++) {
+						document.getElementsByClassName("popup-list")[i].remove();
+					}
+
+					if("id" in response) {
+						addWatchlist(response.id, response.symbol);
+					} else if("matches" in response) {
+						Notify.info({
+							title:"Multiple Results",
+							description:"There are " + response.matches.length + " coins with that symbol. Please choose one from the list.",
+							duration:8000
+						});
+
+						let wrapper = document.createElement("div");
+						wrapper.classList.add("popup-list");
+
+						let matches = response.matches;
+						Object.keys(matches).map(key => {
+							let match = matches[key];
+							let symbol = Object.keys(match)[0];
+							let id = match[symbol];
+
+							let row = document.createElement("div");
+							row.innerHTML = '<span class="title">' + symbol.toUpperCase() + '</span><span class="subtitle">' + capitalizeFirstLetter(id) + '</span>';
+
+							row.addEventListener("click", () => {
+								addWatchlist(id, symbol);
+							});
+
+							wrapper.appendChild(row);
+						});
+
+						let addedHeight = matches * 40;
+
+						if(matches.length >= 3) {
+							addedHeight = 120;
+						}
+
+						let adjustedHeight = (popupHeight + addedHeight) + 20;
+
+						divPopupWrapper.style.height = adjustedHeight + "px";
+						divPopupWrapper.style.top = "calc(50% - " + adjustedHeight + "px / 2)";
+
+						insertAfter(wrapper, inputCoin);
+					} else {
+						Notify.error({
+							title:"Error",
+							description:"Couldn't add coin. Try adding by ID."
+						});
+					}
+				}).catch(e => {
+					console.log(e);
+				});
+			}
+		});
+
+		function addWatchlist(id, symbol) {
+			createWatchlist(id, symbol).then(response => {
+				hidePopup();
+				
+				if("error" in response) {
+					Notify.error({
+						title:"Error",
+						description:response.error
+					});
+				} else {
+					Notify.success({
+						title:"Added to Watchlist",
+						description:response.message
+					});
+				}
+				clearDashboard();
+				listDashboard();
+			}).catch(e => {
+				Notify.error({
+					title:"Error",
+					description:"Couldn't add coin to watchlist."
+				});
+				console.log(e);
+			});
+		}
+	}
+
 	function marketChartPopup(coinID, symbol, currentPrice) {
 		showLoading(10000);
 
 		getCoinInfo(coinID).then(info => {
-			getCoinMarketData(coinID, settings.currency, previousYear(new Date()), new Date()).then(data => {
+			getCoinHistoricalMarketData(coinID, settings.currency, previousYear(new Date()), new Date()).then(data => {
 				data = parseMarketData(data[coinID], new Date().getTime(), currentPrice);
 
 				if(empty(info.description.en)) {
 					info.description.en = "No description found for " + symbol.toUpperCase() + ".";
 				}
 
-				let html = '<div class="coin-popup-wrapper"><div class="coin-chart-wrapper"></div><div class="stats-wrapper noselect"><span id="coin-popup-ath">All-Time High: ...</span></div><span class="message">' + info.description.en + '</span><button class="reject" id="popup-dismiss">Back</button></div>';
+				let html = '<div class="coin-popup-wrapper"><div class="coin-chart-wrapper"></div><div class="stats-wrapper noselect"><span class="stats-icon-wrapper" id="coin-popup-watchlist"><svg width="1792" height="1792" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1728 647q0 22-26 48l-363 354 86 500q1 7 1 20 0 21-10.5 35.5t-30.5 14.5q-19 0-40-12l-449-236-449 236q-22 12-40 12-21 0-31.5-14.5t-10.5-35.5q0-6 2-20l86-500-364-354q-25-27-25-48 0-37 56-46l502-73 225-455q19-41 49-41t49 41l225 455 502 73q56 9 56 46z"/></svg></span><span id="coin-popup-ath">All-Time High: ...</span></div><span class="message">' + info.description.en + '</span><button class="reject" id="popup-dismiss">Back</button></div>';
 
 				popup(symbol.toUpperCase() + " / " + settings.currency.toUpperCase() + " - " + info.name, html, "calc(100% - 40px)", "calc(100% - 40px)", { delay:1500, closeIcon:true });
-										
+
 				generateMarketChart(document.getElementsByClassName("coin-chart-wrapper")[0], "Price", data.labels, data.tooltips, data.prices, { symbol:symbol });
 
 				let ath = parseFloat(info.market_data.ath[settings.currency]);
@@ -1062,6 +1198,70 @@ document.addEventListener("DOMContentLoaded", async () => {
 				}
 
 				document.getElementById("coin-popup-ath").textContent = "All-Time High: " + currencies[settings.currency] + ath + " (" + formatDateHuman(new Date(Date.parse(info.market_data.ath_date[settings.currency]))).replaceAll(" ", "") + ")";
+
+				let buttonWatchlist = document.getElementById("coin-popup-watchlist");
+
+				getWatchlist().then(watchlist => {
+					if(Object.keys(watchlist).includes(coinID)) {
+						buttonWatchlist.classList.add("active");
+					}
+				}).catch(e => {
+					Notify.error({
+						title:"Error",
+						description:"Couldn't fetch watchlist."
+					});
+					console.log(e);
+				});
+
+				buttonWatchlist.addEventListener("click", () => {
+					if(buttonWatchlist.classList.contains("active")) {
+						deleteWatchlist(coinID).then(response => {
+							if("error" in response) {
+								Notify.error({
+									title:"Error",
+									description:response.error
+								});
+							} else {
+								Notify.success({
+									title:"Removed from Watchlist",
+									description:response.message
+								});
+								buttonWatchlist.classList.remove("active");
+							}
+							clearDashboard();
+							listDashboard();
+						}).catch(e => {
+							Notify.error({
+								title:"Error",
+								description:"Couldn't remove coin from watchlist."
+							});
+							console.log(e);
+						});
+					} else {
+						createWatchlist(coinID, symbol).then(response => {
+							if("error" in response) {
+								Notify.error({
+									title:"Error",
+									description:response.error
+								});
+							} else {
+								Notify.success({
+									title:"Added to Watchlist",
+									description:response.message
+								});
+								buttonWatchlist.classList.add("active");
+							}
+							clearDashboard();
+							listDashboard();
+						}).catch(e => {
+							Notify.error({
+								title:"Error",
+								description:"Couldn't add coin to watchlist."
+							});
+							console.log(e);
+						});
+					}
+				});
 
 				document.getElementById("popup-dismiss").addEventListener("click", () => {
 					hidePopup();
@@ -1688,6 +1888,241 @@ document.addEventListener("DOMContentLoaded", async () => {
 		spanHoldingsTotalValue.textContent = "...";
 	}
 
+	async function populateDashboardMarketList(coins) {
+		if(divDashboardMarketList.getElementsByClassName("coin-wrapper loading").length > 0) {
+			divDashboardMarketList.getElementsByClassName("coin-wrapper loading")[0].remove();
+			divDashboardMarketList.classList.remove("loading");
+
+			if(settings.dashboardWatchlist === "enabled") {
+				let divAdd = document.createElement("div");
+				divAdd.classList.add("coin-wrapper");
+				divAdd.classList.add("add");
+				divAdd.innerHTML = '<svg width="1792" height="1792" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1600 736v192q0 40-28 68t-68 28h-416v416q0 40-28 68t-68 28h-192q-40 0-68-28t-28-68v-416h-416q-40 0-68-28t-28-68v-192q0-40 28-68t68-28h416v-416q0-40 28-68t68-28h192q40 0 68 28t28 68v416h416q40 0 68 28t28 68z"/></svg><span class="add-text">Add Coin...';
+
+				divAdd.addEventListener("click", () => {
+					watchlistPopup();
+				});
+
+				divDashboardMarketList.appendChild(divAdd);
+			}
+		}
+
+		let sortItem = await Storage.getItem("dashboardMarketSortItem");
+		let sortOrder = await Storage.getItem("dashboardMarketSortOrder");
+
+		if(empty(sortItem) || settings.dashboardWatchlist !== "enabled") {
+			sortItem = "marketCap";
+		}
+
+		if(empty(sortOrder)) {
+			sortOrder = "descending";
+		}
+
+		let keys = Object.keys(coins);
+
+		switch(sortItem) {
+			case "coin":
+				keys.sort((a, b) => {
+					return coins[keys[b]].symbol - coins[keys[a]].symbol;
+				});
+				break;
+			case "price":
+				keys.sort((a, b) => {
+					return coins[keys[b]].current_price - coins[keys[a]].current_price;
+				});
+				break;
+			case "marketCap":
+				keys.sort((a, b) => {
+					return coins[keys[b]].market_cap - coins[keys[a]].market_cap;
+				});
+				break;
+			case "change":
+				keys.sort((a, b) => {
+					return coins[keys[b]].price_change_percentage_24h - coins[keys[a]].price_change_percentage_24h;
+				});
+				break;
+		}
+
+		if(sortOrder !== "descending") {
+			keys.reverse();
+		}
+
+		keys.map(key => {
+			let coin = coins[key];
+			let price = parseFloat(coin.current_price);
+
+			if(price > 1) {
+				price = separateThousands(price);
+			}
+
+			let id = "dashboard-market-coin-" + coin.id;
+
+			let marketCap = coin.market_cap;
+
+			if(window.innerWidth <= 1100 && window.innerWidth > 440) {
+				marketCap = abbreviateNumber(marketCap, 2);
+			}
+			else if(window.innerWidth <= 440) {
+				marketCap = abbreviateNumber(marketCap, 0);
+			}
+
+			let name = coin.name;
+			let icon = coin.image;
+			let priceChangeDay = coin.price_change_percentage_24h;
+
+			if(!empty(priceChangeDay)) {
+				priceChangeDay = priceChangeDay.toFixed(2).includes("-") ? priceChangeDay.toFixed(2) : "+" + priceChangeDay.toFixed(2);
+			} else {
+				priceChangeDay = "-";
+			}
+
+			let symbol = coin.symbol;
+
+			let div;
+
+			try {
+				if(document.getElementById(id)) {
+					div = document.getElementById(id);
+					div.getElementsByClassName("price")[0].textContent = currencies[settings.currency] + price;
+					div.getElementsByClassName("market-cap")[0].textContent = currencies[settings.currency] + separateThousands(marketCap);
+					div.getElementsByClassName("day")[0].textContent = priceChangeDay + "%";
+
+					if(priceChangeDay.includes("+")) {
+						div.classList.add("positive");
+						div.classList.remove("negative");
+					} else if(priceChangeDay.includes("-")) {
+						div.classList.remove("positive");
+						div.classList.add("negative");
+					} else {
+						div.classList.remove("positive");
+						div.classList.remove("negative");
+					}
+				} else {
+					div = document.createElement("div");
+					div.id = id;
+					div.classList.add("coin-wrapper");
+
+					if(priceChangeDay.includes("+")) {
+						div.classList.add("positive");
+					} else if(priceChangeDay.includes("-")) {
+						div.classList.add("negative");
+					}
+
+					div.innerHTML = '<img draggable="false" src="' + icon + '" title="' + name + '"><span class="coin" title="' + name + '">' + symbol.toUpperCase() + '</span><span class="price">' + currencies[settings.currency] + price + '</span><span class="market-cap">' + currencies[settings.currency] + separateThousands(marketCap) + '</span><span class="day">' + priceChangeDay + '%</span>';
+
+					if(settings.dashboardWatchlist === "enabled") {
+						div.classList.add("watchlist-row");
+						
+						let buttonWatchlist = document.createElement("button");
+						buttonWatchlist.classList.add("watchlist-button");
+						buttonWatchlist.innerHTML += '<svg width="1792" height="1792" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1728 647q0 22-26 48l-363 354 86 500q1 7 1 20 0 21-10.5 35.5t-30.5 14.5q-19 0-40-12l-449-236-449 236q-22 12-40 12-21 0-31.5-14.5t-10.5-35.5q0-6 2-20l86-500-364-354q-25-27-25-48 0-37 56-46l502-73 225-455q19-41 49-41t49 41l225 455 502 73q56 9 56 46z"/></svg>';
+
+						buttonWatchlist.addEventListener("click", () => {
+							deleteWatchlist(coin.id).then(response => {
+								if("error" in response) {
+									Notify.error({
+										title:"Error",
+										description:response.error
+									});
+								} else {
+									Notify.success({
+										title:"Removed from Watchlist",
+										description:response.message
+									});
+									buttonWatchlist.classList.remove("active");
+								}
+								clearDashboard();
+								listDashboard();
+							}).catch(e => {
+								Notify.error({
+									title:"Error",
+									description:"Couldn't remove coin from watchlist."
+								});
+								console.log(e);
+							});
+						});
+
+						div.appendChild(buttonWatchlist);
+					}
+
+					divDashboardMarketList.appendChild(div);
+				}
+			} catch(e) {
+				console.log(e);
+			}
+		});
+	}
+
+	async function changeSortOrder(list, item, order) {
+		let orders = ["ascending", "descending"];
+		let lists = { "dashboardMarket":"Dashboard Market", "dashboardHoldings":"Dashboard Holdings", "market":"Market", "holdings":"Holdings", "activity":"Activity" };
+		let items = [];
+		if(orders.includes(order) && Object.keys(lists).includes(list)) {
+			let valid = true;
+			switch(list) {
+				case "dashboardMarket":
+					clearDashboard();
+					items = ["coin", "price", "marketCap", "change"];
+					if(!items.includes(item)) {
+						valid = false;
+						console.error("Sort order item not found.");
+					}
+					break;
+				case "dashboardHoldings":
+					clearDashboard();
+					items = ["coin", "amount", "value", "change"];
+					if(!items.includes(item)) {
+						valid = false;
+						console.error("Sort order item not found.");
+					}
+					break;
+				case "market":
+					clearMarketList();
+					items = ["rank", "coin", "price", "marketCap", "change"];
+					if(!items.includes(item)) {
+						valid = false;
+						console.error("Sort order item not found.");
+					}
+					break;
+				case "holdings":
+					clearHoldingsList();
+					items = ["coin", "amount", "value", "change"];
+					if(!items.includes(item)) {
+						valid = false;
+						console.error("Sort order item not found.");
+					}
+					break;
+				case "activity":
+					clearActivityList();
+					items = ["date", "coin", "amount", "type", "notes"];
+					if(!items.includes(item)) {
+						valid = false;
+						console.error("Sort order item not found.");
+					}
+					break;
+			}
+
+			if(valid) {
+				await Storage.setItem(list + "SortOrder", order);
+				await Storage.setItem(list + "SortItem", item);
+
+				if(settings.sortOrderNotification === "enabled") {
+					Notify.success({
+						title:"Changed Sort Order",
+						description:"\"" + lists[list] + "\" list is now sorted by " + capitalizeFirstLetter(item) + " (" + capitalizeFirstLetter(order) + ")."
+					});
+				}
+			}
+
+			listDashboard();
+			listMarket();
+			listHoldings();
+			listActivity();
+		} else {
+			console.error("Sort order invalid, or list not found.");
+		}
+	}
+
 	async function listDashboard() {
 		if(!divLoginWrapper.classList.contains("active") && divNavbarDashboard.classList.contains("active")) {
 			clearInterval(updateDashboardListInterval);
@@ -1698,97 +2133,51 @@ document.addEventListener("DOMContentLoaded", async () => {
 				}
 			}, 5000);
 
-			getMarket(1, 10).then(coins => {
-				if(divDashboardMarketList.getElementsByClassName("coin-wrapper loading").length > 0) {
-					divDashboardMarketList.getElementsByClassName("coin-wrapper loading")[0].remove();
-					divDashboardMarketList.classList.remove("loading");
-				}
+			if(settings.additionalDashboardColumns === "enabled") {
+				divPageDashboard.classList.add("additional-columns");
+			} else {
+				divPageDashboard.classList.remove("additional-columns");
+			}
 
-				let keys = Object.keys(coins);
-				keys.sort((a, b) => {
-					return coins[keys[b]].market_cap - coins[keys[a]].market_cap;
-				});
-
-				keys.map(key => {
-					let coin = coins[key];
-					let price = parseFloat(coin.current_price);
-
-					if(price > 1) {
-						price = separateThousands(price);
-					}
-
-					let id = "dashboard-market-coin-" + coin.id;
-
-					let name = coin.name;
-					let icon = coin.image;
-					let priceChangeDay = coin.price_change_percentage_24h;
-
-					if(!empty(priceChangeDay)) {
-						priceChangeDay = priceChangeDay.toFixed(2).includes("-") ? priceChangeDay.toFixed(2) : "+" + priceChangeDay.toFixed(2);
+			if(settings.dashboardWatchlist === "enabled") {
+				getWatchlist().then(watchlist => {
+					if(empty(watchlist)) {
+						populateDashboardMarketList({});
 					} else {
-						priceChangeDay = "-";
+						getCoinMarketData(Object.keys(watchlist).join("%2c")).then(coins => {
+							populateDashboardMarketList(coins);
+						}).catch(e => {
+							console.log(e);
+						});
 					}
-
-					let symbol = coin.symbol;
-
-					let div;
-
-					try {
-						if(document.getElementById(id)) {
-							div = document.getElementById(id);
-							div.getElementsByClassName("price")[0].textContent = currencies[settings.currency] + price;
-							div.getElementsByClassName("day")[0].textContent = priceChangeDay + "%";
-
-							if(priceChangeDay.includes("+")) {
-								div.classList.add("positive");
-								div.classList.remove("negative");
-							} else if(priceChangeDay.includes("-")) {
-								div.classList.remove("positive");
-								div.classList.add("negative");
-							} else {
-								div.classList.remove("positive");
-								div.classList.remove("negative");
-							}
-						} else {
-							div = document.createElement("div");
-							div.id = id;
-							div.classList.add("coin-wrapper");
-
-							if(priceChangeDay.includes("+")) {
-								div.classList.add("positive");
-							} else if(priceChangeDay.includes("-")) {
-								div.classList.add("negative");
-							}
-
-							div.innerHTML = '<img draggable="false" src="' + icon + '" title="' + name + '"><span class="coin" title="' + name + '">' + symbol.toUpperCase() + '</span><span class="price">' + currencies[settings.currency] + price + '</span><span class="day">' + priceChangeDay + '%</span>';
-
-							divDashboardMarketList.appendChild(div);
-						}
-					} catch(e) {
-						console.log(e);
-					}
-				});
-
-				getGlobal().then(global => {
-					globalData = global.data;
-
-					let marketCap = (global.data.total_market_cap[settings.currency]).toFixed(0);
-					let marketChange = (global.data.market_cap_change_percentage_24h_usd).toFixed(1);
-
-					if(window.innerWidth <= 1020) {
-						marketCap = abbreviateNumber(marketCap, 3);
-					}
-
-					spanDashboardMarketCap.textContent = currencies[settings.currency] + separateThousands(marketCap);
-					spanDashboardMarketChange.textContent = marketChange + "%";
 				}).catch(e => {
 					console.log(e);
 				});
+			} else {
+				getMarket(1, 10).then(coins => {
+					populateDashboardMarketList(coins);
+				}).catch(e => {
+					console.log(e);
+				});
+			}
 
-				updateDashboardListInterval = setInterval(listDashboard, updateInterval);
+			getGlobal().then(global => {
+				globalData = global.data;
+
+				let marketCap = (global.data.total_market_cap[settings.currency]).toFixed(0);
+				let marketChange = (global.data.market_cap_change_percentage_24h_usd).toFixed(1);
+
+				if(window.innerWidth <= 1020) {
+					marketCap = abbreviateNumber(marketCap, 3);
+				}
+
+				spanDashboardMarketCap.textContent = currencies[settings.currency] + separateThousands(marketCap);
+				spanDashboardMarketChange.textContent = marketChange + "%";
 			}).catch(e => {
 				console.log(e);
 			});
+
+			updateDashboardListInterval = setInterval(listDashboard, updateInterval);
 
 			getHoldings().then(async coins => {
 				try {
@@ -1822,20 +2211,60 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 						let mixedValue = 0;
 
-						parseHoldings(coins).then(holdings => {
+						parseHoldings(coins).then(async holdings => {
 							if(divDashboardHoldingsList.getElementsByClassName("coin-wrapper loading").length > 0) {
 								divDashboardHoldingsList.getElementsByClassName("coin-wrapper loading")[0].remove();
 								divDashboardHoldingsList.classList.remove("loading");
 							}
 
-							Object.keys(holdings).map(holding => {
+							let sortItem = await Storage.getItem("dashboardHoldingsSortItem");
+							let sortOrder = await Storage.getItem("dashboardHoldingsSortOrder");
+
+							if(empty(sortItem)) {
+								sortItem = "coin";
+							}
+
+							if(empty(sortOrder)) {
+								sortOrder = "descending";
+							}
+
+							let keys = Object.keys(holdings);
+
+							switch(sortItem) {
+								case "coin":
+									keys.sort((a, b) => {
+										return holdings[b].symbol - holdings[a].symbol;
+									});
+									break;
+								case "amount":
+									keys.sort((a, b) => {
+										return holdings[b].amount - holdings[a].amount;
+									});
+									break;
+								case "value":
+									keys.sort((a, b) => {
+										return holdings[b].value - holdings[a].value;
+									});
+									break;
+								case "change":
+									keys.sort((a, b) => {
+										return parseFloat(holdings[b].change) - parseFloat(holdings[a].change);
+									});
+									break;
+							}
+
+							if(sortOrder !== "descending") {
+								keys.reverse();
+							}
+
+							keys.map(holding => {
 								let coin = holdings[holding];
 				
 								let id = "dashboard-holdings-coin-" + holding;
 								let icon = coin.image;
 								let amount = coin.amount;
 								let symbol = coin.symbol;
-								let value = parseFloat(coin.value);
+								let value = coin.value.toFixed(2);
 
 								if(!empty(transactionsBySymbol)) {
 									if(settings.transactionsAffectHoldings === "mixed") {
@@ -1846,6 +2275,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 										}
 									}
 								}
+
+								if(window.innerWidth <= 600 && window.innerWidth > 440) {
+									value = abbreviateNumber(parseFloat(value), 2);
+								} else if(window.innerWidth <= 440) {
+									value = abbreviateNumber(parseFloat(value), 0);
+								}
+
+								let day = coin.change.includes("-") ? coin.change + "%" : "+" + coin.change + "%";
 
 								if(amount < 0) {
 									amount = 0;
@@ -1862,12 +2299,30 @@ document.addEventListener("DOMContentLoaded", async () => {
 										if(document.getElementById(id)) {
 											div = document.getElementById(id);
 											div.getElementsByClassName("amount")[0].textContent = separateThousands(amount);
+											div.getElementsByClassName("value")[0].textContent = currencies[settings.currency] + separateThousands(value);
+
+											if(day.includes("+")) {
+												div.classList.add("positive");
+												div.classList.remove("negative");
+											} else if(day.includes("-")) {
+												div.classList.remove("positive");
+												div.classList.add("negative");
+											} else {
+												div.classList.remove("positive");
+												div.classList.remove("negative");
+											}
 										} else {
 											div = document.createElement("div");
 											div.id = id;
 											div.classList.add("coin-wrapper");
 
-											div.innerHTML = '<img draggable="false" src="' + icon + '"><span class="coin">' + symbol.toUpperCase() + '</span><span class="amount">' + separateThousands(amount) + '</span>';
+											if(day.includes("+")) {
+												div.classList.add("positive");
+											} else if(day.includes("-")) {
+												div.classList.add("negative");
+											}
+
+											div.innerHTML = '<img draggable="false" src="' + icon + '"><span class="coin">' + symbol.toUpperCase() + '</span><span class="amount">' + separateThousands(amount) + '</span><span class="value">' + currencies[settings.currency] + separateThousands(value) + '</span><span class="day">' + day + '</span>';
 
 											divDashboardHoldingsList.appendChild(div);
 										}
@@ -2409,7 +2864,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 				showLoading(8000, "This might take a while... Don't touch anything.");
 				
-				getCoinMarketData(coinID, settings.currency, previousYear(new Date()), new Date()).then(data => {
+				getCoinHistoricalMarketData(coinID, settings.currency, previousYear(new Date()), new Date()).then(data => {
 					hideLoading();
 					
 					showLoading(1400, "Generating chart...");
@@ -2733,6 +3188,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 				clearDashboard();
 				clearHoldingsList();
 				break;
+			case "dashboardWatchlist":
+				clearDashboard();
+				break;
+			case "additionalDashboardColumns":
+				clearDashboard();
+				break;
 		}
 	}
 
@@ -2754,6 +3215,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 				settings.showTransactionsOnCharts = empty(await Storage.getItem("showTransactionsOnCharts")) ? "disabled" : await Storage.getItem("showTransactionsOnCharts");
 
 				settings.highlightPriceChange = empty(await Storage.getItem("highlightPriceChange")) ? "disabled" : await Storage.getItem("highlightPriceChange");
+
+				settings.dashboardWatchlist = empty(await Storage.getItem("dashboardWatchlist")) ? "disabled" : await Storage.getItem("dashboardWatchlist");
+
+				settings.sortOrderNotification = empty(await Storage.getItem("sortOrderNotification")) ? "disabled" : await Storage.getItem("sortOrderNotification");
+
+				settings.additionalDashboardColumns = empty(await Storage.getItem("additionalDashboardColumns")) ? "disabled" : await Storage.getItem("additionalDashboardColumns");
 
 				settings.defaultPage = empty(await Storage.getItem("defaultPage")) ? "market" : await Storage.getItem("defaultPage");
 
@@ -3349,6 +3816,75 @@ document.addEventListener("DOMContentLoaded", async () => {
 		});
 	}
 
+	function getWatchlist() {
+		return new Promise((resolve, reject) => {
+			try {
+				let xhr = new XMLHttpRequest();
+
+				xhr.addEventListener("readystatechange", () => {
+					if(xhr.readyState === XMLHttpRequest.DONE) {
+						if(validJSON(xhr.responseText)) {
+							resolve(JSON.parse(xhr.responseText));
+						} else {
+							reject("Invalid JSON.");
+						}
+					}
+				});
+
+				xhr.open("GET", api + "watchlist/read.php?token=" + sessionToken, true);
+				xhr.send();
+			} catch(e) {
+				reject(e);
+			}
+		});
+	}
+
+	function createWatchlist(id, symbol) {
+		return new Promise((resolve, reject) => {
+			try {
+				let xhr = new XMLHttpRequest();
+
+				xhr.addEventListener("readystatechange", () => {
+					if(xhr.readyState === XMLHttpRequest.DONE) {
+						if(validJSON(xhr.responseText)) {
+							resolve(JSON.parse(xhr.responseText));
+						} else {
+							reject("Invalid JSON.");
+						}
+					}
+				});
+
+				xhr.open("POST", api + "watchlist/create.php", true);
+				xhr.send(JSON.stringify({ token:sessionToken, id:id, symbol:symbol }));
+			} catch(e) {
+				reject(e);
+			}
+		});
+	}
+
+	function deleteWatchlist(id) {
+		return new Promise((resolve, reject) => {
+			try {
+				let xhr = new XMLHttpRequest();
+
+				xhr.addEventListener("readystatechange", () => {
+					if(xhr.readyState === XMLHttpRequest.DONE) {
+						if(validJSON(xhr.responseText)) {
+							resolve(JSON.parse(xhr.responseText));
+						} else {
+							reject("Invalid JSON.");
+						}
+					}
+				});
+
+				xhr.open("DELETE", api + "watchlist/delete.php", true);
+				xhr.send(JSON.stringify({ token:sessionToken, id:id }));
+			} catch(e) {
+				reject(e);
+			}
+		});
+	}
+
 	function createActivity(id, symbol, date, amount, fee, notes, type, exchange, pair, price, from, to) {
 		return new Promise((resolve, reject) => {
 			try {
@@ -3576,7 +4112,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 		});
 	}
 
-	function getCoinMarketData(ids, currency, from, to) {
+	function getCoinHistoricalMarketData(ids, currency, from, to) {
 		return new Promise((resolve, reject) => {
 			try {
 				let xhr = new XMLHttpRequest();
@@ -3592,6 +4128,29 @@ document.addEventListener("DOMContentLoaded", async () => {
 				});
 
 				xhr.open("GET", api + "historical/read.php?token=" + sessionToken + "&ids=" + ids + "&currency=" + currency + "&from=" + new Date(Date.parse(from)).getTime() / 1000 + "&to=" + new Date(Date.parse(to)).getTime() / 1000, true);
+				xhr.send();
+			} catch(e) {
+				reject(e);
+			}
+		});
+	}
+
+	function getCoinMarketData(ids) {
+		return new Promise((resolve, reject) => {
+			try {
+				let xhr = new XMLHttpRequest();
+
+				xhr.addEventListener("readystatechange", () => {
+					if(xhr.readyState === XMLHttpRequest.DONE) {
+						if(validJSON(xhr.responseText)) {
+							resolve(JSON.parse(xhr.responseText));
+						} else {
+							reject("Invalid JSON.");
+						}
+					}
+				});
+
+				xhr.open("GET", "https://api.coingecko.com/api/v3/coins/markets?vs_currency=" + settings.currency + "&ids=" + ids + "&order=market_cap_desc&per_page=250&page=1&sparkline=false", true);
 				xhr.send();
 			} catch(e) {
 				reject(e);

@@ -98,10 +98,11 @@
 					</div>
 				</div>
 				<div class="dashboard-market-list-wrapper noselect">
-					<div class="headers-wrapper">
-						<span class="header coin">Coin</span>
-						<span class="header price">Price</span>
-						<span class="header day">24h Change</span>
+					<div class="headers-wrapper" data-list="dashboardMarket">
+						<span class="header coin" data-item="coin">Coin</span>
+						<span class="header price" data-item="price">Price</span>
+						<span class="header market-cap" data-item="marketCap">Market Cap</span>
+						<span class="header day" data-item="change">24h Change</span>
 					</div>
 					<div class="dashboard-market-list loading" id="dashboard-market-list">
 						<div class="coin-wrapper loading">
@@ -116,9 +117,11 @@
 					</div>
 				</div>
 				<div class="dashboard-holdings-list-wrapper noselect">
-					<div class="headers-wrapper">
-						<span class="header coin">Coin</span>
-						<span class="header amount">Amount</span>
+					<div class="headers-wrapper" data-list="dashboardHoldings">
+						<span class="header coin" data-item="coin">Coin</span>
+						<span class="header amount" data-item="amount">Amount</span>
+						<span class="header value" data-item="value">Value</span>
+						<span class="header day" data-item="change">24h Change</span>
 					</div>
 					<div class="dashboard-holdings-list loading" id="dashboard-holdings-list">
 						<div class="coin-wrapper loading">
@@ -154,12 +157,12 @@
 					</div>
 				</div>
 				<div class="market-list-wrapper noselect">
-					<div class="headers-wrapper">
-						<span class="header rank">#</span>
-						<span class="header coin">Coin</span>
-						<span class="header price">Price</span>
-						<span class="header market-cap">Market Cap</span>
-						<span class="header day">24h Change</span>
+					<div class="headers-wrapper" data-list="market">
+						<span class="header rank" data-item="rank">#</span>
+						<span class="header coin" data-item="coin">Coin</span>
+						<span class="header price" data-item="price">Price</span>
+						<span class="header market-cap" data-item="market-cap">Market Cap</span>
+						<span class="header day" data-item="change">24h Change</span>
 					</div>
 					<div class="market-list loading" id="market-list" data-page="1">
 						<div class="coin-wrapper loading">
@@ -174,11 +177,11 @@
 					<button id="more-remove">Remove</button>
 				</div>
 				<div class="holdings-list-wrapper noselect">
-					<div class="headers-wrapper">
-						<span class="header coin">Coin</span>
-						<span class="header amount">Amount</span>
-						<span class="header value">Value</span>
-						<span class="header day">24h Price Change</span>
+					<div class="headers-wrapper" data-list="holdings">
+						<span class="header coin" data-item="coin">Coin</span>
+						<span class="header amount" data-item="amount">Amount</span>
+						<span class="header value" data-item="value">Value</span>
+						<span class="header day" data-item="change">24h Price Change</span>
 					</div>
 					<div class="holdings-list loading" id="holdings-list">
 						<div class="coin-wrapper loading">
@@ -199,12 +202,12 @@
 			</div>
 			<div class="page activity" id="page-activity">
 				<div class="activity-list-wrapper noselect">
-					<div class="headers-wrapper">
-						<span class="header date">Date</span>
-						<span class="header symbol">Coin</span>
-						<span class="header amount">Amount</span>
-						<span class="header type">Type</span>
-						<span class="header notes">Notes</span>
+					<div class="headers-wrapper" data-list="activity">
+						<span class="header date" data-item="date">Date</span>
+						<span class="header symbol" data-item="coin">Coin</span>
+						<span class="header amount" data-item="amount">Amount</span>
+						<span class="header type" data-item="type">Type</span>
+						<span class="header notes" data-item="notes">Notes</span>
 					</div>
 					<div class="activity-list loading" id="activity-list">
 						<div class="event-wrapper loading">
@@ -305,6 +308,33 @@
 						<button class="choice" data-value="disabled">Disabled</button>
 						<button class="choice" data-value="row">Row</button>
 						<button class="choice" data-value="text">Text</button>
+					</div>
+				</div>
+				<div class="section">
+					<div class="top noselect">
+						<span class="title">Dashboard Watchlist</span>
+					</div>
+					<div class="bottom settings-choices-wrapper" data-key="dashboardWatchlist">
+						<button class="choice" data-value="disabled">Disabled</button>
+						<button class="choice" data-value="enabled">Enabled</button>
+					</div>
+				</div>
+				<div class="section">
+					<div class="top noselect">
+						<span class="title">Sort Order Notification</span>
+					</div>
+					<div class="bottom settings-choices-wrapper" data-key="sortOrderNotification">
+						<button class="choice" data-value="disabled">Disabled</button>
+						<button class="choice" data-value="enabled">Enabled</button>
+					</div>
+				</div>
+				<div class="section">
+					<div class="top noselect">
+						<span class="title">Additional Dashboard Columns</span>
+					</div>
+					<div class="bottom settings-choices-wrapper" data-key="additionalDashboardColumns">
+						<button class="choice" data-value="disabled">Disabled</button>
+						<button class="choice" data-value="enabled">Enabled</button>
 					</div>
 				</div>
 				<div class="section">

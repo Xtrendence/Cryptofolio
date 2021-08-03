@@ -20,11 +20,14 @@ export default function Dashboard({ navigation }) {
 	const loadingText = "Loading...";
 
 	const [pageKey, setPageKey] = React.useState(epoch());
-	const [holdingsKey, setHoldingsKey] = React.useState(epoch());
+	const [marketKey, setMarketKey] = React.useState(epoch() + "-market");
+	const [holdingsKey, setHoldingsKey] = React.useState(epoch() + "-holdings");
 
 	const [refreshing, setRefreshing] = React.useState(false);
 
 	const [transactionsAffectHoldingsState, setTransactionsAffectHoldingsState] = React.useState("disabled");
+
+	const [additionalDashboardColumnsState, setAdditionalDashboardColumnsState] = React.useState("disabled");
 
 	const [marketCap, setMarketCap] = React.useState(loadingText);
 	const [marketChange, setMarketChange] = React.useState();
@@ -66,8 +69,11 @@ export default function Dashboard({ navigation }) {
 	}, [theme]);
 
 	useEffect(() => {
-		setHoldingsKey(epoch());
-	}, [transactionsAffectHoldingsState]);
+		setMarketData([<Text key="loading" style={[styles.headerText, styles[`headerText${theme}`]]}>Loading...</Text>]);
+		setHoldingsData([<Text key="loading" style={[styles.headerText, styles[`headerText${theme}`]]}>Loading...</Text>]);
+		setMarketKey(epoch() + "-market");
+		setHoldingsKey(epoch() + "-holdings");
+	}, [transactionsAffectHoldingsState, additionalDashboardColumnsState]);
 
 	const onRefresh = React.useCallback(() => {
 		setRefreshing(true);
@@ -82,22 +88,26 @@ export default function Dashboard({ navigation }) {
 			<LinearGradient style={[styles.card, { marginBottom:20, marginTop:0 }]} colors={globalColors[theme].purpleGradient} useAngle={true} angle={45}>
 				<Text style={[styles.cardText, styles[`cardText${theme}`]]}>{marketCap} {marketChange}</Text>
 			</LinearGradient>
-			<ScrollView ref={marketRef} style={[styles.tableWrapper, styles[`tableWrapper${theme}`]]} contentContainerStyle={{ paddingLeft:20, paddingTop:10, paddingBottom:10 }} nestedScrollEnabled={true}>
-				{ !empty(marketData) &&
-					marketData.map(row => {
-						return row;
-					})
-				}
+			<ScrollView ref={marketRef} key={marketKey} style={[styles.tableWrapper, styles[`tableWrapper${theme}`]]} nestedScrollEnabled={true} horizontal={true}>
+				<ScrollView contentContainerStyle={{ paddingLeft:20, paddingTop:10, paddingBottom:10, minWidth:screenWidth - 40 }} nestedScrollEnabled={true} horizontal={false}>
+					{ !empty(marketData) &&
+						marketData.map(row => {
+							return row;
+						})
+					}
+				</ScrollView>
 			</ScrollView>
 			<LinearGradient style={[styles.card, { marginBottom:20 }]} colors={globalColors[theme].blueGradient} useAngle={true} angle={45}>
 				<Text style={[styles.cardText, styles[`cardText${theme}`]]}>{holdingsValue}</Text>
 			</LinearGradient>
-			<ScrollView ref={holdingsRef} key={holdingsKey} style={[styles.tableWrapper, styles[`tableWrapper${theme}`], { marginBottom:60 }]} contentContainerStyle={{ paddingLeft:20, paddingTop:10, paddingBottom:10 }} nestedScrollEnabled={true}>
-				{ !empty(holdingsData) &&
-					holdingsData.map(row => {
-						return row;
-					})
-				}
+			<ScrollView ref={holdingsRef} key={holdingsKey} style={[styles.tableWrapper, styles[`tableWrapper${theme}`], { marginBottom:60 }]} nestedScrollEnabled={true}>
+				<ScrollView contentContainerStyle={{ paddingLeft:20, paddingTop:10, paddingBottom:10, minWidth:screenWidth - 40 }} nestedScrollEnabled={true} horizontal={false}>
+					{ !empty(holdingsData) &&
+						holdingsData.map(row => {
+							return row;
+						})
+					}
+				</ScrollView>
 			</ScrollView>
 			<StatusBar style={theme === "Dark" ? "light" : "dark"}/>
 		</ScrollView>
@@ -109,6 +119,15 @@ export default function Dashboard({ navigation }) {
 		let currency = await AsyncStorage.getItem("currency");
 		if(empty(currency)) {
 			currency = "usd";
+		}
+
+		let additionalDashboardColumns = await AsyncStorage.getItem("additionalDashboardColumns");
+		if(empty(additionalDashboardColumns)) {
+			additionalDashboardColumns = "disabled";
+		}
+
+		if(additionalDashboardColumnsState !== additionalDashboardColumns) {
+			setAdditionalDashboardColumnsState(additionalDashboardColumns);
 		}
 
 		let theme = empty(await AsyncStorage.getItem("theme")) ? "Light" : await AsyncStorage.getItem("theme");
@@ -132,6 +151,12 @@ export default function Dashboard({ navigation }) {
 					<Text style={[styles.headerText, styles[`headerText${theme}`], styles.headerRank]}>#</Text>
 					<Text style={[styles.headerText, styles[`headerText${theme}`], styles.headerCoin]}>Coin</Text>
 					<Text style={[styles.headerText, styles[`headerText${theme}`], styles.headerPrice]}>Price</Text>
+					{ (additionalDashboardColumns === "enabled") &&
+						<View style={{ flexDirection:"row" }}>
+							<Text style={[styles.headerText, styles[`headerText${theme}`], styles.headerMarketCap]}>Market Cap</Text>
+							<Text style={[styles.headerText, styles[`headerText${theme}`], styles.headerDay]}>24h Change</Text>
+						</View>
+					}
 				</View>
 			);
 
@@ -149,6 +174,16 @@ export default function Dashboard({ navigation }) {
 					price = separateThousands(price);
 				}
 
+				let marketCap = abbreviateNumber(coin.market_cap, 2);
+
+				let priceChangeDay = coin.price_change_percentage_24h;
+
+				if(!empty(priceChangeDay)) {
+					priceChangeDay = priceChangeDay.toFixed(2).includes("-") ? priceChangeDay.toFixed(2) : "+" + priceChangeDay.toFixed(2);
+				} else {
+					priceChangeDay = "-";
+				}
+
 				let icon = coin.image;
 
 				let symbol = coin.symbol.toUpperCase();
@@ -159,6 +194,12 @@ export default function Dashboard({ navigation }) {
 						<Image style={styles.cellImage} source={{uri:icon}}/>
 						<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellSymbol]}>{symbol}</Text>
 						<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellPrice]}>{currencies[currency] + price}</Text>
+						{ (additionalDashboardColumns === "enabled") &&
+							<View style={{ flexDirection:"row" }}>
+								<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellMarketCap]}>{currencies[currency] + marketCap}</Text>
+								<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellDay]}>{priceChangeDay}</Text>
+							</View>
+						}
 					</View>
 				);
 			});
@@ -215,6 +256,15 @@ export default function Dashboard({ navigation }) {
 
 		if(transactionsAffectHoldingsState !== transactionsAffectHoldings) {
 			setTransactionsAffectHoldingsState(transactionsAffectHoldings);
+		}
+		
+		let additionalDashboardColumns = await AsyncStorage.getItem("additionalDashboardColumns");
+		if(empty(additionalDashboardColumns)) {
+			additionalDashboardColumns = "disabled";
+		}
+
+		if(additionalDashboardColumnsState !== additionalDashboardColumns) {
+			setAdditionalDashboardColumnsState(additionalDashboardColumns);
 		}
 
 		let theme = empty(await AsyncStorage.getItem("theme")) ? "Light" : await AsyncStorage.getItem("theme");

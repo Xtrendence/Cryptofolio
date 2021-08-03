@@ -20,7 +20,7 @@ export default styles = StyleSheet.create({
 		shadowRadius:globalStyles.shadowRadius,
 		elevation:globalStyles.shadowElevation,
 		borderRadius:globalStyles.borderRadius,
-		maxHeight:(screenHeight / 2) - 60
+		maxHeight:(screenHeight / 2) - 60,
 	},
 	tableWrapperDark: {
 		backgroundColor:globalColors["Dark"].mainFirst
@@ -55,6 +55,17 @@ export default styles = StyleSheet.create({
 		width:100,
 		marginLeft:15,
 	},
+	headerPrice: {
+		width:100
+	},
+	headerMarketCap: {
+		width:140
+	},
+	headerDay: {
+		width:120,
+		textAlign:"center",
+		paddingRight:20
+	},
 	cellText: {
 		color:globalColors["Light"].mainContrastLight
 	},
@@ -72,6 +83,16 @@ export default styles = StyleSheet.create({
 		height:30,
 		marginRight:10,
 		borderRadius:15,
+	},
+	cellPrice: {
+		width:100
+	},
+	cellMarketCap: {
+		width:140
+	},
+	cellDay: {
+		width:100,
+		textAlign:"center",
 	},
 	card: {
 		shadowColor:globalStyles.shadowColor,

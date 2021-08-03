@@ -28,7 +28,7 @@ export default styles = StyleSheet.create({
 	row: {
 		flexDirection:"row",
 		alignItems:"center",
-		paddingLeft:4,
+		paddingLeft:24,
 		paddingTop:8,
 		paddingBottom:8,
 	},
@@ -131,5 +131,33 @@ export default styles = StyleSheet.create({
 	},
 	cardTextDark: {
 		color:globalColors["Dark"].accentContrast
-	}
+	},
+	rowHighlightRowPositiveLight: {
+		backgroundColor:"rgba(0,255,150,0.1)"
+	},
+	rowHighlightRowNegativeLight: {
+		backgroundColor:"rgba(255,0,0,0.1)"
+	},
+	rowHighlightRowPositiveDark: {
+		backgroundColor:"rgba(0,255,150,0.1)"
+	},
+	rowHighlightRowNegativeDark: {
+		backgroundColor:"rgba(255,0,0,0.15)"
+	},
+	cellHighlightTextPositiveLight: {
+		color:"rgb(40,150,70)"
+	},
+	cellHighlightTextNegativeLight: {
+		color:"rgb(210,40,40)"
+	},
+	cellHighlightTextPositiveDark: {
+		color:"rgb(20,180,120)"
+	},
+	cellHighlightTextNegativeDark: {
+		color:"rgb(210,50,50)"
+	},
+	loadingText: {
+		marginLeft:20,
+		marginTop:2,
+	},
 });

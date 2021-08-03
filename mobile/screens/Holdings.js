@@ -1116,18 +1116,14 @@ export default function Holdings({ navigation }) {
 
 						holdingsObject[holding] = { amount:amount, value:coin.value };
 
-						let enableModal = true;
-
 						if(!empty(transactionsBySymbol)) {
 							if(transactionsAffectHoldings === "mixed") {
 								if(holding in transactionsBySymbol) {
 									amount = parseFloat(amount) + transactionsBySymbol[holding].amount;
 									value = (coin.price * amount).toFixed(2);
 									mixedValue += parseFloat(value.replaceAll(",", ""));
-									enableModal = false;
+									value = separateThousands(abbreviateNumber(parseFloat(value.replaceAll(",", "")), 2));
 								}
-							} else if(transactionsAffectHoldings === "override") {
-								enableModal = false;
 							}
 						}
 

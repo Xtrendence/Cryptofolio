@@ -22,6 +22,8 @@ export default function Settings({ navigation, route }) {
 
 	const [transactionsAffectHoldings, setTransactionsAffectHoldings] = React.useState();
 
+	const [additionalDashboardColumns, setAdditionalDashboardColumns] = React.useState();
+
 	const [highlightPriceChange, setHighlightPriceChange] = React.useState();
 
 	const [defaultPage, setDefaultPage] = React.useState();
@@ -93,6 +95,17 @@ export default function Settings({ navigation, route }) {
 					</TouchableOpacity>
 					<TouchableOpacity style={[styles.inlineButton, styles[`inlineButton${theme}`], (currency === "cad") ? styles.inlineButtonActive : null]} onPress={() => { changeCurrency("cad")}}>
 						<Text style={[styles.buttonText, styles[`buttonText${theme}`], (currency === "cad") ? styles.buttonTextActive : null]}>CAD</Text>
+					</TouchableOpacity>
+				</View>
+			</View>
+			<View style={[styles.section, styles[`section${theme}`]]}>
+				<Text style={[styles.header, styles[`header${theme}`]]}>Additional Dashboard Columns</Text>
+				<View style={styles.container}>
+					<TouchableOpacity style={[styles.inlineButton, styles[`inlineButton${theme}`], (additionalDashboardColumns === "disabled") ? styles.inlineButtonActive : null]} onPress={() => { changeAdditionalDashboardColumns("disabled")}}>
+						<Text style={[styles.buttonText, styles[`buttonText${theme}`], (additionalDashboardColumns === "disabled") ? styles.buttonTextActive : null]}>Disabled</Text>
+					</TouchableOpacity>
+					<TouchableOpacity style={[styles.inlineButton, styles[`inlineButton${theme}`], (additionalDashboardColumns === "enabled") ? styles.inlineButtonActive : null]} onPress={() => { changeAdditionalDashboardColumns("enabled")}}>
+						<Text style={[styles.buttonText, styles[`buttonText${theme}`], (additionalDashboardColumns === "enabled") ? styles.buttonTextActive : null]}>Enabled</Text>
 					</TouchableOpacity>
 				</View>
 			</View>
@@ -382,6 +395,17 @@ export default function Settings({ navigation, route }) {
 		}
 	}
 
+	async function changeAdditionalDashboardColumns(additionalDashboardColumns) {
+		let validOptions = ["disabled", "enabled"];
+		if(empty(additionalDashboardColumns) || !validOptions.includes(additionalDashboardColumns)) {
+			setAdditionalDashboardColumns("disabled");
+			await AsyncStorage.setItem("additionalDashboardColumns", "disabled");
+		} else {
+			setAdditionalDashboardColumns(additionalDashboardColumns);
+			await AsyncStorage.setItem("additionalDashboardColumns", additionalDashboardColumns);
+		}
+	}
+
 	async function changeHighlightPriceChange(highlightPriceChange) {
 		let validOptions = ["disabled", "row", "text"];
 		if(empty(highlightPriceChange) || !validOptions.includes(highlightPriceChange)) {
@@ -405,6 +429,12 @@ export default function Settings({ navigation, route }) {
 			transactionsAffectHoldings = "disabled";
 		}
 		setTransactionsAffectHoldings(transactionsAffectHoldings);
+
+		let additionalDashboardColumns = await AsyncStorage.getItem("additionalDashboardColumns");
+		if(empty(additionalDashboardColumns)) {
+			additionalDashboardColumns = "disabled";
+		}
+		setAdditionalDashboardColumns(additionalDashboardColumns);
 
 		let highlightPriceChange = await AsyncStorage.getItem("highlightPriceChange");
 		if(empty(highlightPriceChange)) {

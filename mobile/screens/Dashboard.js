@@ -100,7 +100,7 @@ export default function Dashboard({ navigation }) {
 			<LinearGradient style={[styles.card, { marginBottom:20 }]} colors={globalColors[theme].blueGradient} useAngle={true} angle={45}>
 				<Text style={[styles.cardText, styles[`cardText${theme}`]]}>{holdingsValue}</Text>
 			</LinearGradient>
-			<ScrollView ref={holdingsRef} key={holdingsKey} style={[styles.tableWrapper, styles[`tableWrapper${theme}`], { marginBottom:60 }]} nestedScrollEnabled={true}>
+			<ScrollView ref={holdingsRef} key={holdingsKey} style={[styles.tableWrapper, styles[`tableWrapper${theme}`], { marginBottom:60 }]} nestedScrollEnabled={true} horizontal={true}>
 				<ScrollView contentContainerStyle={{ paddingLeft:20, paddingTop:10, paddingBottom:10, minWidth:screenWidth - 40 }} nestedScrollEnabled={true} horizontal={false}>
 					{ !empty(holdingsData) &&
 						holdingsData.map(row => {
@@ -197,7 +197,7 @@ export default function Dashboard({ navigation }) {
 						{ (additionalDashboardColumns === "enabled") &&
 							<View style={{ flexDirection:"row" }}>
 								<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellMarketCap]}>{currencies[currency] + marketCap}</Text>
-								<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellDay]}>{priceChangeDay}</Text>
+								<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellDay]}>{priceChangeDay}%</Text>
 							</View>
 						}
 					</View>
@@ -249,6 +249,11 @@ export default function Dashboard({ navigation }) {
 	}
 
 	async function getHoldings() {
+		let currency = await AsyncStorage.getItem("currency");
+		if(empty(currency)) {
+			currency = "usd";
+		}
+
 		let transactionsAffectHoldings = await AsyncStorage.getItem("transactionsAffectHoldings");
 		if(empty(transactionsAffectHoldings)) {
 			transactionsAffectHoldings = "disabled";
@@ -322,6 +327,12 @@ export default function Dashboard({ navigation }) {
 							<Text style={[styles.headerText, styles[`headerText${theme}`], styles.headerRank]}>#</Text>
 							<Text style={[styles.headerText, styles[`headerText${theme}`], styles.headerCoin]}>Coin</Text>
 							<Text style={[styles.headerText, styles[`headerText${theme}`], styles.headerAmount]}>Amount</Text>
+							{ (additionalDashboardColumns === "enabled") &&
+								<View style={{ flexDirection:"row" }}>
+									<Text style={[styles.headerText, styles[`headerText${theme}`], styles.headerValue]}>Value</Text>
+									<Text style={[styles.headerText, styles[`headerText${theme}`], styles.headerDay]}>24h Change</Text>
+								</View>
+							}
 						</View>
 					);
 
@@ -337,6 +348,9 @@ export default function Dashboard({ navigation }) {
 						let icon = coin.image;
 						let amount = coin.amount;
 						let symbol = coin.symbol;
+						let value = separateThousands(abbreviateNumber(coin.value.toFixed(2), 2));
+
+						let day = coin.change.includes("-") ? coin.change + "%" : "+" + coin.change + "%";
 
 						let enableModal = true;
 
@@ -357,12 +371,18 @@ export default function Dashboard({ navigation }) {
 							amount = 0;
 						}
 
+						if(value < 0) {
+							value = 0;
+						}
+
 						data.push(
 							<View key={epoch() + holding} style={styles.row}>
 								<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellRank]}>{rank}</Text>
 								<Image style={styles.cellImage} source={{uri:icon}}/>
 								<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellSymbol]}>{symbol}</Text>
 								<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellAmount]}>{separateThousands(amount)}</Text>
+								<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellValue]} ellipsizeMode="tail">{currencies[currency] + value}</Text>
+								<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellDay]}>{day}</Text>
 							</View>
 						);
 					});

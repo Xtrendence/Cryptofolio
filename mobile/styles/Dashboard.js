@@ -59,7 +59,14 @@ export default styles = StyleSheet.create({
 		width:100
 	},
 	headerMarketCap: {
-		width:140
+		width:140,
+		textAlign:"center"
+	},
+	headerAmount: {
+		width:100
+	},
+	headerValue: {
+		width:100
 	},
 	headerDay: {
 		width:120,
@@ -88,7 +95,14 @@ export default styles = StyleSheet.create({
 		width:100
 	},
 	cellMarketCap: {
-		width:140
+		width:140,
+		textAlign:"center"
+	},
+	cellAmount: {
+		width:100,
+	},
+	cellValue: {
+		width:100
 	},
 	cellDay: {
 		width:100,

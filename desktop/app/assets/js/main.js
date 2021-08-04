@@ -400,7 +400,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 	for(let i = 0; i < divHeaderWrappers.length; i++) {
 		let wrapper = divHeaderWrappers[i];
 		let list = wrapper.getAttribute("data-list");
-		if(list !== "market") {
+		let validLists = ["dashboardMarket", "dashboardHoldings"];
+		if(validLists.includes(list)) {
 			let headers = wrapper.getElementsByClassName("header");
 			for(let j = 0; j < headers.length; j++) {
 				let header = headers[j];

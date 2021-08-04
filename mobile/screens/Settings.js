@@ -22,6 +22,8 @@ export default function Settings({ navigation, route }) {
 
 	const [transactionsAffectHoldings, setTransactionsAffectHoldings] = React.useState();
 
+	const [dashboardWatchlist, setDashboardWatchlist] = React.useState();
+
 	const [additionalDashboardColumns, setAdditionalDashboardColumns] = React.useState();
 
 	const [highlightPriceChange, setHighlightPriceChange] = React.useState();
@@ -95,6 +97,17 @@ export default function Settings({ navigation, route }) {
 					</TouchableOpacity>
 					<TouchableOpacity style={[styles.inlineButton, styles[`inlineButton${theme}`], (currency === "cad") ? styles.inlineButtonActive : null]} onPress={() => { changeCurrency("cad")}}>
 						<Text style={[styles.buttonText, styles[`buttonText${theme}`], (currency === "cad") ? styles.buttonTextActive : null]}>CAD</Text>
+					</TouchableOpacity>
+				</View>
+			</View>
+			<View style={[styles.section, styles[`section${theme}`]]}>
+				<Text style={[styles.header, styles[`header${theme}`]]}>Dashboard Watchlist</Text>
+				<View style={styles.container}>
+					<TouchableOpacity style={[styles.inlineButton, styles[`inlineButton${theme}`], (dashboardWatchlist === "disabled") ? styles.inlineButtonActive : null]} onPress={() => { changeDashboardWatchlist("disabled")}}>
+						<Text style={[styles.buttonText, styles[`buttonText${theme}`], (dashboardWatchlist === "disabled") ? styles.buttonTextActive : null]}>Disabled</Text>
+					</TouchableOpacity>
+					<TouchableOpacity style={[styles.inlineButton, styles[`inlineButton${theme}`], (dashboardWatchlist === "enabled") ? styles.inlineButtonActive : null]} onPress={() => { changeDashboardWatchlist("enabled")}}>
+						<Text style={[styles.buttonText, styles[`buttonText${theme}`], (dashboardWatchlist === "enabled") ? styles.buttonTextActive : null]}>Enabled</Text>
 					</TouchableOpacity>
 				</View>
 			</View>
@@ -392,6 +405,17 @@ export default function Settings({ navigation, route }) {
 		} else {
 			setTransactionsAffectHoldings(transactionsAffectHoldings);
 			await AsyncStorage.setItem("transactionsAffectHoldings", transactionsAffectHoldings);
+		}
+	}
+
+	async function changeDashboardWatchlist(dashboardWatchlist) {
+		let validOptions = ["disabled", "enabled"];
+		if(empty(dashboardWatchlist) || !validOptions.includes(dashboardWatchlist)) {
+			setDashboardWatchlist("disabled");
+			await AsyncStorage.setItem("dashboardWatchlist", "disabled");
+		} else {
+			setDashboardWatchlist(dashboardWatchlist);
+			await AsyncStorage.setItem("dashboardWatchlist", dashboardWatchlist);
 		}
 	}
 

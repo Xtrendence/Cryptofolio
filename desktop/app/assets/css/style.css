@@ -262,6 +262,9 @@ input[type=number] {
 .popup-wrapper .bottom input.flatpickr-input:read-only {
 	pointer-events:all;
 }
+.popup-wrapper .bottom input::placeholder {
+	color:var(--main-contrast-lightest);
+}
 .popup-wrapper .bottom button {
 	display:block;
 	padding:0 10px 0 10px;
@@ -426,6 +429,9 @@ input[type=number] {
 	font-size:16px;
 	border-radius:var(--border-radius);
 	background:var(--main-first);
+}
+.login-wrapper input::placeholder {
+	color:var(--main-contrast-lightest);
 }
 .login-wrapper button {
 	display:block;
@@ -1444,6 +1450,9 @@ html.dark .highlight-text .coin-wrapper.negative span {
 	width:calc(100% - 60px);
 	box-shadow:var(--shadow-smooth);
 }
+.activity-search-wrapper input::placeholder {
+	color:var(--main-contrast-lightest);
+}
 .activity-search-wrapper button {
 	margin-top:14px;
 	width:calc(100% - 40px);
@@ -1578,6 +1587,9 @@ html.dark .highlight-text .coin-wrapper.negative span {
 	color:var(--main-contrast);
 	font-size:16px;
 	box-shadow:var(--shadow-smooth);
+}
+.settings .section input::placeholder {
+	color:var(--main-contrast-lightest);
 }
 .settings .section .description {
 	margin-bottom:20px;

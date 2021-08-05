@@ -470,7 +470,7 @@ input[type=number] {
 	border-radius:var(--border-radius);
 	box-shadow:var(--shadow-smooth);
 	background:var(--main-first);
-	overflow:auto hidden;
+	overflow:auto;
 }
 .dashboard-holdings-list-wrapper {
 	position:absolute;
@@ -481,7 +481,7 @@ input[type=number] {
 	border-radius:var(--border-radius);
 	box-shadow:var(--shadow-smooth);
 	background:var(--main-first);
-	overflow:auto hidden;
+	overflow:auto;
 }
 
 .dashboard-market-list-wrapper .header, .dashboard-holdings-list-wrapper .header {
@@ -1000,7 +1000,7 @@ html.dark .highlight-text .coin-wrapper.negative span {
 	min-width:100%;
 	width:auto;
 	height:calc(100% - 60px);
-	overflow:visible;
+	overflow:auto;
 	scroll-behavior:smooth;
 	-webkit-overflow-scrolling:touch;
 }

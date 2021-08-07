@@ -454,6 +454,12 @@ export default function Settings({ navigation, route }) {
 		}
 		setTransactionsAffectHoldings(transactionsAffectHoldings);
 
+		let dashboardWatchlist = await AsyncStorage.getItem("dashboardWatchlist");
+		if(empty(dashboardWatchlist)) {
+			dashboardWatchlist = "disabled";
+		}
+		setDashboardWatchlist(dashboardWatchlist);
+
 		let additionalDashboardColumns = await AsyncStorage.getItem("additionalDashboardColumns");
 		if(empty(additionalDashboardColumns)) {
 			additionalDashboardColumns = "disabled";

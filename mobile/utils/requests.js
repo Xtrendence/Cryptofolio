@@ -177,3 +177,28 @@ export async function importData(type, rows) {
 		});
 	});
 }
+
+export async function getWatchlist() {
+	return new Promise(async (resolve, reject) => {
+		let api = await AsyncStorage.getItem("api");
+		let token = await AsyncStorage.getItem("token");
+
+		let endpoint = api + "watchlist/read.php?platform=app&token=" + token;
+
+		fetch(endpoint, {
+			method: "GET",
+			headers: {
+				Accept: "application/json", "Content-Type": "application/json"
+			}
+		})
+		.then((response) => {
+			return response.json();
+		})
+		.then(async (watchlist) => {
+			resolve(watchlist);
+		}).catch(error => {
+			console.log(error);
+			reject(error);
+		});
+	});
+}

@@ -7,6 +7,7 @@ import { globalColors, globalStyles } from "../styles/global";
 import { ThemeContext } from "../utils/theme";
 import { empty, separateThousands, abbreviateNumber, epoch, wait, currencies, capitalizeFirstLetter } from "../utils/utils";
 import styles from "../styles/Dashboard";
+import { getWatchlist } from "../utils/requests";
 
 const screenWidth = Dimensions.get("screen").width;
 const screenHeight = Dimensions.get("screen").height;
@@ -25,6 +26,7 @@ export default function Dashboard({ navigation }) {
 
 	const [refreshing, setRefreshing] = React.useState(false);
 
+	const [dashboardWatchlistState, setDashboardWatchlistState] = React.useState("disabled");
 	const [transactionsAffectHoldingsState, setTransactionsAffectHoldingsState] = React.useState("disabled");
 	const [additionalDashboardColumnsState, setAdditionalDashboardColumnsState] = React.useState("disabled");
 	const [highlightPriceChangeState, setHighlightPriceChangeState] = React.useState("disabled");
@@ -73,7 +75,7 @@ export default function Dashboard({ navigation }) {
 		setHoldingsData([<Text key="loading" style={[styles.loadingText, styles.headerText, styles[`headerText${theme}`]]}>Loading...</Text>]);
 		setMarketKey(epoch() + "-market");
 		setHoldingsKey(epoch() + "-holdings");
-	}, [transactionsAffectHoldingsState, additionalDashboardColumnsState, highlightPriceChangeState]);
+	}, [dashboardWatchlistState, transactionsAffectHoldingsState, additionalDashboardColumnsState, highlightPriceChangeState]);
 
 	const onRefresh = React.useCallback(() => {
 		setRefreshing(true);
@@ -121,6 +123,15 @@ export default function Dashboard({ navigation }) {
 			currency = "usd";
 		}
 
+		let dashboardWatchlist = await AsyncStorage.getItem("dashboardWatchlist");
+		if(empty(dashboardWatchlist)) {
+			dashboardWatchlist = "disabled";
+		}
+
+		if(dashboardWatchlistState !== dashboardWatchlist) {
+			setDashboardWatchlistState(dashboardWatchlist);
+		}
+
 		let additionalDashboardColumns = await AsyncStorage.getItem("additionalDashboardColumns");
 		if(empty(additionalDashboardColumns)) {
 			additionalDashboardColumns = "disabled";
@@ -142,6 +153,13 @@ export default function Dashboard({ navigation }) {
 		let theme = empty(await AsyncStorage.getItem("theme")) ? "Light" : await AsyncStorage.getItem("theme");
 
 		let endpoint = "https://api.coingecko.com/api/v3/coins/markets?vs_currency=" + currency + "&order=market_cap_desc&per_page=10&page=1&sparkline=false";
+
+		let watchlist;
+
+		if(dashboardWatchlist === "enabled") {
+			watchlist = await getWatchlist();
+			endpoint = "https://api.coingecko.com/api/v3/coins/markets?vs_currency=" + currency + "&order=market_cap_desc&per_page=100&page=1&sparkline=false&ids=" + Object.keys(watchlist).join("%2C");
+		}
 
 		fetch(endpoint, {
 			method: "GET",

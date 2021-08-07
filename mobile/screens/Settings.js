@@ -26,6 +26,11 @@ export default function Settings({ navigation, route }) {
 
 	const [additionalDashboardColumns, setAdditionalDashboardColumns] = React.useState();
 
+	const [dashboardMarketSorting, setDashboardMarketSorting] = React.useState();
+	const [dashboardMarketSortOrder, setDashboardMarketSortOrder] = React.useState();
+	const [dashboardHoldingsSorting, setDashboardHoldingsSorting] = React.useState();
+	const [dashboardHoldingsSortOrder, setDashboardHoldingsSortOrder] = React.useState();
+
 	const [highlightPriceChange, setHighlightPriceChange] = React.useState();
 
 	const [defaultPage, setDefaultPage] = React.useState();
@@ -119,6 +124,56 @@ export default function Settings({ navigation, route }) {
 					</TouchableOpacity>
 					<TouchableOpacity style={[styles.inlineButton, styles[`inlineButton${theme}`], (additionalDashboardColumns === "enabled") ? styles.inlineButtonActive : null]} onPress={() => { changeAdditionalDashboardColumns("enabled")}}>
 						<Text style={[styles.buttonText, styles[`buttonText${theme}`], (additionalDashboardColumns === "enabled") ? styles.buttonTextActive : null]}>Enabled</Text>
+					</TouchableOpacity>
+				</View>
+			</View>
+			<View style={[styles.section, styles[`section${theme}`]]}>
+				<Text style={[styles.header, styles[`header${theme}`]]}>Dashboard Market Sorting</Text>
+				<View style={styles.container}>
+					<TouchableOpacity style={[styles.inlineButton, styles[`inlineButton${theme}`], (dashboardMarketSorting === "coin") ? styles.inlineButtonActive : null]} onPress={() => { changeDashboardMarketSorting("coin")}}>
+						<Text style={[styles.buttonText, styles[`buttonText${theme}`], (dashboardMarketSorting === "coin") ? styles.buttonTextActive : null]}>Coin</Text>
+					</TouchableOpacity>
+					<TouchableOpacity style={[styles.inlineButton, styles[`inlineButton${theme}`], (dashboardMarketSorting === "price") ? styles.inlineButtonActive : null]} onPress={() => { changeDashboardMarketSorting("price")}}>
+						<Text style={[styles.buttonText, styles[`buttonText${theme}`], (dashboardMarketSorting === "price") ? styles.buttonTextActive : null]}>Price</Text>
+					</TouchableOpacity>
+					<TouchableOpacity style={[styles.inlineButton, styles[`inlineButton${theme}`], (dashboardMarketSorting === "marketCap") ? styles.inlineButtonActive : null]} onPress={() => { changeDashboardMarketSorting("marketCap")}}>
+						<Text style={[styles.buttonText, styles[`buttonText${theme}`], (dashboardMarketSorting === "marketCap") ? styles.buttonTextActive : null]}>Market Cap</Text>
+					</TouchableOpacity>
+					<TouchableOpacity style={[styles.inlineButton, styles[`inlineButton${theme}`], (dashboardMarketSorting === "change") ? styles.inlineButtonActive : null]} onPress={() => { changeDashboardMarketSorting("change")}}>
+						<Text style={[styles.buttonText, styles[`buttonText${theme}`], (dashboardMarketSorting === "change") ? styles.buttonTextActive : null]}>Change</Text>
+					</TouchableOpacity>
+				</View>
+				<View style={styles.container}>
+					<TouchableOpacity style={[styles.inlineButton, styles[`inlineButton${theme}`], (dashboardMarketSortOrder === "descending") ? styles.inlineButtonActive : null]} onPress={() => { changeDashboardMarketSortOrder("descending")}}>
+						<Text style={[styles.buttonText, styles[`buttonText${theme}`], (dashboardMarketSortOrder === "descending") ? styles.buttonTextActive : null]}>Descending</Text>
+					</TouchableOpacity>
+					<TouchableOpacity style={[styles.inlineButton, styles[`inlineButton${theme}`], (dashboardMarketSortOrder === "ascending") ? styles.inlineButtonActive : null]} onPress={() => { changeDashboardMarketSortOrder("ascending")}}>
+						<Text style={[styles.buttonText, styles[`buttonText${theme}`], (dashboardMarketSortOrder === "ascending") ? styles.buttonTextActive : null]}>Ascending</Text>
+					</TouchableOpacity>
+				</View>
+			</View>
+			<View style={[styles.section, styles[`section${theme}`]]}>
+				<Text style={[styles.header, styles[`header${theme}`]]}>Dashboard Holdings Sorting</Text>
+				<View style={styles.container}>
+					<TouchableOpacity style={[styles.inlineButton, styles[`inlineButton${theme}`], (dashboardHoldingsSorting === "coin") ? styles.inlineButtonActive : null]} onPress={() => { changeDashboardHoldingsSorting("coin")}}>
+						<Text style={[styles.buttonText, styles[`buttonText${theme}`], (dashboardMarketSorting === "coin") ? styles.buttonTextActive : null]}>Coin</Text>
+					</TouchableOpacity>
+					<TouchableOpacity style={[styles.inlineButton, styles[`inlineButton${theme}`], (dashboardHoldingsSorting === "amount") ? styles.inlineButtonActive : null]} onPress={() => { changeDashboardHoldingsSorting("amount")}}>
+						<Text style={[styles.buttonText, styles[`buttonText${theme}`], (dashboardHoldingsSorting === "amount") ? styles.buttonTextActive : null]}>Amount</Text>
+					</TouchableOpacity>
+					<TouchableOpacity style={[styles.inlineButton, styles[`inlineButton${theme}`], (dashboardHoldingsSorting === "value") ? styles.inlineButtonActive : null]} onPress={() => { changeDashboardHoldingsSorting("value")}}>
+						<Text style={[styles.buttonText, styles[`buttonText${theme}`], (dashboardHoldingsSorting === "value") ? styles.buttonTextActive : null]}>Value</Text>
+					</TouchableOpacity>
+					<TouchableOpacity style={[styles.inlineButton, styles[`inlineButton${theme}`], (dashboardHoldingsSorting === "change") ? styles.inlineButtonActive : null]} onPress={() => { changeDashboardHoldingsSorting("change")}}>
+						<Text style={[styles.buttonText, styles[`buttonText${theme}`], (dashboardHoldingsSorting === "change") ? styles.buttonTextActive : null]}>Change</Text>
+					</TouchableOpacity>
+				</View>
+				<View style={styles.container}>
+					<TouchableOpacity style={[styles.inlineButton, styles[`inlineButton${theme}`], (dashboardHoldingsSortOrder === "descending") ? styles.inlineButtonActive : null]} onPress={() => { changeDashboardHoldingsSortOrder("descending")}}>
+						<Text style={[styles.buttonText, styles[`buttonText${theme}`], (dashboardHoldingsSortOrder === "descending") ? styles.buttonTextActive : null]}>Descending</Text>
+					</TouchableOpacity>
+					<TouchableOpacity style={[styles.inlineButton, styles[`inlineButton${theme}`], (dashboardHoldingsSortOrder === "ascending") ? styles.inlineButtonActive : null]} onPress={() => { changeDashboardMarketSortOrder("ascending")}}>
+						<Text style={[styles.buttonText, styles[`buttonText${theme}`], (dashboardHoldingsSortOrder === "ascending") ? styles.buttonTextActive : null]}>Ascending</Text>
 					</TouchableOpacity>
 				</View>
 			</View>
@@ -430,6 +485,50 @@ export default function Settings({ navigation, route }) {
 		}
 	}
 
+	async function changeDashboardMarketSorting(dashboardMarketSorting) {
+		let validOptions = ["coin", "price", "marketCap", "change"];
+		if(empty(dashboardMarketSorting) || !validOptions.includes(dashboardMarketSorting)) {
+			setDashboardMarketSorting("marketCap");
+			await AsyncStorage.setItem("dashboardMarketSorting", "marketCap");
+		} else {
+			setDashboardMarketSorting(dashboardMarketSorting);
+			await AsyncStorage.setItem("dashboardMarketSorting", dashboardMarketSorting);
+		}
+	}
+
+	async function changeDashboardMarketSortOrder(dashboardMarketSortOrder) {
+		let validOptions = ["descending", "ascending"];
+		if(empty(dashboardMarketSortOrder) || !validOptions.includes(dashboardMarketSortOrder)) {
+			setDashboardMarketSortOrder("descending");
+			await AsyncStorage.setItem("dashboardMarketSortOrder", "descending");
+		} else {
+			setDashboardMarketSortOrder(dashboardMarketSortOrder);
+			await AsyncStorage.setItem("dashboardMarketSortOrder", dashboardMarketSortOrder);
+		}
+	}
+
+	async function changeDashboardHoldingsSorting(dashboardHoldingsSorting) {
+		let validOptions = ["coin", "amount", "value", "change"];
+		if(empty(dashboardHoldingsSorting) || !validOptions.includes(dashboardHoldingsSorting)) {
+			setDashboardHoldingsSorting("coin");
+			await AsyncStorage.setItem("dashboardHoldingsSorting", "coin");
+		} else {
+			setDashboardHoldingsSorting(dashboardHoldingsSorting);
+			await AsyncStorage.setItem("dashboardHoldingsSorting", dashboardHoldingsSorting);
+		}
+	}
+
+	async function changeDashboardHoldingsSortOrder(dashboardHoldingsSortOrder) {
+		let validOptions = ["descending", "ascending"];
+		if(empty(dashboardHoldingsSortOrder) || !validOptions.includes(dashboardHoldingsSortOrder)) {
+			setDashboardHoldingsSortOrder("descending");
+			await AsyncStorage.setItem("dashboardHoldingsSortOrder", "descending");
+		} else {
+			setDashboardHoldingsSortOrder(dashboardHoldingsSortOrder);
+			await AsyncStorage.setItem("dashboardHoldingsSortOrder", dashboardHoldingsSortOrder);
+		}
+	}
+
 	async function changeHighlightPriceChange(highlightPriceChange) {
 		let validOptions = ["disabled", "row", "text"];
 		if(empty(highlightPriceChange) || !validOptions.includes(highlightPriceChange)) {
@@ -465,6 +564,30 @@ export default function Settings({ navigation, route }) {
 			additionalDashboardColumns = "disabled";
 		}
 		setAdditionalDashboardColumns(additionalDashboardColumns);
+
+		let dashboardMarketSorting = await AsyncStorage.getItem("dashboardMarketSorting");
+		if(empty(dashboardMarketSorting)) {
+			dashboardMarketSorting = "marketCap";
+		}
+		setDashboardMarketSorting(dashboardMarketSorting);
+
+		let dashboardMarketSortOrder = await AsyncStorage.getItem("dashboardMarketSortOrder");
+		if(empty(dashboardMarketSortOrder)) {
+			dashboardMarketSortOrder = "descending";
+		}
+		setDashboardMarketSortOrder(dashboardMarketSortOrder);
+
+		let dashboardHoldingsSorting = await AsyncStorage.getItem("dashboardHoldingsSorting");
+		if(empty(dashboardHoldingsSorting)) {
+			dashboardHoldingsSorting = "coin";
+		}
+		setDashboardHoldingsSorting(dashboardHoldingsSorting);
+
+		let dashboardHoldingsSortOrder = await AsyncStorage.getItem("dashboardHoldingsSortOrder");
+		if(empty(dashboardHoldingsSortOrder)) {
+			dashboardHoldingsSortOrder = "descending";
+		}
+		setDashboardHoldingsSortOrder(dashboardHoldingsSortOrder);
 
 		let highlightPriceChange = await AsyncStorage.getItem("highlightPriceChange");
 		if(empty(highlightPriceChange)) {

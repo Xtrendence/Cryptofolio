@@ -442,7 +442,7 @@ export default function Dashboard({ navigation }) {
 								<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellSymbol, styles[highlightText]]}>{symbol}</Text>
 								<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellAmount, styles[highlightText]]}>{separateThousands(amount)}</Text>
 								{ (additionalDashboardColumns === "enabled") &&
-									<View>
+									<View style={{ flexDirection:"row" }}>
 										<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellValue, styles[highlightText]]} ellipsizeMode="tail">{currencies[currency] + value}</Text>
 										<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellDay, styles[highlightText]]}>{day}</Text>
 									</View>

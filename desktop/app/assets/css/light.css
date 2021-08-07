@@ -16,6 +16,7 @@ html.light {
 	--accent-second:rgb(80,125,182);
 	--accent-third:rgb(69,168,199);
 	--accent-fourth:rgb(61,212,219);
+	--accent-fifth:rgb(199,121,208);
 	--accent-gradient:linear-gradient(15deg, var(--accent-first) 25%, var(--accent-second) 50%, var(--accent-third) 75%, var(--accent-fourth) 100%);
 	--colorful-gradient:linear-gradient(300deg, #8a2387, #e94057, #f27121);
 	--orange-gradient:linear-gradient(150deg, rgb(245,175,25) 30%, rgb(241,39,17) 100%);

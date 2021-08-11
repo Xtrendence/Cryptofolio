@@ -172,7 +172,7 @@ export default function Settings({ navigation, route }) {
 					<TouchableOpacity style={[styles.inlineButton, styles[`inlineButton${theme}`], (dashboardHoldingsSortOrder === "descending") ? styles.inlineButtonActive : null]} onPress={() => { changeDashboardHoldingsSortOrder("descending")}}>
 						<Text style={[styles.buttonText, styles[`buttonText${theme}`], (dashboardHoldingsSortOrder === "descending") ? styles.buttonTextActive : null]}>Descending</Text>
 					</TouchableOpacity>
-					<TouchableOpacity style={[styles.inlineButton, styles[`inlineButton${theme}`], (dashboardHoldingsSortOrder === "ascending") ? styles.inlineButtonActive : null]} onPress={() => { changeDashboardMarketSortOrder("ascending")}}>
+					<TouchableOpacity style={[styles.inlineButton, styles[`inlineButton${theme}`], (dashboardHoldingsSortOrder === "ascending") ? styles.inlineButtonActive : null]} onPress={() => { changeDashboardHoldingsSortOrder("ascending")}}>
 						<Text style={[styles.buttonText, styles[`buttonText${theme}`], (dashboardHoldingsSortOrder === "ascending") ? styles.buttonTextActive : null]}>Ascending</Text>
 					</TouchableOpacity>
 				</View>

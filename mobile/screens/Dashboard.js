@@ -31,6 +31,11 @@ export default function Dashboard({ navigation }) {
 	const [additionalDashboardColumnsState, setAdditionalDashboardColumnsState] = React.useState("disabled");
 	const [highlightPriceChangeState, setHighlightPriceChangeState] = React.useState("disabled");
 
+	const [dashboardMarketSortingState, setDashboardMarketSortingState] = React.useState("marketCap");
+	const [dashboardMarketSortOrderState, setDashboardMarketSortOrderState] = React.useState("descending");
+	const [dashboardHoldingsSortingState, setDashboardHoldingsSortingState] = React.useState("coin");
+	const [dashboardHoldingsSortOrderState, setDashboardHoldingsSortOrderState] = React.useState("descending");
+
 	const [marketCap, setMarketCap] = React.useState(loadingText);
 	const [marketChange, setMarketChange] = React.useState();
 	const [holdingsValue, setHoldingsValue] = React.useState(loadingText);
@@ -75,7 +80,7 @@ export default function Dashboard({ navigation }) {
 		setHoldingsData([<Text key="loading" style={[styles.loadingText, styles.headerText, styles[`headerText${theme}`]]}>Loading...</Text>]);
 		setMarketKey(epoch() + "-market");
 		setHoldingsKey(epoch() + "-holdings");
-	}, [dashboardWatchlistState, transactionsAffectHoldingsState, additionalDashboardColumnsState, highlightPriceChangeState]);
+	}, [dashboardWatchlistState, transactionsAffectHoldingsState, additionalDashboardColumnsState, highlightPriceChangeState, dashboardMarketSortingState, dashboardMarketSortOrderState, dashboardHoldingsSortingState, dashboardHoldingsSortOrderState]);
 
 	const onRefresh = React.useCallback(() => {
 		setRefreshing(true);
@@ -150,6 +155,24 @@ export default function Dashboard({ navigation }) {
 			setHighlightPriceChangeState(highlightPriceChange);
 		}
 
+		let sortItem = await AsyncStorage.getItem("dashboardMarketSorting");
+		if(empty(sortItem)) {
+			sortItem = "marketCap";
+		}
+
+		if(dashboardMarketSortingState !== sortItem) {
+			setDashboardMarketSortingState(sortItem);
+		}
+
+		let sortOrder = await AsyncStorage.getItem("dashboardMarketSortOrder");
+		if(empty(sortOrder)) {
+			sortOrder = "descending";
+		}
+
+		if(dashboardMarketSortOrderState !== sortOrder) {
+			setDashboardMarketSortOrderState(sortOrder);
+		}
+
 		let theme = empty(await AsyncStorage.getItem("theme")) ? "Light" : await AsyncStorage.getItem("theme");
 
 		let endpoint = "https://api.coingecko.com/api/v3/coins/markets?vs_currency=" + currency + "&order=market_cap_desc&per_page=10&page=1&sparkline=false";
@@ -188,6 +211,33 @@ export default function Dashboard({ navigation }) {
 			);
 
 			let keys = Object.keys(coins);
+
+			switch(sortItem) {
+				case "coin":
+					keys.sort((a, b) => {
+						return coins[b].symbol.charAt(0).localeCompare(coins[a].symbol.charAt(0));
+					});
+					break;
+				case "price":
+					keys.sort((a, b) => {
+						return coins[b].current_price - coins[a].current_price;
+					});
+					break;
+				case "marketCap":
+					keys.sort((a, b) => {
+						return coins[b].market_cap - coins[a].market_cap;
+					});
+					break;
+				case "change":
+					keys.sort((a, b) => {
+						return coins[b].price_change_percentage_24h - coins[a].price_change_percentage_24h;
+					});
+					break;
+			}
+
+			if(sortOrder !== "descending") {
+				keys.reverse();
+			}
 
 			let rank = 0;
 
@@ -322,6 +372,24 @@ export default function Dashboard({ navigation }) {
 			setHighlightPriceChangeState(highlightPriceChange);
 		}
 
+		let sortItem = await AsyncStorage.getItem("dashboardHoldingsSorting");
+		if(empty(sortItem)) {
+			sortItem = "coin";
+		}
+
+		if(dashboardHoldingsSortingState !== sortItem) {
+			setDashboardHoldingsSortingState(sortItem);
+		}
+
+		let sortOrder = await AsyncStorage.getItem("dashboardHoldingsSortOrder");
+		if(empty(sortOrder)) {
+			sortOrder = "descending";
+		}
+
+		if(dashboardHoldingsSortOrderState !== sortOrder) {
+			setDashboardHoldingsSortOrderState(sortOrder);
+		}
+
 		let theme = empty(await AsyncStorage.getItem("theme")) ? "Light" : await AsyncStorage.getItem("theme");
 
 		let api = await AsyncStorage.getItem("api");
@@ -390,7 +458,36 @@ export default function Dashboard({ navigation }) {
 					
 					let mixedValue = 0;
 
-					Object.keys(holdings).map(holding => {
+					let keys = Object.keys(holdings);
+
+					switch(sortItem) {
+						case "coin":
+							keys.sort((a, b) => {
+								return holdings[b].symbol.charAt(0).localeCompare(holdings[a].symbol.charAt(0));
+							});
+							break;
+						case "amount":
+							keys.sort((a, b) => {
+								return holdings[b].amount - holdings[a].amount;
+							});
+							break;
+						case "value":
+							keys.sort((a, b) => {
+								return holdings[b].value - holdings[a].value;
+							});
+							break;
+						case "change":
+							keys.sort((a, b) => {
+								return parseFloat(holdings[b].change) - parseFloat(holdings[a].change);
+							});
+							break;
+					}
+
+					if(sortOrder !== "descending") {
+						keys.reverse();
+					}
+
+					keys.map(holding => {
 						rank += 1;
 
 						let coin = holdings[holding];

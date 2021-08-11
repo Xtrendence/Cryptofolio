@@ -1878,22 +1878,22 @@ document.addEventListener("DOMContentLoaded", async () => {
 		switch(sortItem) {
 			case "coin":
 				keys.sort((a, b) => {
-					return coins[keys[b]].symbol - coins[keys[a]].symbol;
+					return coins[b].symbol.charAt(0).localeCompare(coins[a].symbol.charAt(0));
 				});
 				break;
 			case "price":
 				keys.sort((a, b) => {
-					return coins[keys[b]].current_price - coins[keys[a]].current_price;
+					return coins[b].current_price - coins[a].current_price;
 				});
 				break;
 			case "marketCap":
 				keys.sort((a, b) => {
-					return coins[keys[b]].market_cap - coins[keys[a]].market_cap;
+					return coins[b].market_cap - coins[a].market_cap;
 				});
 				break;
 			case "change":
 				keys.sort((a, b) => {
-					return coins[keys[b]].price_change_percentage_24h - coins[keys[a]].price_change_percentage_24h;
+					return coins[b].price_change_percentage_24h - coins[a].price_change_percentage_24h;
 				});
 				break;
 		}
@@ -2188,7 +2188,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 							switch(sortItem) {
 								case "coin":
 									keys.sort((a, b) => {
-										return holdings[b].symbol - holdings[a].symbol;
+										return holdings[b].symbol.charAt(0).localeCompare(holdings[a].symbol.charAt(0));
 									});
 									break;
 								case "amount":

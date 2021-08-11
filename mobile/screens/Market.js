@@ -12,6 +12,7 @@ import { ThemeContext } from "../utils/theme";
 import { empty, separateThousands, abbreviateNumber, epoch, wait, currencies, replaceAll, formatDate, capitalizeFirstLetter, formatDateHuman, previousYear } from "../utils/utils";
 import GradientChart from "../components/GradientChart";
 import styles from "../styles/Market";
+import { getWatchlist, createWatchlist, deleteWatchlist } from "../utils/requests";
 
 const screenWidth = Dimensions.get("screen").width;
 const screenHeight = Dimensions.get("screen").height;
@@ -39,10 +40,14 @@ export default function Market({ navigation }) {
 	const [modalATH, setModalATH] = React.useState("All-Time High: ...");
 	const [modalMessage, setModalMessage] = React.useState("Loading Chart...");
 	const [modalDescription, setModalDescription] = React.useState("<div>Loading Description...</div>");
+	const [modalWatchlist, setModalWatchlist] = React.useState();
 	const [chartLabels, setChartLabels] = React.useState();
 	const [chartData, setChartData] = React.useState();
 	const [chartSegments, setChartSegments] = React.useState(1);
 	const [userCurrency, setUserCurrency] = React.useState("$");
+
+	const [coinID, setCoinID] = React.useState();
+	const [coinSymbol, setCoinSymbol] = React.useState();
 
 	const [refreshing, setRefreshing] = React.useState(false);
 
@@ -159,6 +164,16 @@ export default function Market({ navigation }) {
 									<Text style={styles.modalMessage}>{modalMessage}</Text>
 								</View>
 							}
+							{ !empty(modalWatchlist) && !modalWatchlist &&
+								<TouchableOpacity style={[styles.modalDescriptionWrapper, styles[`modalDescriptionWrapper${theme}`], { width:220 }]} onPress={() => { createWatchlist(coinID, coinSymbol); setModalWatchlist(true)}}>
+									<Text style={[styles.modalDescription, styles[`modalDescription${theme}`]]}>Add To Watchlist</Text>
+								</TouchableOpacity>
+							}
+							{ modalWatchlist &&
+								<TouchableOpacity style={[styles.modalDescriptionWrapper, styles[`modalDescriptionWrapper${theme}`], { width:220 }]} onPress={() => { deleteWatchlist(coinID); setModalWatchlist(false)}}>
+									<Text style={[styles.modalDescription, styles[`modalDescription${theme}`]]}>Remove From Watchlist</Text>
+								</TouchableOpacity>
+							}
 							<View style={[styles.modalDescriptionWrapper, styles[`modalDescriptionWrapper${theme}`]]}>
 								<Text style={[styles.modalDescription, styles[`modalDescription${theme}`]]}>{modalATH}</Text>
 							</View>
@@ -196,6 +211,7 @@ export default function Market({ navigation }) {
 		setChartLabels();
 		setModalATH("All-Time High: ...");
 		setModalDescription("<div>Loading Description...</div>");
+		setModalWatchlist();
 		setModal(false);
 	}
 
@@ -204,6 +220,7 @@ export default function Market({ navigation }) {
 		setChartLabels();
 		setModalATH("All-Time High: ...");
 		setModalDescription("<div>Loading Description...</div>");
+		setModalWatchlist();
 		
 		let currency = await AsyncStorage.getItem("currency");
 		if(empty(currency)) {
@@ -215,13 +232,22 @@ export default function Market({ navigation }) {
 		setModalMessage("Loading Chart...");
 		setModal(true);
 
-		getCoinInfo(id).then(info => {
-			getCoinMarketData(id, currency, previousYear(new Date()), new Date()).then(data => {
+		getCoinInfo(id).then(async info => {
+			getCoinMarketData(id, currency, previousYear(new Date()), new Date()).then(async data => {
 				data = parseMarketData(data, new Date().getTime(), currentPrice);
 
 				if(empty(info.description.en)) {
 					info.description.en = "No description found for " + symbol.toUpperCase() + ".";
 				}
+
+				if(Object.keys(await getWatchlist()).includes(id)) {
+					setModalWatchlist(true);
+				} else {
+					setModalWatchlist(false);
+				}
+
+				setCoinID(id);
+				setCoinSymbol(info.symbol);
 
 				let months = data.months;
 				let prices = data.prices;

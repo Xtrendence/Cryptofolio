@@ -202,3 +202,67 @@ export async function getWatchlist() {
 		});
 	});
 }
+
+export async function createWatchlist(id, symbol) {
+	return new Promise(async (resolve, reject) => {
+		let api = await AsyncStorage.getItem("api");
+		let token = await AsyncStorage.getItem("token");
+
+		let endpoint = api + "watchlist/create.php";
+
+		let body = { token:token, id:id, symbol:symbol };
+
+		fetch(endpoint, {
+			body: JSON.stringify(body),
+			method: "POST",
+			headers: {
+				Accept: "application/json", "Content-Type": "application/json"
+			}
+		})
+		.then((json) => {
+			return json.json();
+		})
+		.then((response) => {
+			if("error" in response) {
+				reject(response.error);
+			} else {
+				resolve(response.message);
+			}
+		}).catch(error => {
+			console.log(error);
+			reject(error);
+		});
+	});
+}
+
+export async function deleteWatchlist(id) {
+	return new Promise(async (resolve, reject) => {
+		let api = await AsyncStorage.getItem("api");
+		let token = await AsyncStorage.getItem("token");
+
+		let endpoint = api + "watchlist/delete.php";
+
+		let body = { token:token, id:id };
+
+		fetch(endpoint, {
+			body: JSON.stringify(body),
+			method: "DELETE",
+			headers: {
+				Accept: "application/json", "Content-Type": "application/json"
+			}
+		})
+		.then((json) => {
+			return json.json();
+		})
+		.then((response) => {
+			if("error" in response) {
+				reject(response.error);
+			} else {
+				resolve(response.message);
+			}
+		}).catch(error => {
+			console.log(error);
+			reject(error);
+		});
+	});
+}

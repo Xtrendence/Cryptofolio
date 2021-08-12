@@ -7,7 +7,7 @@ import { globalColors, globalStyles } from "../styles/global";
 import { ThemeContext } from "../utils/theme";
 import { empty, separateThousands, abbreviateNumber, epoch, wait, currencies, capitalizeFirstLetter } from "../utils/utils";
 import styles from "../styles/Dashboard";
-import { getWatchlist, createWatchlist, deleteWatchlist } from "../utils/requests";
+import { getWatchlist, createWatchlist, deleteWatchlist, getCoinID } from "../utils/requests";
 
 const screenWidth = Dimensions.get("screen").width;
 const screenHeight = Dimensions.get("screen").height;
@@ -122,7 +122,7 @@ export default function Dashboard({ navigation }) {
 								<TouchableOpacity style={[styles.button, styles[`button${theme}`]]} onPress={() => { hideModal()}}>
 									<Text style={styles.text}>Cancel</Text>
 								</TouchableOpacity>
-								<TouchableOpacity style={[styles.button, styles.buttonConfirm, styles[`buttonConfirm${theme}`]]} onPress={() => { }}>
+								<TouchableOpacity style={[styles.button, styles.buttonConfirm, styles[`buttonConfirm${theme}`]]} onPress={() => { addToWatchlist(coinSymbol)}}>
 									<Text style={styles.text}>Confirm</Text>
 								</TouchableOpacity>
 							</View>
@@ -135,7 +135,7 @@ export default function Dashboard({ navigation }) {
 					</View>
 					{ (action === "delete") &&
 						<View style={[styles.buttonWrapper, styles.buttonWrapperCenter]}>
-							<TouchableOpacity style={[styles.button, styles.buttonDelete]} onPress={() => { }}>
+							<TouchableOpacity style={[styles.button, styles.buttonDelete]} onPress={() => { removeFromWatchlist(coinID)}}>
 								<Text style={styles.text}>Remove From Watchlist</Text>
 							</TouchableOpacity>
 							<TouchableOpacity style={[styles.button, styles[`button${theme}`], styles.buttonCancel]} onPress={() => { hideModal()}}>
@@ -175,6 +175,7 @@ export default function Dashboard({ navigation }) {
 
 	function hideModal() {
 		setModal(false);
+		setModalMessage();
 		setAction();
 		setCoinID();
 		setCoinSymbol();
@@ -182,9 +183,70 @@ export default function Dashboard({ navigation }) {
 
 	function showModal(action, id) {
 		setModal(true);
+		setModalMessage();
 		setAction(action);
 		setCoinID(id);
 		setCoinSymbol();
+	}
+
+	function processWatchlist(id, symbol) {
+		createWatchlist(id, symbol).then(() => {
+			hideModal();
+			getMarket();
+		}).catch(error => {
+			console.log(error);
+		});
+	}
+
+	function addToWatchlist(symbol) {
+		if(!empty(symbol)) {
+			setModalMessage("Checking coin...");
+
+			let key = "symbol";
+			let value = symbol.trim().toLowerCase();
+
+			getCoinID(key, value).then(async response => {
+				if("id" in response) {
+					processWatchlist(response.id, value);
+				} else if("matches" in response) {
+					let matches = response.matches;
+
+					let data = [];
+
+					Object.keys(matches).map(key => {
+						let match = matches[key];
+						let symbol = Object.keys(match)[0];
+						let id = match[symbol];
+
+						data.push(
+							<TouchableOpacity key={epoch() + id} onPress={() => { processWatchlist(id, symbol) }}>
+								<View style={[styles.row, key % 2 ? {...styles.rowOdd, ...styles[`rowOdd${theme}`]} : null, styles.modalRow]}>
+									<Text style={[styles.cellText, styles[`cellText${theme}`]]} ellipsizeMode="tail">{symbol.toUpperCase()}</Text>
+									<Text style={[styles.cellText, styles[`cellText${theme}`], { marginLeft:20 }]} ellipsizeMode="tail">{capitalizeFirstLetter(id)}</Text>
+								</View>
+							</TouchableOpacity>
+						);
+					});
+
+					setCoinList(data);
+					setShowCoinList(true);
+					setModalMessage("Please select a coin from the list.");
+				}
+			}).catch(error => {
+				console.log(error);
+			});
+		} else {
+			setModalMessage("Please fill out the symbol field.");
+		}
+	}
+
+	function removeFromWatchlist(id) {
+		deleteWatchlist(id).then(() => {
+			hideModal();
+			getMarket();
+		}).catch(error => {
+			console.log(error);
+		});
 	}
 
 	async function getMarket() {
@@ -355,7 +417,7 @@ export default function Dashboard({ navigation }) {
 				let symbol = coin.symbol.toUpperCase();
 
 				data.push(
-					<TouchableOpacity style={[styles.row, styles[highlightRow]]} key={epoch() + key} onPress={() => { if(dashboardWatchlist === "enabled") { showModal("delete", key)}}}>
+					<TouchableOpacity style={[styles.row, styles[highlightRow]]} key={epoch() + key} onPress={() => { if(dashboardWatchlist === "enabled") { showModal("delete", coin.id)}}}>
 						<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellRank, styles[highlightText]]}>{rank}</Text>
 						<Image style={styles.cellImage} source={{uri:icon}}/>
 						<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellSymbol, styles[highlightText]]}>{symbol}</Text>

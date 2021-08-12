@@ -84,6 +84,11 @@ export default styles = StyleSheet.create({
 		width:screenWidth - 140,
 		flexDirection:"row"
 	},
+	buttonWrapperCenter: {
+		justifyContent:"center",
+		alignItems:"center",
+		flexDirection:"column",
+	},
 	button: {
 		height:40,
 		width:((screenWidth - 140) / 2) - 10,
@@ -108,12 +113,15 @@ export default styles = StyleSheet.create({
 	buttonConfirmDark: {
 		backgroundColor:globalColors["Dark"].accentFirst
 	},
+	buttonCancel: {
+		width:140,
+		marginTop:20,
+		paddingLeft:14,
+		paddingRight:14,
+	},
 	buttonDelete: {
-		position:"absolute",
-		bottom:70,
 		backgroundColor:"rgb(230,50,50)",
 		width:"auto",
-		marginTop:20,
 		paddingLeft:14,
 		paddingRight:14,
 	},

@@ -27,7 +27,9 @@ export default function Dashboard({ navigation }) {
 	const [refreshing, setRefreshing] = React.useState(false);
 
 	const [modal, setModal] = React.useState(false);
+	const [action, setAction] = React.useState();
 	const [modalMessage, setModalMessage] = React.useState();
+	const [coinID, setCoinID] = React.useState();
 	const [coinSymbol, setCoinSymbol] = React.useState();
 	const [showCoinList, setShowCoinList] = React.useState(false);
 	const [coinList, setCoinList] = React.useState();
@@ -101,34 +103,45 @@ export default function Dashboard({ navigation }) {
 			<Modal animationType="fade" visible={modal} onRequestClose={() => { hideModal()}} transparent={false}>
 				<View style={[styles.modalWrapper, styles[`modalWrapper${theme}`]]}>
 					<View stlye={[styles.modal, styles[`modal${theme}`]]}>
-						<TextInput style={[styles.input, styles[`input${theme}`], { backgroundColor:globalColors[theme].mainFourth, color:globalColors[theme].mainContrastLight }]} placeholder={"Coin Symbol... (e.g. BTC)"} onChangeText={(value) => { setCoinSymbol(value)}} value={coinSymbol} placeholderTextColor={globalColors[theme].mainContrastLight} spellCheck={false}/>
-						{ showCoinList && !empty(coinList) &&
-							<ScrollView style={[styles.coinList, styles[`coinList${theme}`]]} nestedScrollEnabled={true}>
-								{
-									coinList.map(row => {
-										return row;
-									})
+						{ (action === "create") &&
+							<View>
+								<TextInput style={[styles.input, styles[`input${theme}`], { backgroundColor:globalColors[theme].mainFourth, color:globalColors[theme].mainContrastLight }]} placeholder={"Coin Symbol... (e.g. BTC)"} onChangeText={(value) => { setCoinSymbol(value)}} value={coinSymbol} placeholderTextColor={globalColors[theme].mainContrastLight} spellCheck={false}/>
+								{ showCoinList && !empty(coinList) &&
+									<ScrollView style={[styles.coinList, styles[`coinList${theme}`]]} nestedScrollEnabled={true}>
+										{
+											coinList.map(row => {
+												return row;
+											})
+										}
+									</ScrollView>
 								}
-							</ScrollView>
+							</View>
 						}
-						<View style={styles.buttonWrapper}>
-							<TouchableOpacity style={[styles.button, styles[`button${theme}`]]} onPress={() => { hideModal()}}>
-								<Text style={styles.text}>Cancel</Text>
-							</TouchableOpacity>
-							<TouchableOpacity style={[styles.button, styles.buttonConfirm, styles[`buttonConfirm${theme}`]]} onPress={() => { }}>
-								<Text style={styles.text}>Confirm</Text>
-							</TouchableOpacity>
-						</View>
+						{ (action === "create") &&
+							<View style={styles.buttonWrapper}>
+								<TouchableOpacity style={[styles.button, styles[`button${theme}`]]} onPress={() => { hideModal()}}>
+									<Text style={styles.text}>Cancel</Text>
+								</TouchableOpacity>
+								<TouchableOpacity style={[styles.button, styles.buttonConfirm, styles[`buttonConfirm${theme}`]]} onPress={() => { }}>
+									<Text style={styles.text}>Confirm</Text>
+								</TouchableOpacity>
+							</View>
+						}
 						{ !empty(modalMessage) &&
 							<View style={styles.modalMessageWrapper}>
 								<Text style={styles.modalMessage}>{modalMessage}</Text>
 							</View>
 						}
 					</View>
-					{ !empty(coinSymbol) &&
-						<TouchableOpacity style={[styles.button, styles.buttonDelete]} onPress={() => { }}>
-							<Text style={styles.text}>Remove From Watchlist</Text>
-						</TouchableOpacity>
+					{ (action === "delete") &&
+						<View style={[styles.buttonWrapper, styles.buttonWrapperCenter]}>
+							<TouchableOpacity style={[styles.button, styles.buttonDelete]} onPress={() => { }}>
+								<Text style={styles.text}>Remove From Watchlist</Text>
+							</TouchableOpacity>
+							<TouchableOpacity style={[styles.button, styles[`button${theme}`], styles.buttonCancel]} onPress={() => { hideModal()}}>
+								<Text style={styles.text}>Cancel</Text>
+							</TouchableOpacity>
+						</View>
 					}
 				</View>
 			</Modal>
@@ -162,12 +175,16 @@ export default function Dashboard({ navigation }) {
 
 	function hideModal() {
 		setModal(false);
+		setAction();
+		setCoinID();
 		setCoinSymbol();
 	}
 
-	function showModal(symbol) {
+	function showModal(action, id) {
 		setModal(true);
-		setCoinSymbol(symbol);
+		setAction(action);
+		setCoinID(id);
+		setCoinSymbol();
 	}
 
 	async function getMarket() {
@@ -248,7 +265,7 @@ export default function Dashboard({ navigation }) {
 
 			if(dashboardWatchlist === "enabled") {
 				data.push(
-					<TouchableOpacity style={styles.row} key={epoch() + "add-coin"} onPress={() => { showModal()}}>
+					<TouchableOpacity style={styles.row} key={epoch() + "add-coin"} onPress={() => { showModal("create")}}>
 						<Text style={[styles.addText, styles[`addText${theme}`]]}>Add Coin...</Text>
 					</TouchableOpacity>
 				);
@@ -338,7 +355,7 @@ export default function Dashboard({ navigation }) {
 				let symbol = coin.symbol.toUpperCase();
 
 				data.push(
-					<View style={[styles.row, styles[highlightRow]]} key={epoch() + key}>
+					<TouchableOpacity style={[styles.row, styles[highlightRow]]} key={epoch() + key} onPress={() => { if(dashboardWatchlist === "enabled") { showModal("delete", key)}}}>
 						<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellRank, styles[highlightText]]}>{rank}</Text>
 						<Image style={styles.cellImage} source={{uri:icon}}/>
 						<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellSymbol, styles[highlightText]]}>{symbol}</Text>
@@ -349,7 +366,7 @@ export default function Dashboard({ navigation }) {
 								<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellDay, styles[highlightText]]}>{priceChangeDay}%</Text>
 							</View>
 						}
-					</View>
+					</TouchableOpacity>
 				);
 			});
 

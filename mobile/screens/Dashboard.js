@@ -1,13 +1,13 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { useEffect } from "react";
-import { Text, StyleSheet, View, Image, Dimensions, ScrollView, RefreshControl, TouchableOpacity } from "react-native";
+import { Text, StyleSheet, View, Image, Dimensions, ScrollView, RefreshControl, TouchableOpacity, Modal, TextInput } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import LinearGradient from "react-native-linear-gradient";
 import { globalColors, globalStyles } from "../styles/global";
 import { ThemeContext } from "../utils/theme";
 import { empty, separateThousands, abbreviateNumber, epoch, wait, currencies, capitalizeFirstLetter } from "../utils/utils";
 import styles from "../styles/Dashboard";
-import { getWatchlist } from "../utils/requests";
+import { getWatchlist, createWatchlist, deleteWatchlist } from "../utils/requests";
 
 const screenWidth = Dimensions.get("screen").width;
 const screenHeight = Dimensions.get("screen").height;
@@ -25,6 +25,12 @@ export default function Dashboard({ navigation }) {
 	const [holdingsKey, setHoldingsKey] = React.useState(epoch() + "-holdings");
 
 	const [refreshing, setRefreshing] = React.useState(false);
+
+	const [modal, setModal] = React.useState(false);
+	const [modalMessage, setModalMessage] = React.useState();
+	const [coinSymbol, setCoinSymbol] = React.useState();
+	const [showCoinList, setShowCoinList] = React.useState(false);
+	const [coinList, setCoinList] = React.useState();
 
 	const [dashboardWatchlistState, setDashboardWatchlistState] = React.useState("disabled");
 	const [transactionsAffectHoldingsState, setTransactionsAffectHoldingsState] = React.useState("disabled");
@@ -92,6 +98,40 @@ export default function Dashboard({ navigation }) {
 
 	return (
 		<ScrollView style={[styles.page, styles[`page${theme}`]]} contentContainerStyle={{ padding:20 }} nestedScrollEnabled={true} key={pageKey} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[globalColors[theme].accentFirst]} progressBackgroundColor={globalColors[theme].mainFirst}/>}>
+			<Modal animationType="fade" visible={modal} onRequestClose={() => { hideModal()}} transparent={false}>
+				<View style={[styles.modalWrapper, styles[`modalWrapper${theme}`]]}>
+					<View stlye={[styles.modal, styles[`modal${theme}`]]}>
+						<TextInput style={[styles.input, styles[`input${theme}`], { backgroundColor:globalColors[theme].mainFourth, color:globalColors[theme].mainContrastLight }]} placeholder={"Coin Symbol... (e.g. BTC)"} onChangeText={(value) => { setCoinSymbol(value)}} value={coinSymbol} placeholderTextColor={globalColors[theme].mainContrastLight} spellCheck={false}/>
+						{ showCoinList && !empty(coinList) &&
+							<ScrollView style={[styles.coinList, styles[`coinList${theme}`]]} nestedScrollEnabled={true}>
+								{
+									coinList.map(row => {
+										return row;
+									})
+								}
+							</ScrollView>
+						}
+						<View style={styles.buttonWrapper}>
+							<TouchableOpacity style={[styles.button, styles[`button${theme}`]]} onPress={() => { hideModal()}}>
+								<Text style={styles.text}>Cancel</Text>
+							</TouchableOpacity>
+							<TouchableOpacity style={[styles.button, styles.buttonConfirm, styles[`buttonConfirm${theme}`]]} onPress={() => { }}>
+								<Text style={styles.text}>Confirm</Text>
+							</TouchableOpacity>
+						</View>
+						{ !empty(modalMessage) &&
+							<View style={styles.modalMessageWrapper}>
+								<Text style={styles.modalMessage}>{modalMessage}</Text>
+							</View>
+						}
+					</View>
+					{ !empty(coinSymbol) &&
+						<TouchableOpacity style={[styles.button, styles.buttonDelete]} onPress={() => { }}>
+							<Text style={styles.text}>Remove From Watchlist</Text>
+						</TouchableOpacity>
+					}
+				</View>
+			</Modal>
 			<LinearGradient style={[styles.card, { marginBottom:20, marginTop:0 }]} colors={globalColors[theme].purpleGradient} useAngle={true} angle={45}>
 				<Text style={[styles.cardText, styles[`cardText${theme}`]]}>{marketCap} {marketChange}</Text>
 			</LinearGradient>
@@ -119,6 +159,16 @@ export default function Dashboard({ navigation }) {
 			<StatusBar style={theme === "Dark" ? "light" : "dark"}/>
 		</ScrollView>
 	);
+
+	function hideModal() {
+		setModal(false);
+		setCoinSymbol();
+	}
+
+	function showModal(symbol) {
+		setModal(true);
+		setCoinSymbol(symbol);
+	}
 
 	async function getMarket() {
 		console.log("Dashboard - Getting Market - " + epoch());
@@ -195,6 +245,14 @@ export default function Dashboard({ navigation }) {
 		})
 		.then(async (coins) => {
 			let data = [];
+
+			if(dashboardWatchlist === "enabled") {
+				data.push(
+					<TouchableOpacity style={styles.row} key={epoch() + "add-coin"} onPress={() => { showModal()}}>
+						<Text style={[styles.addText, styles[`addText${theme}`]]}>Add Coin...</Text>
+					</TouchableOpacity>
+				);
+			}
 
 			data.push(
 				<View style={styles.row} key={epoch() + "market-header"}>

@@ -175,7 +175,10 @@ export default styles = StyleSheet.create({
 		color:globalColors["Light"].mainContrastLight,
 		backgroundColor:globalColors["Light"].mainThird,
 		borderRadius:globalStyles.borderRadius,
-		padding:10,
+		paddingTop:10,
+		paddingBottom:10,
+		paddingRight:20,
+		paddingLeft:20,
 		marginBottom:4,
 	},
 	addTextDark: {

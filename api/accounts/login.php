@@ -14,8 +14,6 @@
 		$utils = require_once("../utils.php");
 		$helper = new Utils($username);
 
-		$helper->generateAccount();
-
 		$helper->fetchCoins();
 
 		if(!empty($_POST["token"])) {

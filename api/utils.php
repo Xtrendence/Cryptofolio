@@ -192,6 +192,14 @@
 			return true;
 		}
 
+		function rglob($pattern, $flags = 0) {
+			$files = glob($pattern, $flags); 
+			foreach(glob(dirname($pattern) . "/*", GLOB_ONLYDIR|GLOB_NOSORT) as $directory) {
+				$files = array_merge($files, $this->rglob($directory . "/" . basename($pattern), $flags));
+			}
+			return $files;
+		}
+
 		function validDate($date){
 			return (bool)strtotime($date);
 		}

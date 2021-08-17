@@ -15,14 +15,18 @@
 		$token = !empty($input["token"]) ? $input["token"] : die();
 		if($helper->verifySession($token)) {
 			if($helper->username == "admin") {
-				$helper->rrmdir("../data/" . $account);
+				if(trim(strtolower($account)) !== "admin") {
+					$helper->rrmdir("../data/users/" . $account);
 
-				$delete = is_dir("../data/" . $account);
+					$delete = !is_dir("../data/users/" . $account);
 
-				if($delete) {
-					echo json_encode(array("message" => "The account has been deleted."));
+					if($delete) {
+						echo json_encode(array("message" => "The account has been deleted."));
+					} else {
+						echo json_encode(array("error" => "Account couldn't be deleted."));
+					}
 				} else {
-					echo json_encode(array("error" => "Account couldn't be deleted."));
+					echo json_encode(array("error" => "The admin account cannot be deleted."));
 				}
 			} else {
 				echo json_encode(array("error" => "Only the admin can do that."));

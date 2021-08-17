@@ -12,13 +12,14 @@
 		$token = !empty($_GET["token"]) ? $_GET["token"] : die();
 		if($helper->verifySession($token)) {
 			if($helper->username == "admin") {
-				$files = $helper->rglob("../data/*account.json");
+				$files = $helper->rglob("../data/users/*account.json");
 
-				$accounts = array("accounts" => []);
+				$accounts = array("accounts" => [], "usernames" => []);
 
 				foreach($files as $file) {
 					$content = json_decode(file_get_contents($file), true);
-					array_push($accounts["accounts"], $content["username"]);
+					array_push($accounts["accounts"], basename(dirname($file)));
+					array_push($accounts["usernames"], $content["username"]);
 				}
 
 				echo json_encode($accounts);

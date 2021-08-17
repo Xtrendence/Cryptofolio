@@ -852,7 +852,120 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 	buttonManageAccounts.addEventListener("click", () => {
 		getAccounts().then(accounts => {
+			let users = accounts.accounts;
 
+			let popupHeight = 240;
+			let addedHeight = users.length * 40;
+
+			if(users.length >= 3) {
+				addedHeight = 120;
+			}
+
+			let adjustedHeight = (popupHeight + addedHeight) + 20;
+
+			divPopupWrapper.style.height = adjustedHeight + "px";
+			divPopupWrapper.style.top = "calc(50% - " + adjustedHeight + "px / 2)";
+
+			popup("Manage Accounts", '<div id="popup-list" class="popup-list"></div><div id="popup-choice"><button id="popup-create" data-value="create" class="choice active">Create</button><button id="popup-delete" data-value="delete" class="choice">Delete</button></div><input id="popup-username" placeholder="Username..." type="text"><button class="reject" id="popup-cancel">Cancel</button><button class="resolve" id="popup-confirm">Confirm</button>', "300px", adjustedHeight + "px");
+
+			let divPopupList = document.getElementById("popup-list");
+
+			let inputUsername = document.getElementById("popup-username");
+
+			users.map(user => {
+				let row = document.createElement("div");
+				row.innerHTML = '<span class="title">' + user + '</span>';
+
+				row.addEventListener("click", () => {
+					inputUsername.value = user;
+				});
+
+				divPopupList.appendChild(row);
+			});
+
+			let choices = document.getElementById("popup-choice").getElementsByClassName("choice");
+			for(let i = 0; i < choices.length; i++) {
+				choices[i].addEventListener("click", () => {
+					for(let j = 0; j < choices.length; j++) {
+						choices[j].classList.remove("active");
+					}
+					choices[i].classList.add("active");
+				});
+			}
+
+			document.getElementById("popup-cancel").addEventListener("click", () => {
+				hidePopup();
+			});
+
+			document.getElementById("popup-confirm").addEventListener("click", () => {
+				let username = inputUsername.value;
+
+				if(!empty(username)) {
+					if(username.toLowerCase().trim() !== "admin") {
+						if(document.getElementById("popup-create").classList.contains("active")) {
+							createAccount(username).then(response => {
+								if("error" in response) {
+									Notify.error({
+										title:"Error",
+										description:response.error
+									});
+								} else {
+									Notify.success({
+										title:"Account Created",
+										description:response.message
+									});
+
+									hidePopup();
+								}
+							}).catch(e => {
+								console.log(e);
+								Notify.error({
+									title:"Error",
+									description:"Couldn't create account."
+								});
+							});
+						} else {
+							deleteAccount(username).then(response => {
+								if("error" in response) {
+									Notify.error({
+										title:"Error",
+										description:response.error
+									});
+								} else {
+									Notify.success({
+										title:"Account Deleted",
+										description:response.message
+									});
+
+									hidePopup();
+								}
+							}).catch(e => {
+								console.log(e);
+								Notify.error({
+									title:"Error",
+									description:"Couldn't delete account."
+								});
+							});
+						}
+					} else {
+						Notify.error({
+							title:"Error",
+							description:"The admin account cannot be modified."
+						});
+					}
+				} else {
+					Notify.error({
+						title:"Error",
+						description:"Please fill out the input field."
+					});
+				}
+			});
+		}).catch(e => {
+			console.log(e);
+			Notify.error({
+				title:"Error",
+				description:"Couldn't fetch accounts."
+			});
 		});
 	});
 
@@ -4220,7 +4333,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 				xhr.addEventListener("readystatechange", () => {
 					if(xhr.readyState === XMLHttpRequest.DONE) {
-						console.log(xhr.responseText);
 						if(validJSON(xhr.responseText)) {
 							resolve(JSON.parse(xhr.responseText));
 						} else {
@@ -4231,6 +4343,75 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 				xhr.open("GET", api + "accounts/read-all.php?token=" + sessionToken + "&username=" + sessionUsername, true);
 				xhr.send();
+			} catch(e) {
+				reject(e);
+			}
+		});
+	}
+
+	function getAccount() {
+		return new Promise((resolve, reject) => {
+			try {
+				let xhr = new XMLHttpRequest();
+
+				xhr.addEventListener("readystatechange", () => {
+					if(xhr.readyState === XMLHttpRequest.DONE) {
+						if(validJSON(xhr.responseText)) {
+							resolve(JSON.parse(xhr.responseText));
+						} else {
+							reject("Invalid JSON.");
+						}
+					}
+				});
+
+				xhr.open("GET", api + "accounts/read.php?token=" + sessionToken + "&username=" + sessionUsername, true);
+				xhr.send();
+			} catch(e) {
+				reject(e);
+			}
+		});
+	}
+
+	function createAccount(account) {
+		return new Promise((resolve, reject) => {
+			try {
+				let xhr = new XMLHttpRequest();
+
+				xhr.addEventListener("readystatechange", () => {
+					if(xhr.readyState === XMLHttpRequest.DONE) {
+						if(validJSON(xhr.responseText)) {
+							resolve(JSON.parse(xhr.responseText));
+						} else {
+							reject("Invalid JSON.");
+						}
+					}
+				});
+
+				xhr.open("POST", api + "accounts/create.php", true);
+				xhr.send(JSON.stringify({ username:sessionUsername, token:sessionToken, account:account }));
+			} catch(e) {
+				reject(e);
+			}
+		});
+	}
+
+	function deleteAccount(account) {
+		return new Promise((resolve, reject) => {
+			try {
+				let xhr = new XMLHttpRequest();
+
+				xhr.addEventListener("readystatechange", () => {
+					if(xhr.readyState === XMLHttpRequest.DONE) {
+						if(validJSON(xhr.responseText)) {
+							resolve(JSON.parse(xhr.responseText));
+						} else {
+							reject("Invalid JSON.");
+						}
+					}
+				});
+
+				xhr.open("DELETE", api + "accounts/delete.php", true);
+				xhr.send(JSON.stringify({ username:sessionUsername, token:sessionToken, account:account }));
 			} catch(e) {
 				reject(e);
 			}

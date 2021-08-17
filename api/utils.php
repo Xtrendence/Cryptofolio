@@ -1,11 +1,37 @@
 <?php
 	class Utils {
-		public $accountFile = "../data/account.json";
-		public $holdingsFile = "../data/holdings.json";
-		public $activityFile = "../data/activity.json";
-		public $settingsFile = "../data/settings.json";
-		public $watchlistFile = "../data/watchlist.json";
-		public $coinsFile = "../data/coins.json";
+		public $username;
+		public $dataFolder;
+		public $accountFile;
+		public $holdingsFile;
+		public $activityFile;
+		public $settingsFile;
+		public $watchlistFile;
+		public $coinsFile;
+
+		public function __construct($username) {
+			if($this->userExists($username)) {
+				$this->username = $username;
+				$this->dataFolder = "../data/users/" . $username . "/";
+				$this->accountFile = $this->dataFolder . "account.json";
+				$this->holdingsFile = $this->dataFolder . "holdings.json";
+				$this->activityFile = $this->dataFolder . "activity.json";
+				$this->settingsFile = $this->dataFolder . "settings.json";
+				$this->watchlistFile = $this->dataFolder . "watchlist.json";
+				$this->coinsFile = $this->dataFolder . "coins.json";
+			} else {
+				$this->username = "admin";
+				$this->dataFolder = "../data/users/admin/";
+				$this->accountFile = $this->dataFolder . "account.json";
+				$this->holdingsFile = $this->dataFolder . "holdings.json";
+				$this->activityFile = $this->dataFolder . "activity.json";
+				$this->settingsFile = $this->dataFolder . "settings.json";
+				$this->watchlistFile = $this->dataFolder . "watchlist.json";
+				$this->coinsFile = $this->dataFolder . "coins.json";
+				
+				$this->generateAccount();
+			}
+		}
 
 		function verifyPassword($password) {
 			$account = json_decode(file_get_contents($this->accountFile), true);
@@ -32,12 +58,34 @@
 			return false;
 		}
 
+		function validUsername($username) {
+			if(empty($username) || preg_match('/[^a-z_\-0-9]/i', $username)) {
+				return false;
+			}
+			return true;
+		}
+
+		function userExists($username) {
+			if(is_dir("../data/users/" . $username)) {
+				return true;
+			}
+			return false;
+		}
+
 		function generateAccount() {
+			if(!is_dir("../data/users/")) {
+				mkdir("../data/users/");
+			}
+
+			if(!is_dir("../data/users/admin/")) {
+				mkdir("../data/users/admin/");
+			}
+
 			$content = file_get_contents($this->accountFile);
 			$current = json_decode($content, true);
-			if(!array_key_exists("password", $current) || empty($content)) {
+			if(!file_exists($this->accountFile) || !array_key_exists("password", $current) || empty($content)) {
 				$password = password_hash("admin", PASSWORD_DEFAULT);
-				$account = json_encode(array("password" => $password, "web" => $this->generateToken("web"), "app" => $this->generateToken("app"), "desktop" => $this->generateToken("desktop")));
+				$account = json_encode(array("username" => "admin", "password" => $password, "web" => $this->generateToken("web"), "app" => $this->generateToken("app"), "desktop" => $this->generateToken("desktop")));
 				file_put_contents($this->accountFile, $account);
 			}
 

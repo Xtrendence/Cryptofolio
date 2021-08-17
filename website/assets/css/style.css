@@ -325,11 +325,11 @@ input[type=number] {
 }
 .login-wrapper div {
 	position:absolute;
-	width:calc(200px - 40px);
-	height:100px;
+	width:calc(300px - 40px);
+	height:160px;
 	padding:20px;
-	top:calc(50% - 100px / 2);
-	left:calc(50% - 200px / 2);
+	top:calc(50% - 160px / 2 - 36px);
+	left:calc(50% - 300px / 2);
 	background:var(--main-third);
 	box-shadow:var(--shadow-smooth);
 	border-radius:var(--border-radius);
@@ -339,6 +339,7 @@ input[type=number] {
 	width:calc(100% - 20px);
 	padding:0 10px 0 10px;
 	height:40px;
+	margin-bottom:20px;
 	color:var(--main-contrast);
 	font-size:16px;
 	border-radius:var(--border-radius);

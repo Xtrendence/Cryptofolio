@@ -6,8 +6,10 @@
 	if($_SERVER["REQUEST_METHOD"] == "PUT") {
 		$input = json_decode(file_get_contents("php://input"), true);
 
+		$username = !empty($input["username"]) ? $input["username"] : die();
+
 		$utils = require_once("../utils.php");
-		$helper = new Utils();
+		$helper = new Utils($username);
 
 		$token = !empty($input["token"]) ? $input["token"] : die();
 		if($helper->verifySession($token)) {

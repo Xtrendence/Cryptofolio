@@ -8,9 +8,11 @@
 			$json = file_get_contents("php://input");
 			$_POST = json_decode($json, true);
 		}
-		
+
+		$username = !empty($_POST["username"]) ? $_POST["username"] : die();
+
 		$utils = require_once("../utils.php");
-		$helper = new Utils();
+		$helper = new Utils($username);
 
 		$helper->generateAccount();
 
@@ -18,7 +20,7 @@
 
 		if(!empty($_POST["token"])) {
 			if($helper->verifySession($_POST["token"])) {
-				echo json_encode(array("message" => "You are now being logged in...", "valid" => true));
+				echo json_encode(array("message" => "You are now being logged in...", "valid" => true, "username" => $helper->username));
 			} else {
 				echo json_encode(array("error" => "Invalid token.", "valid" => false));
 			}
@@ -30,7 +32,7 @@
 
 			if($helper->verifyPassword($password)) {
 				$token = $helper->generateToken($platform);
-				echo json_encode(array("message" => "You are now being logged in...", "token" => $token, "valid" => true));
+				echo json_encode(array("message" => "You are now being logged in...", "token" => $token, "valid" => true, "username" => $helper->username));
 			} else {
 				echo json_encode(array("error" => "Invalid password.", "valid" => false));
 			}

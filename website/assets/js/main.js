@@ -10,6 +10,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 	let updateActivityListInterval = setInterval(listActivity, updateInterval);
 
 	let sessionToken = localStorage.getItem("token");
+	let sessionUsername = empty(localStorage.getItem("username")) ? "admin" : localStorage.getItem("username");
 
 	let currencies = {
 		usd: "$",
@@ -35,6 +36,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 	let divLoginWrapper = document.getElementById("login-wrapper");
 
+	let inputLoginUsername = document.getElementById("login-username");
 	let inputLoginPassword = document.getElementById("login-password");
 
 	let buttonLogin = document.getElementById("login-button");
@@ -218,14 +220,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 				document.getElementById("popup-confirm").click();
 			}
 		}
-		if(divLoginWrapper.classList.contains("active")) {
-			inputLoginPassword.focus();
-		}
 	});
 
 	buttonLogin.addEventListener("click", () => {
+		let username = inputLoginUsername.value;
 		let password = inputLoginPassword.value;
-		login(password);
+		login(username, password);
 	});
 
 	buttonLogout.addEventListener("click", () => {
@@ -889,7 +889,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 	});
 
 	buttonExportHoldings.addEventListener("click", () => {
-		download(api + "holdings/export.php?token=" + sessionToken);
+		download(api + "holdings/export.php?token=" + sessionToken + "&username=" + sessionUsername);
 	});
 
 	buttonImportActivity.addEventListener("click", () => {
@@ -918,7 +918,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 	});
 
 	buttonExportActivity.addEventListener("click", () => {
-		download(api + "activity/export.php?token=" + sessionToken);
+		download(api + "activity/export.php?token=" + sessionToken + "&username=" + sessionUsername);
 	});
 
 	buttonDeleteCache.addEventListener("click", () => {
@@ -1004,7 +1004,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 				});
 
 				xhr.open("POST", api + "account/login.php?platform=app", true);
-				xhr.send(JSON.stringify({ password:password }));
+				xhr.send(JSON.stringify({ username:sessionUsername, password:password }));
 			} else {
 				Notify.error({
 					title:"Error",
@@ -1495,7 +1495,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 		});
 	}
 
-	function login(password) {
+	function login(username, password) {
 		try {
 			let xhr = new XMLHttpRequest();
 
@@ -1512,8 +1512,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 						} else {
 							if(response.valid) {
 								sessionToken = response.token;
+								sessionUsername = response.username;
 
 								localStorage.setItem("token", response.token);
+								localStorage.setItem("username", response.username);
 
 								Notify.success({
 									title:"Logging In...",
@@ -1549,7 +1551,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 			});
 
 			xhr.open("POST", api + "account/login.php?platform=web", true);
-			xhr.send(JSON.stringify({ password:password }));
+			xhr.send(JSON.stringify({ username:username, password:password }));
 		} catch(e) {
 			reject(e);
 		}
@@ -1571,8 +1573,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 							});
 						} else {
 							sessionToken = null;
+							sessionUsername = null;
 
 							localStorage.removeItem("token");
+							localStorage.removeItem("username");
 
 							Notify.success({
 								title:"Logging Out...",
@@ -1600,7 +1604,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 				}
 			});
 
-			xhr.open("GET", api + "account/logout.php?platform=web&token=" + sessionToken, true);
+			xhr.open("GET", api + "account/logout.php?platform=web&token=" + sessionToken + "&username=" + sessionUsername, true);
 			xhr.send();
 		} catch(e) {
 			reject(e);
@@ -1615,7 +1619,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 			if(!divLoginWrapper.classList.contains("active")) {
 				divLoginWrapper.classList.add("active");
-				inputLoginPassword.focus();
+				inputLoginUsername.focus();
 			}
 		} else {
 			verifySession(sessionToken).then(response => {
@@ -1626,13 +1630,15 @@ document.addEventListener("DOMContentLoaded", async () => {
 				}, 250);
 
 				if("valid" in response && response.valid) {
+					sessionUsername = response.username;
+
 					if(divLoginWrapper.classList.contains("active")) {
 						divLoginWrapper.classList.remove("active");
 					}
 				} else {
 					if(!divLoginWrapper.classList.contains("active")) {
 						divLoginWrapper.classList.add("active");
-						inputLoginPassword.focus();
+						inputLoginUsername.focus();
 					}
 				}
 			}).catch(e => {
@@ -3295,7 +3301,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 					}
 				});
 
-				xhr.open("GET", api + "settings/read.php?token=" + sessionToken, true);
+				xhr.open("GET", api + "settings/read.php?token=" + sessionToken + "&username=" + sessionUsername, true);
 				xhr.send();
 			} catch(e) {
 				reject(e);
@@ -3319,7 +3325,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 				});
 
 				xhr.open("PUT", api + "account/update.php", true);
-				xhr.send(JSON.stringify({ currentPassword:currentPassword, newPassword:newPassword }));
+				xhr.send(JSON.stringify({ username:sessionUsername, currentPassword:currentPassword, newPassword:newPassword }));
 			} catch(e) {
 				reject(e);
 			}
@@ -3342,7 +3348,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 				});
 
 				xhr.open("PUT", api + "settings/update.php", true);
-				xhr.send(JSON.stringify({ token:sessionToken, key:key, value:value }));
+				xhr.send(JSON.stringify({ username:sessionUsername, token:sessionToken, key:key, value:value }));
 			} catch(e) {
 				reject(e);
 			}
@@ -3426,7 +3432,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 				});
 
 				xhr.open("POST", api + "holdings/create.php", true);
-				xhr.send(JSON.stringify({ token:sessionToken, id:id, symbol:symbol, amount:amount }));
+				xhr.send(JSON.stringify({ username:sessionUsername, token:sessionToken, id:id, symbol:symbol, amount:amount }));
 			} catch(e) {
 				reject(e);
 			}
@@ -3449,7 +3455,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 				});
 
 				xhr.open("PUT", api + "holdings/update.php", true);
-				xhr.send(JSON.stringify({ token:sessionToken, id:id, amount:amount }));
+				xhr.send(JSON.stringify({ username:sessionUsername, token:sessionToken, id:id, amount:amount }));
 			} catch(e) {
 				reject(e);
 			}
@@ -3472,7 +3478,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 				});
 
 				xhr.open("DELETE", api + "holdings/delete.php", true);
-				xhr.send(JSON.stringify({ token:sessionToken, id:id }));
+				xhr.send(JSON.stringify({ username:sessionUsername, token:sessionToken, id:id }));
 			} catch(e) {
 				reject(e);
 			}
@@ -3508,7 +3514,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 		});
 
 		xhr.open("POST", api + "holdings/import.php", true);
-		xhr.send(JSON.stringify({ token:sessionToken, rows:rows }));
+		xhr.send(JSON.stringify({ username:sessionUsername, token:sessionToken, rows:rows }));
 	}
 
 	function activityPopup(action, params) {
@@ -3790,7 +3796,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 					}
 				});
 
-				xhr.open("GET", api + "watchlist/read.php?token=" + sessionToken, true);
+				xhr.open("GET", api + "watchlist/read.php?token=" + sessionToken + "&username=" + sessionUsername, true);
 				xhr.send();
 			} catch(e) {
 				reject(e);
@@ -3814,7 +3820,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 				});
 
 				xhr.open("POST", api + "watchlist/create.php", true);
-				xhr.send(JSON.stringify({ token:sessionToken, id:id, symbol:symbol }));
+				xhr.send(JSON.stringify({ username:sessionUsername, token:sessionToken, id:id, symbol:symbol }));
 			} catch(e) {
 				reject(e);
 			}
@@ -3837,7 +3843,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 				});
 
 				xhr.open("DELETE", api + "watchlist/delete.php", true);
-				xhr.send(JSON.stringify({ token:sessionToken, id:id }));
+				xhr.send(JSON.stringify({ username:sessionUsername, token:sessionToken, id:id }));
 			} catch(e) {
 				reject(e);
 			}
@@ -3860,7 +3866,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 				});
 
 				xhr.open("POST", api + "activity/create.php", true);
-				xhr.send(JSON.stringify({ token:sessionToken, id:id, symbol:symbol, date:date, amount:amount, fee:fee, notes:notes, type:type, exchange:exchange, pair:pair, price:price, from:from, to:to }));
+				xhr.send(JSON.stringify({ username:sessionUsername, token:sessionToken, id:id, symbol:symbol, date:date, amount:amount, fee:fee, notes:notes, type:type, exchange:exchange, pair:pair, price:price, from:from, to:to }));
 			} catch(e) {
 				reject(e);
 			}
@@ -3883,7 +3889,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 				});
 
 				xhr.open("PUT", api + "activity/update.php", true);
-				xhr.send(JSON.stringify({ token:sessionToken, txID:txID, id:id, symbol:symbol, date:date, amount:amount, fee:fee, notes:notes, type:type, exchange:exchange, pair:pair, price:price, from:from, to:to }));
+				xhr.send(JSON.stringify({ username:sessionUsername, token:sessionToken, txID:txID, id:id, symbol:symbol, date:date, amount:amount, fee:fee, notes:notes, type:type, exchange:exchange, pair:pair, price:price, from:from, to:to }));
 			} catch(e) {
 				reject(e);
 			}
@@ -3906,7 +3912,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 				});
 
 				xhr.open("DELETE", api + "activity/delete.php", true);
-				xhr.send(JSON.stringify({ token:sessionToken, txID:txID }));
+				xhr.send(JSON.stringify({ username:sessionUsername, token:sessionToken, txID:txID }));
 			} catch(e) {
 				reject(e);
 			}
@@ -3999,7 +4005,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 		});
 
 		xhr.open("POST", api + "activity/import.php", true);
-		xhr.send(JSON.stringify({ token:sessionToken, rows:rows }));
+		xhr.send(JSON.stringify({ username:sessionUsername, token:sessionToken, rows:rows }));
 	}
 
 	function getCoin(id) {
@@ -4040,7 +4046,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 					}
 				});
 
-				xhr.open("GET", api + "coins/read.php?token=" + sessionToken + "&" + key + "=" + value, true);
+				xhr.open("GET", api + "coins/read.php?token=" + sessionToken + "&username=" + sessionUsername + "&" + key + "=" + value, true);
 				xhr.send();
 			} catch(e) {
 				reject(e);
@@ -4086,7 +4092,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 					}
 				});
 
-				xhr.open("GET", api + "historical/read.php?token=" + sessionToken + "&ids=" + ids + "&currency=" + currency + "&from=" + new Date(Date.parse(from)).getTime() / 1000 + "&to=" + new Date(Date.parse(to)).getTime() / 1000, true);
+				xhr.open("GET", api + "historical/read.php?token=" + sessionToken + "&username=" + sessionUsername + "&ids=" + ids + "&currency=" + currency + "&from=" + new Date(Date.parse(from)).getTime() / 1000 + "&to=" + new Date(Date.parse(to)).getTime() / 1000, true);
 				xhr.send();
 			} catch(e) {
 				reject(e);
@@ -4202,7 +4208,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 				});
 
 				xhr.open("POST", api + "account/login.php", true);
-				xhr.send(JSON.stringify({ token:token }));
+				xhr.send(JSON.stringify({ username:sessionUsername, token:token }));
 			} catch(e) {
 				reject(e);
 			}
@@ -4224,7 +4230,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 					}
 				});
 
-				xhr.open("GET", api + "holdings/read.php?token=" + sessionToken, true);
+				xhr.open("GET", api + "holdings/read.php?token=" + sessionToken + "&username=" + sessionUsername, true);
 				xhr.send();
 			} catch(e) {
 				reject(e);
@@ -4306,7 +4312,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 					}
 				});
 
-				xhr.open("GET", api + "activity/read.php?token=" + sessionToken, true);
+				xhr.open("GET", api + "activity/read.php?token=" + sessionToken + "&username=" + sessionUsername, true);
 				xhr.send();
 			} catch(e) {
 				reject(e);
@@ -4427,7 +4433,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 				});
 
 				xhr.open("DELETE", api + "historical/delete.php", true);
-				xhr.send(JSON.stringify({ token:sessionToken }));
+				xhr.send(JSON.stringify({ username:sessionUsername, token:sessionToken }));
 			} catch(e) {
 				reject(e);
 			}

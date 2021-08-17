@@ -441,6 +441,7 @@ input[type=number] {
 	font-weight:bold;
 	color:var(--main-contrast);
 	font-size:16px;
+	margin-top:20px;
 	border-radius:var(--border-radius);
 	background:var(--main-first);
 	cursor:pointer;

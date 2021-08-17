@@ -8,9 +8,11 @@
 			$json = file_get_contents("php://input");
 			$_POST = json_decode($json, true);
 		}
+
+		$username = !empty($_POST["username"]) ? $_POST["username"] : die();
 		
 		$utils = require_once("../utils.php");
-		$helper = new Utils();
+		$helper = new Utils($username);
 
 		$token = !empty($_POST["token"]) ? $_POST["token"] : die();
 		if($helper->verifySession($token)) {

@@ -1738,17 +1738,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 	}
 
 	function checkSession() {
-		if(empty(sessionToken)) {
+		if(empty(sessionToken) || empty(sessionUsername)) {
 			if(divLoadingOverlay.classList.contains("active")) {
 				divLoadingOverlay.classList.remove("active");
 			}
 
-			if(!divLoginWrapper.classList.contains("active")) {
-				divLoginWrapper.classList.add("active");
-				inputLoginUsername.focus();
-			}
-
-			buttonManageAccounts.classList.add("hidden");
+			showLogin();
 		} else {
 			verifySession(sessionToken).then(response => {
 				setTimeout(() => {
@@ -1768,17 +1763,27 @@ document.addEventListener("DOMContentLoaded", async () => {
 						buttonManageAccounts.classList.remove("hidden");
 					}
 				} else {
-					if(!divLoginWrapper.classList.contains("active")) {
-						divLoginWrapper.classList.add("active");
-						inputLoginUsername.focus();
-					}
-
-					buttonManageAccounts.classList.add("hidden");
+					showLogin();
 				}
 			}).catch(e => {
 				console.log(e);
 			});
 		}
+	}
+
+	function showLogin() {
+		sessionToken = null;
+		sessionUsername = null;
+
+		localStorage.removeItem("token");
+		localStorage.removeItem("username");
+		
+		if(!divLoginWrapper.classList.contains("active")) {
+			divLoginWrapper.classList.add("active");
+			inputLoginUsername.focus();
+		}
+
+		buttonManageAccounts.classList.add("hidden");
 	}
 
 	function popup(title, html, width, height, options) {

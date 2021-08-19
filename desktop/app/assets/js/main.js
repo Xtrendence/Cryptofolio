@@ -1720,8 +1720,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 								description:response.message
 							});
 
+							clearDashboard();
 							clearMarketList();
 							clearHoldingsList();
+							clearActivityList();
 
 							spanHoldingsTotalValue.textContent = "...";
 

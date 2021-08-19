@@ -1709,8 +1709,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 								description:response.message
 							});
 
+							clearDashboard();
 							clearMarketList();
 							clearHoldingsList();
+							clearActivityList();
 
 							spanHoldingsTotalValue.textContent = "...";
 
@@ -2644,7 +2646,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 							}
 						} else if(settings.transactionsAffectHoldings === "override") {
 							let activity = await getActivity();
-							
+
 							if(!empty(activity)) {
 								transactionsBySymbol = sortActivityBySymbol(activity);
 

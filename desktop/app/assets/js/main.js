@@ -6,6 +6,7 @@ const Storage = new XStorage(ipcRenderer);
 document.addEventListener("DOMContentLoaded", async () => {
 	let api = await Storage.getItem("api");
 	let sessionToken = await Storage.getItem("token");
+	let sessionUsername = await Storage.getItem("username");
 
 	const updateInterval = 30000; // Default: 30000
 	
@@ -49,6 +50,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 	let divLoginWrapper = document.getElementById("login-wrapper");
 
 	let inputLoginAPI = document.getElementById("login-api");
+	let inputLoginUsername = document.getElementById("login-username");
 	let inputLoginPassword = document.getElementById("login-password");
 
 	let buttonLogin = document.getElementById("login-button");
@@ -128,6 +130,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 	let inputRepeatPassword = document.getElementById("input-repeat-password");
 
 	let buttonChangePassword = document.getElementById("change-password-button");
+	let buttonManageAccounts = document.getElementById("manage-accounts-button");
 
 	let buttonImportHoldings = document.getElementById("import-holdings-button");
 	let buttonExportHoldings = document.getElementById("export-holdings-button");
@@ -248,11 +251,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 	buttonLogin.addEventListener("click", async () => {
 		let url = inputLoginAPI.value;
+		let username = inputLoginUsername.value;
 		let password = inputLoginPassword.value;
-		if(empty(url) || empty(password)) {
+		if(empty(url) || empty(password) || empty(username)) {
 			Notify.error({
 				title:"Error",
-				description:"Both fields must be filled out."
+				description:"All fields must be filled out."
 			});
 		} else {
 			if(!url.includes("http://") && !url.includes("https://")) {
@@ -267,7 +271,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 			api = url;
 			await Storage.setItem("api", url);
 
-			login(password);
+			login(username, password);
 		}
 	});
 
@@ -870,6 +874,125 @@ document.addEventListener("DOMContentLoaded", async () => {
 		}
 	});
 
+	buttonManageAccounts.addEventListener("click", () => {
+		getAccounts().then(accounts => {
+			let users = accounts.accounts;
+
+			let popupHeight = 240;
+			let addedHeight = users.length * 40;
+
+			if(users.length >= 3) {
+				addedHeight = 120;
+			}
+
+			let adjustedHeight = (popupHeight + addedHeight) + 20;
+
+			divPopupWrapper.style.height = adjustedHeight + "px";
+			divPopupWrapper.style.top = "calc(50% - " + adjustedHeight + "px / 2)";
+
+			popup("Manage Accounts", '<div id="popup-list" class="popup-list"></div><div id="popup-choice"><button id="popup-create" data-value="create" class="choice active">Create</button><button id="popup-delete" data-value="delete" class="choice">Delete</button></div><input id="popup-username" placeholder="Username..." type="text"><button class="reject" id="popup-cancel">Cancel</button><button class="resolve" id="popup-confirm">Confirm</button>', "300px", adjustedHeight + "px");
+
+			let divPopupList = document.getElementById("popup-list");
+
+			let inputUsername = document.getElementById("popup-username");
+
+			users.map(user => {
+				let row = document.createElement("div");
+				row.innerHTML = '<span class="title">' + user + '</span>';
+
+				row.addEventListener("click", () => {
+					inputUsername.value = user;
+				});
+
+				divPopupList.appendChild(row);
+			});
+
+			let choices = document.getElementById("popup-choice").getElementsByClassName("choice");
+			for(let i = 0; i < choices.length; i++) {
+				choices[i].addEventListener("click", () => {
+					for(let j = 0; j < choices.length; j++) {
+						choices[j].classList.remove("active");
+					}
+					choices[i].classList.add("active");
+				});
+			}
+
+			document.getElementById("popup-cancel").addEventListener("click", () => {
+				hidePopup();
+			});
+
+			document.getElementById("popup-confirm").addEventListener("click", () => {
+				let username = inputUsername.value;
+
+				if(!empty(username)) {
+					if(username.toLowerCase().trim() !== "admin") {
+						if(document.getElementById("popup-create").classList.contains("active")) {
+							createAccount(username).then(response => {
+								if("error" in response) {
+									Notify.error({
+										title:"Error",
+										description:response.error
+									});
+								} else {
+									Notify.success({
+										title:"Account Created",
+										description:response.message
+									});
+
+									hidePopup();
+								}
+							}).catch(e => {
+								console.log(e);
+								Notify.error({
+									title:"Error",
+									description:"Couldn't create account."
+								});
+							});
+						} else {
+							deleteAccount(username).then(response => {
+								if("error" in response) {
+									Notify.error({
+										title:"Error",
+										description:response.error
+									});
+								} else {
+									Notify.success({
+										title:"Account Deleted",
+										description:response.message
+									});
+
+									hidePopup();
+								}
+							}).catch(e => {
+								console.log(e);
+								Notify.error({
+									title:"Error",
+									description:"Couldn't delete account."
+								});
+							});
+						}
+					} else {
+						Notify.error({
+							title:"Error",
+							description:"The admin account cannot be modified."
+						});
+					}
+				} else {
+					Notify.error({
+						title:"Error",
+						description:"Please fill out the input field."
+					});
+				}
+			});
+		}).catch(e => {
+			console.log(e);
+			Notify.error({
+				title:"Error",
+				description:"Couldn't fetch accounts."
+			});
+		});
+	});
+
 	buttonImportHoldings.addEventListener("click", () => {
 		upload().then(data => {
 			let rows = data.split(/\r?\n/);
@@ -892,7 +1015,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 	});
 
 	buttonExportHoldings.addEventListener("click", () => {
-		download(api + "holdings/export.php?token=" + sessionToken);
+		download(api + "holdings/export.php?token=" + sessionToken + "&username=" + sessionUsername);
 	});
 
 	buttonImportActivity.addEventListener("click", () => {
@@ -921,7 +1044,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 	});
 
 	buttonExportActivity.addEventListener("click", () => {
-		download(api + "activity/export.php?token=" + sessionToken);
+		download(api + "activity/export.php?token=" + sessionToken + "&username=" + sessionUsername);
 	});
 
 	buttonDeleteCache.addEventListener("click", () => {
@@ -1006,8 +1129,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 					}
 				});
 
-				xhr.open("POST", api + "account/login.php?platform=app", true);
-				xhr.send(JSON.stringify({ password:password }));
+				xhr.open("POST", api + "accounts/login.php?platform=app", true);
+				xhr.send(JSON.stringify({ username:sessionUsername, password:password }));
 			} else {
 				Notify.error({
 					title:"Error",
@@ -1498,7 +1621,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 		});
 	}
 
-	function login(password) {
+	async function login(username, password) {
 		try {
 			let xhr = new XMLHttpRequest();
 
@@ -1515,8 +1638,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 						} else {
 							if(response.valid) {
 								sessionToken = response.token;
+								sessionUsername = response.username;
 
 								await Storage.setItem("token", response.token);
+								await Storage.setItem("username", response.username);
 								
 								getLocalSettings();
 
@@ -1545,6 +1670,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 								inputLoginPassword.value = "";
 								inputLoginPassword.blur();
+
+								if(sessionUsername === "admin") {
+									buttonManageAccounts.classList.remove("hidden");
+								} else {
+									buttonManageAccounts.classList.add("hidden");
+								}
 							}
 						}
 					} else {
@@ -1556,14 +1687,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 				}
 			});
 
-			xhr.open("POST", api + "account/login.php?platform=desktop", true);
-			xhr.send(JSON.stringify({ password:password }));
+			xhr.open("POST", api + "accounts/login.php?platform=desktop", true);
+			xhr.send(JSON.stringify({ username:username, password:password }));
 		} catch(e) {
 			reject(e);
 		}
 	}
 
-	function logout() {
+	async function logout() {
 		try {
 			let xhr = new XMLHttpRequest();
 
@@ -1579,8 +1710,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 							});
 						} else {
 							sessionToken = null;
+							sessionUsername = null;
 
 							await Storage.removeItem("token");
+							await Storage.removeItem("username");
 
 							Notify.success({
 								title:"Logging Out...",
@@ -1608,7 +1741,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 				}
 			});
 
-			xhr.open("GET", api + "account/logout.php?platform=desktop&token=" + sessionToken, true);
+			xhr.open("GET", api + "accounts/logout.php?platform=desktop&token=" + sessionToken + "&username=" + sessionUsername, true);
 			xhr.send();
 		} catch(e) {
 			reject(e);
@@ -1620,7 +1753,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 			inputLoginAPI.value = api;
 		}
 
-		if(empty(sessionToken)) {
+		if(empty(sessionToken) || empty(sessionUsername)) {
 			if(divLoadingOverlay.classList.contains("active")) {
 				divLoadingOverlay.classList.remove("active");
 				divTitlebar.classList.remove("loading");
@@ -1630,10 +1763,19 @@ document.addEventListener("DOMContentLoaded", async () => {
 			if(!divLoginWrapper.classList.contains("active")) {
 				divLoginWrapper.classList.add("active");
 				divTitlebarShadow.classList.add("hidden");
-				inputLoginPassword.focus();
+				inputLoginUsername.focus();
+
+				sessionToken = null;
+				sessionUsername = null;
+
+				await Storage.removeItem("api");
+				await Storage.removeItem("token");
+				await Storage.removeItem("username");
+
+				buttonManageAccounts.classList.add("hidden");
 			}
 		} else {
-			verifySession(sessionToken).then(response => {
+			verifySession(sessionToken).then(async response => {
 				setTimeout(() => {
 					if(divLoadingOverlay.classList.contains("active")) {
 						divLoadingOverlay.classList.remove("active");
@@ -1643,20 +1785,39 @@ document.addEventListener("DOMContentLoaded", async () => {
 				}, 250);
 
 				if("valid" in response && response.valid) {
+					sessionUsername = response.username;
+
 					if(divLoginWrapper.classList.contains("active")) {
 						divLoginWrapper.classList.remove("active");
 						divTitlebarShadow.classList.remove("hidden");
+					}
+
+					if(sessionUsername === "admin") {
+						buttonManageAccounts.classList.remove("hidden");
 					}
 				} else {
 					if(!divLoginWrapper.classList.contains("active")) {
 						divLoginWrapper.classList.add("active");
 						divTitlebarShadow.classList.add("hidden");
-						inputLoginPassword.focus();
+						inputLoginUsername.focus();
+
+						sessionToken = null;
+						sessionUsername = null;
+
+						await Storage.removeItem("api");
+						await Storage.removeItem("token");
+						await Storage.removeItem("username");
+
+						buttonManageAccounts.classList.add("hidden");
 					}
 				}
 			}).catch(async e => {
+				sessionToken = null;
+				sessionUsername = null;
+
 				await Storage.removeItem("api");
 				await Storage.removeItem("token");
+				await Storage.removeItem("username");
 
 				if(divLoadingOverlay.classList.contains("active")) {
 					divLoadingOverlay.classList.remove("active");
@@ -1669,6 +1830,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 					divTitlebarShadow.classList.add("hidden");
 					inputLoginPassword.focus();
 				}
+
+				buttonManageAccounts.classList.add("hidden");
 
 				console.log(e);
 			});
@@ -3337,7 +3500,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 					}
 				});
 
-				xhr.open("GET", api + "settings/read.php?token=" + sessionToken, true);
+				xhr.open("GET", api + "settings/read.php?token=" + sessionToken + "&username=" + sessionUsername, true);
 				xhr.send();
 			} catch(e) {
 				reject(e);
@@ -3360,8 +3523,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 					}
 				});
 
-				xhr.open("PUT", api + "account/update.php", true);
-				xhr.send(JSON.stringify({ currentPassword:currentPassword, newPassword:newPassword }));
+				xhr.open("PUT", api + "accounts/update.php", true);
+				xhr.send(JSON.stringify({ username:sessionUsername, currentPassword:currentPassword, newPassword:newPassword }));
 			} catch(e) {
 				reject(e);
 			}
@@ -3384,7 +3547,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 				});
 
 				xhr.open("PUT", api + "settings/update.php", true);
-				xhr.send(JSON.stringify({ token:sessionToken, key:key, value:value }));
+				xhr.send(JSON.stringify({ username:sessionUsername, token:sessionToken, key:key, value:value }));
 			} catch(e) {
 				reject(e);
 			}
@@ -3468,7 +3631,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 				});
 
 				xhr.open("POST", api + "holdings/create.php", true);
-				xhr.send(JSON.stringify({ token:sessionToken, id:id, symbol:symbol, amount:amount }));
+				xhr.send(JSON.stringify({ username:sessionUsername, token:sessionToken, id:id, symbol:symbol, amount:amount }));
 			} catch(e) {
 				reject(e);
 			}
@@ -3491,7 +3654,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 				});
 
 				xhr.open("PUT", api + "holdings/update.php", true);
-				xhr.send(JSON.stringify({ token:sessionToken, id:id, amount:amount }));
+				xhr.send(JSON.stringify({ username:sessionUsername, token:sessionToken, id:id, amount:amount }));
 			} catch(e) {
 				reject(e);
 			}
@@ -3514,7 +3677,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 				});
 
 				xhr.open("DELETE", api + "holdings/delete.php", true);
-				xhr.send(JSON.stringify({ token:sessionToken, id:id }));
+				xhr.send(JSON.stringify({ username:sessionUsername, token:sessionToken, id:id }));
 			} catch(e) {
 				reject(e);
 			}
@@ -3550,7 +3713,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 		});
 
 		xhr.open("POST", api + "holdings/import.php", true);
-		xhr.send(JSON.stringify({ token:sessionToken, rows:rows }));
+		xhr.send(JSON.stringify({ username:sessionUsername, token:sessionToken, rows:rows }));
 	}
 
 	function activityPopup(action, params) {
@@ -3832,7 +3995,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 					}
 				});
 
-				xhr.open("GET", api + "watchlist/read.php?token=" + sessionToken, true);
+				xhr.open("GET", api + "watchlist/read.php?token=" + sessionToken + "&username=" + sessionUsername, true);
 				xhr.send();
 			} catch(e) {
 				reject(e);
@@ -3856,7 +4019,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 				});
 
 				xhr.open("POST", api + "watchlist/create.php", true);
-				xhr.send(JSON.stringify({ token:sessionToken, id:id, symbol:symbol }));
+				xhr.send(JSON.stringify({ username:sessionUsername, token:sessionToken, id:id, symbol:symbol }));
 			} catch(e) {
 				reject(e);
 			}
@@ -3879,7 +4042,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 				});
 
 				xhr.open("DELETE", api + "watchlist/delete.php", true);
-				xhr.send(JSON.stringify({ token:sessionToken, id:id }));
+				xhr.send(JSON.stringify({ username:sessionUsername, token:sessionToken, id:id }));
 			} catch(e) {
 				reject(e);
 			}
@@ -3902,7 +4065,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 				});
 
 				xhr.open("POST", api + "activity/create.php", true);
-				xhr.send(JSON.stringify({ token:sessionToken, id:id, symbol:symbol, date:date, amount:amount, fee:fee, notes:notes, type:type, exchange:exchange, pair:pair, price:price, from:from, to:to }));
+				xhr.send(JSON.stringify({ username:sessionUsername, token:sessionToken, id:id, symbol:symbol, date:date, amount:amount, fee:fee, notes:notes, type:type, exchange:exchange, pair:pair, price:price, from:from, to:to }));
 			} catch(e) {
 				reject(e);
 			}
@@ -3925,7 +4088,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 				});
 
 				xhr.open("PUT", api + "activity/update.php", true);
-				xhr.send(JSON.stringify({ token:sessionToken, txID:txID, id:id, symbol:symbol, date:date, amount:amount, fee:fee, notes:notes, type:type, exchange:exchange, pair:pair, price:price, from:from, to:to }));
+				xhr.send(JSON.stringify({ username:sessionUsername, token:sessionToken, txID:txID, id:id, symbol:symbol, date:date, amount:amount, fee:fee, notes:notes, type:type, exchange:exchange, pair:pair, price:price, from:from, to:to }));
 			} catch(e) {
 				reject(e);
 			}
@@ -3948,7 +4111,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 				});
 
 				xhr.open("DELETE", api + "activity/delete.php", true);
-				xhr.send(JSON.stringify({ token:sessionToken, txID:txID }));
+				xhr.send(JSON.stringify({ username:sessionUsername, token:sessionToken, txID:txID }));
 			} catch(e) {
 				reject(e);
 			}
@@ -4041,7 +4204,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 		});
 
 		xhr.open("POST", api + "activity/import.php", true);
-		xhr.send(JSON.stringify({ token:sessionToken, rows:rows }));
+		xhr.send(JSON.stringify({ username:sessionUsername, token:sessionToken, rows:rows }));
 	}
 
 	function getCoin(id) {
@@ -4082,7 +4245,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 					}
 				});
 
-				xhr.open("GET", api + "coins/read.php?token=" + sessionToken + "&" + key + "=" + value, true);
+				xhr.open("GET", api + "coins/read.php?token=" + sessionToken + "&username=" + sessionUsername + "&" + key + "=" + value, true);
 				xhr.send();
 			} catch(e) {
 				reject(e);
@@ -4128,7 +4291,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 					}
 				});
 
-				xhr.open("GET", api + "historical/read.php?token=" + sessionToken + "&ids=" + ids + "&currency=" + currency + "&from=" + new Date(Date.parse(from)).getTime() / 1000 + "&to=" + new Date(Date.parse(to)).getTime() / 1000, true);
+				xhr.open("GET", api + "historical/read.php?token=" + sessionToken + "&username=" + sessionUsername + "&ids=" + ids + "&currency=" + currency + "&from=" + new Date(Date.parse(from)).getTime() / 1000 + "&to=" + new Date(Date.parse(to)).getTime() / 1000, true);
 				xhr.send();
 			} catch(e) {
 				reject(e);
@@ -4228,6 +4391,98 @@ document.addEventListener("DOMContentLoaded", async () => {
 		});
 	}
 
+	function getAccounts() {
+		return new Promise((resolve, reject) => {
+			try {
+				let xhr = new XMLHttpRequest();
+
+				xhr.addEventListener("readystatechange", () => {
+					if(xhr.readyState === XMLHttpRequest.DONE) {
+						if(validJSON(xhr.responseText)) {
+							resolve(JSON.parse(xhr.responseText));
+						} else {
+							reject("Invalid JSON.");
+						}
+					}
+				});
+
+				xhr.open("GET", api + "accounts/read-all.php?token=" + sessionToken + "&username=" + sessionUsername, true);
+				xhr.send();
+			} catch(e) {
+				reject(e);
+			}
+		});
+	}
+
+	function getAccount() {
+		return new Promise((resolve, reject) => {
+			try {
+				let xhr = new XMLHttpRequest();
+
+				xhr.addEventListener("readystatechange", () => {
+					if(xhr.readyState === XMLHttpRequest.DONE) {
+						if(validJSON(xhr.responseText)) {
+							resolve(JSON.parse(xhr.responseText));
+						} else {
+							reject("Invalid JSON.");
+						}
+					}
+				});
+
+				xhr.open("GET", api + "accounts/read.php?token=" + sessionToken + "&username=" + sessionUsername, true);
+				xhr.send();
+			} catch(e) {
+				reject(e);
+			}
+		});
+	}
+
+	function createAccount(account) {
+		return new Promise((resolve, reject) => {
+			try {
+				let xhr = new XMLHttpRequest();
+
+				xhr.addEventListener("readystatechange", () => {
+					if(xhr.readyState === XMLHttpRequest.DONE) {
+						if(validJSON(xhr.responseText)) {
+							resolve(JSON.parse(xhr.responseText));
+						} else {
+							reject("Invalid JSON.");
+						}
+					}
+				});
+
+				xhr.open("POST", api + "accounts/create.php", true);
+				xhr.send(JSON.stringify({ username:sessionUsername, token:sessionToken, account:account }));
+			} catch(e) {
+				reject(e);
+			}
+		});
+	}
+
+	function deleteAccount(account) {
+		return new Promise((resolve, reject) => {
+			try {
+				let xhr = new XMLHttpRequest();
+
+				xhr.addEventListener("readystatechange", () => {
+					if(xhr.readyState === XMLHttpRequest.DONE) {
+						if(validJSON(xhr.responseText)) {
+							resolve(JSON.parse(xhr.responseText));
+						} else {
+							reject("Invalid JSON.");
+						}
+					}
+				});
+
+				xhr.open("DELETE", api + "accounts/delete.php", true);
+				xhr.send(JSON.stringify({ username:sessionUsername, token:sessionToken, account:account }));
+			} catch(e) {
+				reject(e);
+			}
+		});
+	}
+
 	function verifySession(token) {
 		return new Promise((resolve, reject) => {
 			try {
@@ -4243,8 +4498,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 					}
 				});
 
-				xhr.open("POST", api + "account/login.php", true);
-				xhr.send(JSON.stringify({ token:token }));
+				xhr.open("POST", api + "accounts/login.php", true);
+				xhr.send(JSON.stringify({ username:sessionUsername, token:token }));
 			} catch(e) {
 				reject(e);
 			}
@@ -4266,7 +4521,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 					}
 				});
 
-				xhr.open("GET", api + "holdings/read.php?token=" + sessionToken, true);
+				xhr.open("GET", api + "holdings/read.php?token=" + sessionToken + "&username=" + sessionUsername, true);
 				xhr.send();
 			} catch(e) {
 				reject(e);
@@ -4348,7 +4603,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 					}
 				});
 
-				xhr.open("GET", api + "activity/read.php?token=" + sessionToken, true);
+				xhr.open("GET", api + "activity/read.php?token=" + sessionToken + "&username=" + sessionUsername, true);
 				xhr.send();
 			} catch(e) {
 				reject(e);
@@ -4469,7 +4724,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 				});
 
 				xhr.open("DELETE", api + "historical/delete.php", true);
-				xhr.send(JSON.stringify({ token:sessionToken }));
+				xhr.send(JSON.stringify({ username:sessionUsername, token:sessionToken }));
 			} catch(e) {
 				reject(e);
 			}

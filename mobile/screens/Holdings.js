@@ -828,8 +828,9 @@ export default function Holdings({ navigation }) {
 		return new Promise(async (resolve, reject) => {
 			let api = await AsyncStorage.getItem("api");
 			let token = await AsyncStorage.getItem("token");
+			let username = await AsyncStorage.getItem("username");
 
-			let endpoint = api + "historical/read.php?token=" + token + "&ids=" + ids + "&currency=" + currency + "&from=" + new Date(Date.parse(from)).getTime() / 1000 + "&to=" + new Date(Date.parse(to)).getTime() / 1000;
+			let endpoint = api + "historical/read.php?token=" + token + "&username=" + username + "&ids=" + ids + "&currency=" + currency + "&from=" + new Date(Date.parse(from)).getTime() / 1000 + "&to=" + new Date(Date.parse(to)).getTime() / 1000;
 
 			fetch(endpoint, {
 				method: "GET",
@@ -922,6 +923,7 @@ export default function Holdings({ navigation }) {
 	async function processHolding(id, amount) {
 		let api = await AsyncStorage.getItem("api");
 		let token = await AsyncStorage.getItem("token");
+		let username = await AsyncStorage.getItem("username");
 
 		let endpoint = "https://api.coingecko.com/api/v3/coins/" + id;
 
@@ -942,12 +944,12 @@ export default function Holdings({ navigation }) {
 
 				let endpoint = api + "holdings/create.php";
 				let method = "POST";
-				let body = { token:token, id:id, symbol:symbol, amount:amount };
+				let body = { token:token, username:username, id:id, symbol:symbol, amount:amount };
 
 				if(action === "update") {
 					endpoint = api + "holdings/update.php";
 					method = "PUT";
-					body = { token:token, id:id, amount:amount };
+					body = { token:token, username:username, id:id, amount:amount };
 				}
 
 				fetch(endpoint, {
@@ -982,10 +984,11 @@ export default function Holdings({ navigation }) {
 
 			let api = await AsyncStorage.getItem("api");
 			let token = await AsyncStorage.getItem("token");
+			let username = await AsyncStorage.getItem("username");
 
 			let endpoint = api + "holdings/delete.php";
 
-			let body = { token:token, id:id };
+			let body = { token:token, username:username, id:id };
 
 			fetch(endpoint, {
 				method: "DELETE",
@@ -1042,8 +1045,9 @@ export default function Holdings({ navigation }) {
 
 		let api = await AsyncStorage.getItem("api");
 		let token = await AsyncStorage.getItem("token");
+		let username = await AsyncStorage.getItem("username");
 
-		let endpoint = api + "holdings/read.php?platform=app&token=" + token;
+		let endpoint = api + "holdings/read.php?platform=app&token=" + token + "&username=" + username;
 
 		fetch(endpoint, {
 			method: "GET",
@@ -1283,8 +1287,9 @@ export default function Holdings({ navigation }) {
 		return new Promise(async (resolve, reject) => {
 			let api = await AsyncStorage.getItem("api");
 			let token = await AsyncStorage.getItem("token");
+			let username = await AsyncStorage.getItem("username");
 
-			let endpoint = api + "activity/read.php?platform=app&token=" + token;
+			let endpoint = api + "activity/read.php?platform=app&token=" + token + "&username=" + username;
 
 			fetch(endpoint, {
 				method: "GET",

@@ -1,13 +1,13 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { empty } from "../utils/utils";
 
-export function login(url, password) {
+export function login(url, username, password) {
 	return new Promise((resolve, reject) => {
 		let isFulfilled = false;
 
-		if(empty(url) || empty(password)) {
+		if(empty(url) || empty(username) || empty(password)) {
 			isFulfilled = true;
-			reject("Both fields must be filled out.");
+			reject("All fields must be filled out.");
 		} else {
 			setTimeout(() => {
 				if(!isFulfilled) {
@@ -25,9 +25,9 @@ export function login(url, password) {
 				url = url + "/";
 			}
 
-			let endpoint = url + "account/login.php?platform=app";
+			let endpoint = url + "accounts/login.php?platform=app";
 
-			let body = { password:password };
+			let body = { username:username, password:password };
 
 			fetch(endpoint, {
 				body: JSON.stringify(body),
@@ -46,7 +46,7 @@ export function login(url, password) {
 				} else {
 					if(response.valid) {
 						isFulfilled = true;
-						resolve({ token:response.token, api:url });
+						resolve({ token:response.token, username:response.username, api:url });
 					}
 				}
 			}).catch(error => {
@@ -74,10 +74,11 @@ export async function verifySession(token) {
 			}, 5000);
 
 			let api = await AsyncStorage.getItem("api");
+			let username = await AsyncStorage.getItem("username");
 
-			let endpoint = api + "account/login.php?platform=app";
+			let endpoint = api + "accounts/login.php?platform=app";
 
-			let body = { token:token };
+			let body = { token:token, username:username };
 
 			fetch(endpoint, {
 				body: JSON.stringify(body),
@@ -111,8 +112,9 @@ export async function getCoinID(key, value) {
 	return new Promise(async (resolve, reject) => {
 		let api = await AsyncStorage.getItem("api");
 		let token = await AsyncStorage.getItem("token");
+		let username = await AsyncStorage.getItem("username");
 
-		let endpoint = api + "coins/read.php?" + key + "=" + value + "&token=" + token;
+		let endpoint = api + "coins/read.php?" + key + "=" + value + "&token=" + token + "&username=" + username;
 
 		fetch(endpoint, {
 			method: "GET",
@@ -145,6 +147,7 @@ export async function importData(type, rows) {
 
 		let api = await AsyncStorage.getItem("api");
 		let token = await AsyncStorage.getItem("token");
+		let username = await AsyncStorage.getItem("username");
 
 		let endpoint = api + "holdings/import.php";
 
@@ -152,7 +155,7 @@ export async function importData(type, rows) {
 			endpoint = api + "activity/import.php";
 		}
 
-		let body = { token:token, rows:rows };
+		let body = { token:token, username:username, rows:rows };
 
 		fetch(endpoint, {
 			body: JSON.stringify(body),
@@ -183,7 +186,7 @@ export async function getWatchlist() {
 		let api = await AsyncStorage.getItem("api");
 		let token = await AsyncStorage.getItem("token");
 
-		let endpoint = api + "watchlist/read.php?platform=app&token=" + token;
+		let endpoint = api + "watchlist/read.php?platform=app&token=" + token + "&username=" + username;
 
 		fetch(endpoint, {
 			method: "GET",
@@ -207,10 +210,11 @@ export async function createWatchlist(id, symbol) {
 	return new Promise(async (resolve, reject) => {
 		let api = await AsyncStorage.getItem("api");
 		let token = await AsyncStorage.getItem("token");
+		let username = await AsyncStorage.getItem("username");
 
 		let endpoint = api + "watchlist/create.php";
 
-		let body = { token:token, id:id, symbol:symbol };
+		let body = { token:token, username:username, id:id, symbol:symbol };
 
 		fetch(endpoint, {
 			body: JSON.stringify(body),
@@ -239,10 +243,11 @@ export async function deleteWatchlist(id) {
 	return new Promise(async (resolve, reject) => {
 		let api = await AsyncStorage.getItem("api");
 		let token = await AsyncStorage.getItem("token");
+		let username = await AsyncStorage.getItem("username");
 
 		let endpoint = api + "watchlist/delete.php";
 
-		let body = { token:token, id:id };
+		let body = { token:token, username:username, id:id };
 
 		fetch(endpoint, {
 			body: JSON.stringify(body),

@@ -531,8 +531,9 @@ export default function Dashboard({ navigation }) {
 
 		let api = await AsyncStorage.getItem("api");
 		let token = await AsyncStorage.getItem("token");
+		let username = await AsyncStorage.getItem("username");
 
-		let endpoint = api + "holdings/read.php?platform=app&token=" + token;
+		let endpoint = api + "holdings/read.php?platform=app&token=" + token + "&username=" + username;
 
 		fetch(endpoint, {
 			method: "GET",
@@ -546,7 +547,7 @@ export default function Dashboard({ navigation }) {
 		.then(async (coins) => {
 			if(Object.keys(coins).length === 0 && transactionsAffectHoldings !== "override" && transactionsAffectHoldings !== "mixed") {
 				if(navigation.isFocused()) {
-					setHoldingsData([<Text key="empty" style={[styles.headerText, styles[`headerText${theme}`]]}>No Holdings Found.</Text>]);
+					setHoldingsData([<Text key="empty" style={[styles.loadingText, styles.headerText, styles[`headerText${theme}`]]}>No Holdings Found.</Text>]);
 					setHoldingsValue("-");
 				}
 			} else {
@@ -804,8 +805,9 @@ export default function Dashboard({ navigation }) {
 		return new Promise(async (resolve, reject) => {
 			let api = await AsyncStorage.getItem("api");
 			let token = await AsyncStorage.getItem("token");
+			let username = await AsyncStorage.getItem("username");
 
-			let endpoint = api + "activity/read.php?platform=app&token=" + token;
+			let endpoint = api + "activity/read.php?platform=app&token=" + token + "&username=" + username;
 
 			fetch(endpoint, {
 				method: "GET",

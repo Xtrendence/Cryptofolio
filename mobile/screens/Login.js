@@ -19,6 +19,7 @@ export default function Login({ navigation, route }) {
 	const { theme } = React.useContext(ThemeContext);
 
 	const [url, setUrl] = React.useState();
+	const [username, setUsername] = React.useState();
 	const [password, setPassword] = React.useState();
 	const [showCamera, setShowCamera] = React.useState(false);
 
@@ -40,6 +41,7 @@ export default function Login({ navigation, route }) {
 			{ !showCamera && 
 				<View style={styles.formWrapper}>
 					<TextInput placeholder="API URL..." onChangeText={(value) => setUrl(value)} value={url} style={[styles.input, styles[`input${theme}`]]} placeholderTextColor={globalColors[theme].mainContrastLight} autoCapitalize="none" spellCheck={false}></TextInput>
+					<TextInput placeholder="Username..." onChangeText={(value) => setUsername(value)} value={username} style={[styles.input, styles[`input${theme}`]]} placeholderTextColor={globalColors[theme].mainContrastLight} autoCapitalize="none" spellCheck={false}></TextInput>
 					<TextInput placeholder="Password..." secureTextEntry={!empty(password)} value={password} onChangeText={(value) => setPassword(value)} style={[styles.input, styles[`input${theme}`]]} placeholderTextColor={globalColors[theme].mainContrastLight} autoCapitalize="none"></TextInput>
 					<TouchableOpacity onPress={() => attemptLogin()}>
 						<LinearGradient colors={[globalColors[theme].accentFirst, globalColors[theme].accentSecond]} style={[styles.button, { width:100 }]} useAngle={true} angle={45}>
@@ -82,10 +84,15 @@ export default function Login({ navigation, route }) {
 	async function processCode(data) {
 		if(data.includes("!")) {
 			let parts = data.split("!");
+
 			let token = parts[0];
 			let api = parts[1];
+			let username = parts[2];
+
 			await AsyncStorage.setItem("token", token);
 			await AsyncStorage.setItem("api", api);
+			await AsyncStorage.setItem("username", username);
+			
 			checkSession();
 		} else {
 			showMessage({
@@ -99,9 +106,11 @@ export default function Login({ navigation, route }) {
 
 	async function attemptLogin(token) {
 		if(empty(token)) {
-			login(url, password).then(async response => {
+			login(url, username, password).then(async response => {
 				let token = response.token;
+
 				await AsyncStorage.setItem("api", response.api);
+				await AsyncStorage.setItem("username", response.username);
 				await AsyncStorage.setItem("token", token);
 
 				setPassword();
@@ -124,6 +133,9 @@ export default function Login({ navigation, route }) {
 		} else {
 			verifySession(token).then(async response => {
 				if(response.valid) {
+					await AsyncStorage.setItem("username", response.username);
+
+					setUsername();
 					setPassword();
 
 					let validPages = ["Dashboard", "Market", "Holdings", "Activity", "Settings"];

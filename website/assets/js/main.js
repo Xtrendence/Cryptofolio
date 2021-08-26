@@ -1102,7 +1102,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 										let qrStyle = JSON.parse(qrCodeStyle);
 										qrStyle.width = 340;
 										qrStyle.height = 340;
-										qrStyle.data = token + "!" + new URL(api, document.baseURI).href;
+										qrStyle.data = token + "!" + new URL(api, document.baseURI).href + "!" + sessionUsername;
 
 										let qrCode = new QRCodeStyling(qrStyle);
 

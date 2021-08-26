@@ -275,10 +275,11 @@ export default function Activity({ navigation }) {
 	async function createActivity(id, symbol, date, amount, fee, notes, type, exchange, pair, price, from, to) {
 		let api = await AsyncStorage.getItem("api");
 		let token = await AsyncStorage.getItem("token");
+		let username = await AsyncStorage.getItem("username");
 
 		let endpoint = api + "activity/create.php";
 
-		let body = { token:token, id:id, symbol:symbol, date:date, amount:amount, fee:fee, notes:notes, type:type, exchange:exchange, pair:pair, price:price, from:from, to:to };
+		let body = { token:token, username:username, id:id, symbol:symbol, date:date, amount:amount, fee:fee, notes:notes, type:type, exchange:exchange, pair:pair, price:price, from:from, to:to };
 
 		fetch(endpoint, {
 			body: JSON.stringify(body),
@@ -306,10 +307,11 @@ export default function Activity({ navigation }) {
 	async function updateActivity(txID, id, symbol, date, amount, fee, notes, type, exchange, pair, price, from, to) {
 		let api = await AsyncStorage.getItem("api");
 		let token = await AsyncStorage.getItem("token");
+		let username = await AsyncStorage.getItem("username");
 
 		let endpoint = api + "activity/update.php";
 
-		let body = { token:token, txID:txID, id:id, symbol:symbol, date:date, amount:amount, fee:fee, notes:notes, type:type, exchange:exchange, pair:pair, price:price, from:from, to:to };
+		let body = { token:token, username:username, txID:txID, id:id, symbol:symbol, date:date, amount:amount, fee:fee, notes:notes, type:type, exchange:exchange, pair:pair, price:price, from:from, to:to };
 
 		fetch(endpoint, {
 			body: JSON.stringify(body),
@@ -338,10 +340,11 @@ export default function Activity({ navigation }) {
 		if(!empty(txID)) {
 			let api = await AsyncStorage.getItem("api");
 			let token = await AsyncStorage.getItem("token");
+			let username = await AsyncStorage.getItem("username");
 
 			let endpoint = api + "activity/delete.php";
 
-			let body = { token:token, txID:txID };
+			let body = { token:token, username:username, txID:txID };
 
 			fetch(endpoint, {
 				method: "DELETE",
@@ -375,8 +378,9 @@ export default function Activity({ navigation }) {
 
 		let api = await AsyncStorage.getItem("api");
 		let token = await AsyncStorage.getItem("token");
+		let username = await AsyncStorage.getItem("username");
 
-		let endpoint = api + "activity/read.php?platform=app&token=" + token;
+		let endpoint = api + "activity/read.php?platform=app&token=" + token + "&username=" + username;
 
 		fetch(endpoint, {
 			method: "GET",

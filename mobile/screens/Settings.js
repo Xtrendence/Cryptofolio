@@ -355,10 +355,12 @@ export default function Settings({ navigation, route }) {
 	async function exportData(type) {
 		let api = await AsyncStorage.getItem("api");
 		let token = await AsyncStorage.getItem("token");
-		let endpoint = api + "holdings/export.php?token=" + token;
+		let username = await AsyncStorage.getItem("username");
+
+		let endpoint = api + "holdings/export.php?token=" + token + "&username=" + username;
 
 		if(type === "activity") {
-			endpoint = api + "activity/export.php?token=" + token;
+			endpoint = api + "activity/export.php?token=" + token + "&username=" + username;
 		}
 
 		Linking.openURL(endpoint).catch(error => {
@@ -371,10 +373,11 @@ export default function Settings({ navigation, route }) {
 		if(!empty(currentPassword) && !empty(newPassword) && !empty(repeatPassword)) {
 			if(newPassword === repeatPassword) {
 				let api = await AsyncStorage.getItem("api");
+				let username = await AsyncStorage.getItem("username");
 
-				let endpoint = api + "account/update.php";
+				let endpoint = api + "accounts/update.php";
 
-				let body = { currentPassword:currentPassword, newPassword:newPassword };
+				let body = { username:username, currentPassword:currentPassword, newPassword:newPassword };
 
 				fetch(endpoint, {
 					body: JSON.stringify(body),
@@ -407,8 +410,9 @@ export default function Settings({ navigation, route }) {
 	async function logout() {
 		let api = await AsyncStorage.getItem("api");
 		let token = await AsyncStorage.getItem("token");
+		let username = await AsyncStorage.getItem("username");
 
-		let endpoint = api + "account/logout.php?platform=app&token=" + token;
+		let endpoint = api + "accounts/logout.php?platform=app&token=" + token + "&username=" + username;
 
 		fetch(endpoint, {
 			method: "GET",

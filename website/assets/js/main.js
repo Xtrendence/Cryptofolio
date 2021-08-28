@@ -3414,6 +3414,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 		return new Promise((resolve, reject) => {
 			checkSession();
 
+			getLocalStorageSize().then(result => {
+				console.log(result);
+			});
+
 			getServerSettings().then((response) => {
 				settings = response;
 
@@ -4819,6 +4823,35 @@ document.addEventListener("DOMContentLoaded", async () => {
 		});
 	}
 });
+
+function getLocalStorageSize() {
+	return new Promise((resolve, reject) => {
+		if(localStorage) {
+			if(empty(localStorage.getItem("storageSize"))) {
+				let i = 0;
+				try {
+					for(i = 250; i <= 10000; i += 250) {
+						localStorage.setItem("testSize", new Array((i * 1024) + 1).join("a"));
+					}
+				} catch(e) {
+					localStorage.removeItem("testSize");
+					localStorage.setItem("storageSize", i - 250);
+					let remaining = (i - 250) - getLocalStorageUsedSize();
+					resolve({ size:i - 250, remaining:remaining });
+				}
+			} else {
+				let remaining = localStorage.getItem("storageSize") - getLocalStorageUsedSize();
+				resolve({ size:localStorage.getItem("storageSize"), remaining:remaining });
+			}
+		} else {
+			reject({ size:0, remaining:0 });
+		}
+	});
+}
+
+function getLocalStorageUsedSize() {
+	return JSON.stringify(localStorage).length;
+}
 
 function sum(total, num) {
 	return total + num;

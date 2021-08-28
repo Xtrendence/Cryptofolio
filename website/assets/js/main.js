@@ -3414,10 +3414,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 		return new Promise((resolve, reject) => {
 			checkSession();
 
-			getLocalStorageSize().then(result => {
-				console.log(result);
-			});
-
 			getServerSettings().then((response) => {
 				settings = response;
 

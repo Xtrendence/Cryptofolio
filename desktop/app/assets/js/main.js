@@ -129,8 +129,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 	let inputNewPassword = document.getElementById("input-new-password");
 	let inputRepeatPassword = document.getElementById("input-repeat-password");
 
+	let inputETHAddress = document.getElementById("input-eth-address");
+
 	let buttonChangePassword = document.getElementById("change-password-button");
 	let buttonManageAccounts = document.getElementById("manage-accounts-button");
+
+	let buttonImportTokens = document.getElementById("import-tokens-button");
 
 	let buttonImportHoldings = document.getElementById("import-holdings-button");
 	let buttonExportHoldings = document.getElementById("export-holdings-button");
@@ -991,6 +995,83 @@ document.addEventListener("DOMContentLoaded", async () => {
 				description:"Couldn't fetch accounts."
 			});
 		});
+	});
+
+	buttonImportTokens.addEventListener("click", () => {
+		let address = inputETHAddress.value;
+
+		if(!empty(address)) {
+			getETHAddressBalance(address).then(balance => {
+				let eth = parseFloat(balance["ETH"].balance.toFixed(3));
+				let tokens = balance.tokens;
+
+				let index = 0;
+
+				Object.keys(tokens).map(key => {
+					index++;
+
+					let token = tokens[key];
+					let info = token.tokenInfo;
+					let symbol = info.symbol;
+					if("coingecko" in info) {
+						let balance = token.balance;
+						let string = balance.toFixed(0);
+						let decimals = parseInt(info.decimals);
+						let position = string.length - decimals;
+						let split = string.split("");
+						split.splice(position, 0, ".");
+						let join = split.join("");
+						
+						let id = info.coingecko;
+						let amount = parseFloat(parseFloat(join).toFixed(2));
+
+						setTimeout(() => {
+							getCoinID("id", id).then(response => {
+								if("id" in response) {
+									if(settings.importTokens === "add") {
+										addHolding(id, amount);
+									} else {
+										updateHolding(id, amount);
+									}
+								} else {
+									Notify.error({
+										title:"Error",
+										description:"Couldn't add " + symbol + "."
+									});
+								}
+							}).catch(e => {
+								console.log(e);
+								Notify.error({
+									title:"Error",
+									description:"Couldn't find " + symbol + "."
+								});
+							});
+						}, index * 4000);
+
+						Notify.info({
+							title:"Adding " + symbol,
+							description:"Adding asset to holdings."
+						});
+					} else {
+						Notify.error({
+							title:symbol + " Not Found",
+							description:symbol + " isn't listed on CoinGecko."
+						});
+					}
+				});
+			}).catch(e => {
+				console.log(e);
+				Notify.error({
+					title:"Error",
+					description:"Couldn't fetch balance."
+				});
+			});
+		} else {
+			Notify.error({
+				title:"Error",
+				description:"Please provide an address to fetch the balance of."
+			});
+		}
 	});
 
 	buttonImportHoldings.addEventListener("click", () => {
@@ -3418,6 +3499,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 				settings.additionalDashboardColumns = empty(await Storage.getItem("additionalDashboardColumns")) ? "disabled" : await Storage.getItem("additionalDashboardColumns");
 
+				settings.importTokens = empty(await Storage.getItem("importTokens")) ? "add" : await Storage.getItem("importTokens");
+
 				settings.defaultPage = empty(await Storage.getItem("defaultPage")) ? "market" : await Storage.getItem("defaultPage");
 
 				switchTheme(settings.theme);
@@ -4740,6 +4823,29 @@ document.addEventListener("DOMContentLoaded", async () => {
 		});
 	}
 
+	function getETHAddressBalance(address) {
+		return new Promise((resolve, reject) => {
+			try {
+				let xhr = new XMLHttpRequest();
+
+				xhr.addEventListener("readystatechange", () => {
+					if(xhr.readyState === XMLHttpRequest.DONE) {
+						if(validJSON(xhr.responseText)) {
+							resolve(JSON.parse(xhr.responseText));
+						} else {
+							reject("Invalid JSON.");
+						}
+					}
+				});
+
+				xhr.open("GET", "https://api.ethplorer.io/getAddressInfo/" + address + "?apiKey=freekey", true);
+				xhr.send();
+			} catch(e) {
+				reject(e);
+			}
+		});
+	}
+	
 	function deleteCache() {
 		return new Promise((resolve, reject) => {
 			try {

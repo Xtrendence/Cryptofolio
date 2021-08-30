@@ -9,7 +9,7 @@ import * as RNFS from "react-native-fs";
 import { ThemeContext } from "../utils/theme";
 import { globalColors, globalStyles } from "../styles/global";
 import { empty } from "../utils/utils";
-import { importData } from "../utils/requests";
+import { importData, getCoinID, getETHAddressBalance, addHolding, updateHolding } from "../utils/requests";
 import styles from "../styles/Settings";
 
 const screenWidth = Dimensions.get("screen").width;
@@ -34,6 +34,9 @@ export default function Settings({ navigation, route }) {
 	const [highlightPriceChange, setHighlightPriceChange] = React.useState();
 
 	const [defaultPage, setDefaultPage] = React.useState();
+
+	const [ethAddress, setEthAddress] = React.useState();
+	const [importTokens, setImportTokens] = React.useState();
 
 	const [accountMessage, setAccountMessage] = React.useState();
 	const [currentPassword, setCurrentPassword] = React.useState();
@@ -176,6 +179,24 @@ export default function Settings({ navigation, route }) {
 						<Text style={[styles.buttonText, styles[`buttonText${theme}`], (dashboardHoldingsSortOrder === "ascending") ? styles.buttonTextActive : null]}>Ascending</Text>
 					</TouchableOpacity>
 				</View>
+			</View>
+			<View style={[styles.section, styles[`section${theme}`]]}>
+				<Text style={[styles.header, styles[`header${theme}`]]}>Import ETH Tokens</Text>
+				<View style={[styles.sectionDescriptionWrapper, styles[`sectionDescriptionWrapper${theme}`], { marginBottom:20 }]}>
+					<Text style={[styles.sectionDescription, styles[`sectionDescription${theme}`]]}>Using Ethplorer, the current balance of the tokens in your ETH wallet can be imported into Cryptofolio. Your Ethereum token holdings would either get added to your current holdings, or would replace them depending on which option you choose. Tokens that aren't listed on CoinGecko would not get added.</Text>
+				</View>
+				<TextInput style={[styles.input, styles[`input${theme}`]]} placeholder="ETH Address..." placeholderTextColor={globalColors[theme].mainContrastLight} onChangeText={(value) => { setEthAddress(value)}} autoCapitalize="none"/>
+				<View style={styles.container}>
+					<TouchableOpacity style={[styles.inlineButton, styles[`inlineButton${theme}`], { marginTop:0, marginBottom:0 }, (importTokens === "add") ? styles.inlineButtonActive : null]} onPress={() => { changeImportTokens("add")}}>
+						<Text style={[styles.buttonText, styles[`buttonText${theme}`], (importTokens === "add") ? styles.buttonTextActive : null]}>Add</Text>
+					</TouchableOpacity>
+					<TouchableOpacity style={[styles.inlineButton, styles[`inlineButton${theme}`], { marginTop:0, marginBottom:0 }, (importTokens === "replace") ? styles.inlineButtonActive : null]} onPress={() => { changeImportTokens("replace")}}>
+						<Text style={[styles.buttonText, styles[`buttonText${theme}`], (importTokens === "replace") ? styles.buttonTextActive : null]}>Replace</Text>
+					</TouchableOpacity>
+				</View>
+				<TouchableOpacity style={[styles.button, { marginTop:20 }]} onPress={() => { importETHTokens(importTokens, ethAddress) }}>
+					<Text style={styles.text}>Import</Text>
+				</TouchableOpacity>
 			</View>
 			<View style={[styles.section, styles[`section${theme}`]]}>
 				<Text style={[styles.header, styles[`header${theme}`]]}>Transactions Affect Holdings</Text>
@@ -369,6 +390,62 @@ export default function Settings({ navigation, route }) {
 		});
 	}
 
+	async function importETHTokens(importTokens, address) {
+		if(!empty(address)) {
+			getETHAddressBalance(address).then(balance => {
+				ToastAndroid.showWithGravity("Importing tokens...", ToastAndroid.LONG, ToastAndroid.BOTTOM);
+
+				let eth = parseFloat(balance["ETH"].balance.toFixed(3));
+				let tokens = balance.tokens;
+
+				let index = 0;
+
+				Object.keys(tokens).map(key => {
+					index++;
+
+					let token = tokens[key];
+					let info = token.tokenInfo;
+					let symbol = info.symbol;
+					if("coingecko" in info) {
+						let balance = token.balance;
+						let string = balance.toFixed(0);
+						let decimals = parseInt(info.decimals);
+						let position = string.length - decimals;
+						let split = string.split("");
+						split.splice(position, 0, ".");
+						let join = split.join("");
+						
+						let id = info.coingecko;
+						let amount = parseFloat(parseFloat(join).toFixed(2));
+
+						setTimeout(() => {
+							getCoinID("id", id).then(response => {
+								if("id" in response) {
+									if(importTokens === "add") {
+										addHolding(id, symbol, amount);
+									} else {
+										updateHolding(id, amount);
+									}
+									ToastAndroid.showWithGravity("Adding " + symbol + ".", ToastAndroid.LONG, ToastAndroid.BOTTOM);
+								} else {
+									ToastAndroid.showWithGravity("Couldn't add " + symbol + ".", ToastAndroid.LONG, ToastAndroid.BOTTOM);
+								}
+							}).catch(e => {
+								console.log(e);
+								ToastAndroid.showWithGravity("Error fetching " + symbol + " details.", ToastAndroid.LONG, ToastAndroid.BOTTOM);
+							});
+						}, index * 4000);
+					}
+				});
+			}).catch(e => {
+				console.log(e);
+				ToastAndroid.showWithGravity("Couldn't fetch balance.", ToastAndroid.LONG, ToastAndroid.BOTTOM);
+			});
+		} else {
+			ToastAndroid.showWithGravity("Please provide an address to fetch the balance of.", ToastAndroid.LONG, ToastAndroid.BOTTOM);
+		}
+	}
+
 	async function changePassword() {
 		if(!empty(currentPassword) && !empty(newPassword) && !empty(repeatPassword)) {
 			if(newPassword === repeatPassword) {
@@ -453,6 +530,17 @@ export default function Settings({ navigation, route }) {
 		} else {
 			setCurrency(fiatCurrency);
 			await AsyncStorage.setItem("currency", fiatCurrency);
+		}
+	}
+
+	async function changeImportTokens(importTokens) {
+		let validOptions = ["add", "replace"];
+		if(empty(importTokens) || !validOptions.includes(importTokens)) {
+			setImportTokens("add");
+			await AsyncStorage.setItem("importTokens", "add");
+		} else {
+			setImportTokens(importTokens);
+			await AsyncStorage.setItem("importTokens", importTokens);
 		}
 	}
 
@@ -568,6 +656,12 @@ export default function Settings({ navigation, route }) {
 			additionalDashboardColumns = "disabled";
 		}
 		setAdditionalDashboardColumns(additionalDashboardColumns);
+
+		let importTokens = await AsyncStorage.getItem("importTokens");
+		if(empty(importTokens)) {
+			importTokens = "add";
+		}
+		setImportTokens(importTokens);
 
 		let dashboardMarketSorting = await AsyncStorage.getItem("dashboardMarketSorting");
 		if(empty(dashboardMarketSorting)) {

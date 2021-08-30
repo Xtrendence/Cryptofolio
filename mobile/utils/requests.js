@@ -134,6 +134,28 @@ export async function getCoinID(key, value) {
 	});
 }
 
+export async function getETHAddressBalance(address) {
+	return new Promise(async (resolve, reject) => {
+		let endpoint = "https://api.ethplorer.io/getAddressInfo/" + address + "?apiKey=freekey";
+
+		fetch(endpoint, {
+			method: "GET",
+			headers: {
+				Accept: "application/json", "Content-Type": "application/json"
+			}
+		})
+		.then((json) => {
+			return json.json();
+		})
+		.then(async (response) => {
+			resolve(response);
+		}).catch(error => {
+			console.log(error);
+			reject(error);
+		});
+	});
+}
+
 export async function importData(type, rows) {
 	return new Promise(async (resolve, reject) => {
 		let isFulfilled = false;
@@ -177,6 +199,72 @@ export async function importData(type, rows) {
 			isFulfilled = true;
 			reject("Data Import Failed");
 			console.log(error);
+		});
+	});
+}
+
+export async function addHolding(id, symbol, amount) {
+	return new Promise(async (resolve, reject) => {
+		let api = await AsyncStorage.getItem("api");
+		let token = await AsyncStorage.getItem("token");
+		let username = await AsyncStorage.getItem("username");
+
+		let endpoint = api + "holdings/create.php";
+		let method = "POST";
+		let body = { token:token, username:username, id:id, symbol:symbol, amount:amount };
+
+		fetch(endpoint, {
+			method: method,
+			body: JSON.stringify(body),
+			headers: {
+				Accept: "application/json", "Content-Type": "application/json"
+			}
+		})
+		.then((json) => {
+			return json.json();
+		})
+		.then(async (response) => {
+			if("message" in response) {
+				resolve();
+			} else {
+				reject();
+			}
+		}).catch(error => {
+			console.log(error);
+			reject(error);
+		});
+	});
+}
+
+export async function updateHolding(id, amount) {
+	return new Promise(async (resolve, reject) => {
+		let api = await AsyncStorage.getItem("api");
+		let token = await AsyncStorage.getItem("token");
+		let username = await AsyncStorage.getItem("username");
+
+		let endpoint = api + "holdings/update.php";
+		let method = "PUT";
+		let body = { token:token, username:username, id:id, amount:amount };
+
+		fetch(endpoint, {
+			method: method,
+			body: JSON.stringify(body),
+			headers: {
+				Accept: "application/json", "Content-Type": "application/json"
+			}
+		})
+		.then((json) => {
+			return json.json();
+		})
+		.then(async (response) => {
+			if("message" in response) {
+				resolve();
+			} else {
+				reject();
+			}
+		}).catch(error => {
+			console.log(error);
+			reject(error);
 		});
 	});
 }

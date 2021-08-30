@@ -233,9 +233,9 @@ export default function Settings({ navigation, route }) {
 						<Text style={styles.message}>{accountMessage}</Text>
 					</View>
 				}
-				<TextInput style={[styles.input, styles[`input${theme}`]]} placeholder="Current Password..." placeholderTextColor={globalColors[theme].mainContrastLight} onChangeText={(value) => { setCurrentPassword(value)}} autoCapitalize="none"/>
-				<TextInput style={[styles.input, styles[`input${theme}`]]} placeholder="New Password..." placeholderTextColor={globalColors[theme].mainContrastLight} onChangeText={(value) => { setNewPassword(value)}} autoCapitalize="none"/>
-				<TextInput style={[styles.input, styles[`input${theme}`]]} placeholder="Repeat Password..." placeholderTextColor={globalColors[theme].mainContrastLight} onChangeText={(value) => { setRepeatPassword(value)}} autoCapitalize="none"/>
+				<TextInput secureTextEntry={!empty(currentPassword)} style={[styles.input, styles[`input${theme}`]]} placeholder="Current Password..." placeholderTextColor={globalColors[theme].mainContrastLight} onChangeText={(value) => { setCurrentPassword(value)}} autoCapitalize="none"/>
+				<TextInput secureTextEntry={!empty(newPassword)} style={[styles.input, styles[`input${theme}`]]} placeholder="New Password..." placeholderTextColor={globalColors[theme].mainContrastLight} onChangeText={(value) => { setNewPassword(value)}} autoCapitalize="none"/>
+				<TextInput secureTextEntry={!empty(repeatPassword)} style={[styles.input, styles[`input${theme}`]]} placeholder="Repeat Password..." placeholderTextColor={globalColors[theme].mainContrastLight} onChangeText={(value) => { setRepeatPassword(value)}} autoCapitalize="none"/>
 				<TouchableOpacity style={styles.button} onPress={() => { changePassword() }}>
 					<Text style={styles.text}>Change Password</Text>
 				</TouchableOpacity>

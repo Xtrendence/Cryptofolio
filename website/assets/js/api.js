@@ -68,8 +68,8 @@ class NoAPI {
 				let current = this.data;
 				current.activity[txID] = activity;
 
-				let create = this.setData(current);
-				if(create) {
+				let set = this.setData(current);
+				if(set) {
 					return { message:"The activity has been recorded." };
 				}
 
@@ -81,7 +81,17 @@ class NoAPI {
 	}
 
 	deleteActivity(txID) {
+		if(!this.empty(txID)) {
+			let current = this.data;
+			delete current.activity[txID];
 
+			let set = this.setData(current);
+			if(set) {
+				return { message:"The activity has been deleted." };
+			}
+
+			return { error:"Activity couldn't be deleted." };
+		}
 	}
 
 	exportActivity() {

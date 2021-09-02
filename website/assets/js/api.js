@@ -359,7 +359,12 @@ class NoAPI {
 	// Historical
 
 	deleteHistorical() {
-
+		if("historical" in this.data) {
+			delete this.data.historical;
+			return { message:"Historical data has been deleted." };
+		} else {
+			return { message:"Historical data not found." };
+		}
 	}
 
 	readHistorical(ids, currency, from, to, background) {

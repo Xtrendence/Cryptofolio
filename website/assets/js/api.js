@@ -189,11 +189,70 @@ class NoAPI {
 	}
 
 	readActivity() {
-
+		return this.data.activity;
 	}
 
 	updateActivity(txID, id, symbol, date, type, amount, fee, notes, exchange, pair, price, from, to) {
+		if(!this.empty(id) && !this.empty(symbol) && !this.empty(date) && !this.empty(type) && !this.empty(amount)) {
+			if(this.empty(fee)) {
+				fee = 0;
+			}
+			if(this.empty(notes)) {
+				notes = "-";
+			}
 
+			if(this.validDate(date)) {
+				let time = new Date(Date.parse(date)).getTime() / 1000;
+				let activity = { id:id, symbol:symbol, date:date, time:time, type:type, amount:amount, fee:fee, notes:notes };
+
+				if(type === "buy" || type === "sell" || type === "transfer") {
+					if(type === "buy" || type === "sell") {
+						if(this.empty(exchange)) {
+							exchange = "-";
+						}
+						if(this.empty(pair)) {
+							pair = "-";
+						}
+						if(this.empty(price)) {
+							price = 0;
+						}
+					
+						activity["exchange"] = exchange;
+						activity["pair"] = pair;
+						activity["price"] = price;
+					} else if(type === "transfer") {
+						if(this.empty(from)) {
+							from = "-";
+						}
+						if(this.empty(to)) {
+							to = "-";
+						}
+
+						activity["from"] = from;
+						activity["to"] = to;
+					}
+				} else {
+					return { error:"Invalid activity type." };
+				}
+
+				let current = this.data;
+
+				if(txID in current.activity) {
+					current.activity[txID] = activity;
+
+					let set = this.setData(current);
+					if(set) {
+						return { message:"The activity has been updated." };
+					}
+
+					return { error:"Activity couldn't be updated." };
+				} else {
+					return { error:"Activity not found." };
+				}
+			} else {
+				return { error:"Invalid date." };
+			}
+		}
 	}
 
 	// Coins

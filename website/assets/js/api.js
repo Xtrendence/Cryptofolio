@@ -1,6 +1,12 @@
 class NoAPI {
 	constructor(data) {
 		this.data = data;
+
+		this.fetchCoins().then(coins => {
+			this.coins = coins;
+		}).catch(error => {
+			console.log(error);
+		});
 	}
 
 	getData() {
@@ -258,7 +264,96 @@ class NoAPI {
 	// Coins
 
 	readCoins(id = null, symbol = null) {
+		this.fetchCoins().then(coins => {
+			if((this.empty(id) && this.empty(symbol)) || (!this.empty(id) && !this.empty(symbol))) {
+				return;
+			} else if(!this.empty(symbol)) {
+				return findBySymbol(coins, symbol, true);
+			} else if(!this.empty(id)) {
+				return findByID(coins, id, true);
+			}
+		}).catch(error => {
+			console.log(error);
+		});
+	}
 
+	fetchCoins() {
+		return new Promise((resolve, reject) => {
+			if(this.empty(this.coins) || new Date.getTime() - 3600 > this.fetchedCoins) {
+				let pairs = [];
+
+				let endpoint = "https://api.coingecko.com/api/v3/coins/list"
+
+				fetch(endpoint, {
+					method: "GET",
+					headers: {
+						Accept: "application/json", "Content-Type": "application/json"
+					}
+				})
+				.then((json) => {
+					return json.json();
+				})
+				.then((coins) => {
+					Object.keys(coins).map(coin => {
+						let symbol = coins[coin].symbol.toLowerCase();
+						let pair = { [symbol]:coins[coin].id };
+						pairs.push(pair);
+					});
+
+					this.fetchedCoins = new Date().getTime();
+
+					resolve(pairs);
+				}).catch(error => {
+					console.log(error);
+					reject(error);
+				});
+			} else {
+				resolve(this.coins);
+			}
+		});
+	}
+
+	findBySymbol(coins, symbol, retry) {
+		let matches = [];
+
+		coins.map(coin => {
+			if(Object.keys(coin)[0] === symbol) {
+				matches.push(coin);
+			}
+		});
+
+		if(matches.length === 1) {
+			return { id:matches[0][symbol], symbol:symbol };
+		} else if(this.empty(matches)) {
+			if(retry) {
+				return this.findByID(coins, symbol, false);
+			} else {
+				return { error:"No coins were found with that symbol." };
+			}
+		} else {
+			return { matches:matches };
+		}
+	}
+
+	findByID(coins, id, retry) {
+		let values = Object.values(coins);
+		let symbols = {};
+		let ids = [];
+
+		values.map(value => {
+			ids.push(value[Object.keys(value)[0]]);
+			symbols[value[Object.keys(value)[0]]] = Object.keys(value)[0];
+		});
+
+		if(ids.includes(id)) {
+			return { id:id, symbol:symbols[id] };
+		} else {
+			if(retry) {
+				return this.findBySymbol(coins, id, false);
+			} else {
+				return { error:"No coins were found with that symbol." };
+			}
+		}
 	}
 
 	// Historical

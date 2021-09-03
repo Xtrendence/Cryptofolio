@@ -550,7 +550,18 @@ class NoAPI {
 	// Watchlist
 
 	createWatchlist(id, symbol) {
+		if(!this.empty(id) && !this.empty(symbol)) {
+			let current = this.data.watchlist;
 
+			current[id] = { symbol:symbol };
+
+			let set = this.setData(current);
+			if(set) {
+				return { message:"Asset added to watchlist." };
+			}
+
+			return { error:"Asset couldn't be added to watchlist." };
+		}
 	}
 
 	deleteWatchlist(id) {

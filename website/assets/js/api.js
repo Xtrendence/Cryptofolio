@@ -512,7 +512,7 @@ class NoAPI {
 
 				let set = this.setData(current);
 				if(set) {
-					return { message:"The asset has been created." };
+					return { message:"The asset has been updated." };
 				}
 			} else {
 				return { error:"Asset not found." };
@@ -525,11 +525,26 @@ class NoAPI {
 	// Settings
 
 	readSettings() {
-
+		return this.data.settings;
 	}
 
 	updateSettings(key, value) {
+		if(!this.empty(key) && !this.empty(value)) {
+			let current = this.data.settings;
 
+			if(Object.keys(current).includes(key)) {
+				current[key] = value;
+
+				let set = this.setData(current);
+				if(set) {
+					return { message:"The setting has been updated." };
+				}
+			} else {
+				return { error:"Setting not found." };
+			}
+
+			return { error:"Setting couldn't be updated." };
+		}
 	}
 
 	// Watchlist

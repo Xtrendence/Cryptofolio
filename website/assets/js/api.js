@@ -565,11 +565,21 @@ class NoAPI {
 	}
 
 	deleteWatchlist(id) {
+		if(!this.empty(id)) {
+			let current = this.data;
+			delete current.watchlist[id];
 
+			let set = this.setData(current);
+			if(set) {
+				return { message:"Asset removed from watchlist." };
+			}
+
+			return { error:"Asset couldn't be removed from watchlist." };
+		}
 	}
 
 	readWatchlist() {
-
+		return this.data.watchlist;
 	}
 
 	// Utils

@@ -504,7 +504,22 @@ class NoAPI {
 	}
 
 	updateHoldings(id, amount) {
+		if(!this.empty(id) && !this.empty(amount)) {
+			let current = this.data.holdings;
 
+			if(Object.keys(current).includes(id)) {
+				current[id].amount = amount;
+
+				let set = this.setData(current);
+				if(set) {
+					return { message:"The asset has been created." };
+				}
+			} else {
+				return { error:"Asset not found." };
+			}
+
+			return { error:"Asset couldn't be updated." };
+		}
 	}
 
 	// Settings

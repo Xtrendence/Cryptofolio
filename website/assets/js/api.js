@@ -466,7 +466,17 @@ class NoAPI {
 	}
 
 	exportHoldings() {
+		let headers = ["id", "symbol", "amount"];
 
+		let csv = headers.join(",") + '\r\n';
+
+		Object.keys(this.data.holdings).map(id => {
+			let holding = this.data.holdings[id];
+			let array = [id, holding["symbol"], holding["amount"]];
+			csv += array.join(",") + '\r\n';
+		});
+
+		return csv;
 	}
 
 	importHoldings(rows) {

@@ -3,7 +3,7 @@ class NoAPI {
 		this.data = data;
 
 		this.fetchCoins().then(coins => {
-			this.coins = coins;
+			this.data.coins = coins;
 		}).catch(error => {
 			console.log(error);
 		});
@@ -279,7 +279,7 @@ class NoAPI {
 
 	fetchCoins() {
 		return new Promise((resolve, reject) => {
-			if(this.empty(this.coins) || new Date.getTime() - 3600 > this.fetchedCoins) {
+			if(this.empty(this.data.coins) || new Date.getTime() - 3600 > this.data.fetchedCoins) {
 				let pairs = [];
 
 				let endpoint = "https://api.coingecko.com/api/v3/coins/list"
@@ -300,7 +300,7 @@ class NoAPI {
 						pairs.push(pair);
 					});
 
-					this.fetchedCoins = new Date().getTime();
+					this.data.fetchedCoins = new Date().getTime();
 
 					resolve(pairs);
 				}).catch(error => {
@@ -308,7 +308,7 @@ class NoAPI {
 					reject(error);
 				});
 			} else {
-				resolve(this.coins);
+				resolve(this.data.coins);
 			}
 		});
 	}
@@ -368,7 +368,66 @@ class NoAPI {
 	}
 
 	readHistorical(ids, currency, from, to, background) {
+		if(!this.empty(ids) && !this.empty(currency) && !this.empty(from) && !this.empty(to)) {
+			ids = ids.split(",");
+			let data = {};
+			for(let i = 0; i < ids.length; i++) {
+				if(i !== ids.length - 1 && this.historicalDataExists(ids[i + 1], currency)) {
+					setTimeout(() => {
+						data[ids[i]] = this.fetchHistoricalData(ids[i], currency, from, to);
+					}, i * 2000);
+				}
+			}
 
+			if(background === "true") {
+				return { message:"Fetched historical data." };
+			} else {
+				return data;
+			}
+		}
+	}
+
+	fetchHistoricalData(id, currency, from, to) {
+		let key = id + currency;
+
+		if(!this.historicalDataExists(id, currency)) {
+			let endpoint = "https://api.coingecko.com/api/v3/coins/" + id + "/market_chart/range?vs_currency=" + currency + "&from=" + from + "&to=" + to;
+
+			fetch(endpoint, {
+				method: "GET",
+				headers: {
+					Accept: "application/json", "Content-Type": "application/json"
+				}
+			})
+			.then((json) => {
+				return json.json();
+			})
+			.then((data) => {
+				this.data.historical[key] = data;
+				this.data.historical["modified" + key] = new Date().getTime();
+				resolve(data);
+			}).catch(error => {
+				console.log(error);
+				reject(error);
+			});
+		} else {
+			return this.data.historical[key];
+		}
+	}
+
+	historicalDataExists(id, currency) {
+		let key = id + currency;
+
+		let settings = this.data.settings;
+		let refetchTime = 86400;
+		if(!this.empty(settings.refetchTime)) {
+			refetchTime = settings.refetchTime;
+		}
+
+		if(!key in this.data.historical || new Date().getTime() - refetchTime > this.data.historical["modified" + key]) {
+			return false;
+		}
+		return true;
 	}
 
 	// Holdings

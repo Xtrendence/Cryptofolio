@@ -131,14 +131,13 @@ class NoAPI {
 				}
 			}
 
-			id = !this.empty(data[1]) ? data[1] : valid = false;
-			symbol = !this.empty(data[2]) ? data[2] : valid = false;
-			date = !this.empty(data[3]) ? this.replaceAll(this.replaceAll(data[3], "'", ""), '"', "") : valid = false;
-			type = !this.empty(data[4]) ? data[4].toLowerCase() : valid = false;
-			amount = !this.empty(data[5]) ? data[5] : valid = false;
-			fee = !this.empty(data[6]) ? data[6] : 0;
-			notes = !this.empty(data[7]) ? this.replaceAll(data[7], '"', "") : "-";
-			notes = !this.empty(data[7]) ? this.replaceAll(data[7], '"', "") : "-";
+			let id = !this.empty(data[1]) ? data[1] : valid = false;
+			let symbol = !this.empty(data[2]) ? data[2] : valid = false;
+			let date = !this.empty(data[3]) ? this.replaceAll(this.replaceAll(data[3], "'", ""), '"', "") : valid = false;
+			let type = !this.empty(data[4]) ? data[4].toLowerCase() : valid = false;
+			let amount = !this.empty(data[5]) ? data[5] : valid = false;
+			let fee = !this.empty(data[6]) ? data[6] : 0;
+			let notes = !this.empty(data[7]) ? this.replaceAll(data[7], '"', "") : "-";
 
 			if(this.validDate(date)) {
 				let time = new Date(Date.parse(date)).getTime() / 1000;
@@ -146,26 +145,16 @@ class NoAPI {
 
 				if(type === "buy" || type === "sell" || type === "transfer") {
 					if(type === "buy" || type === "sell") {
-						if(this.empty(exchange)) {
-							exchange = "-";
-						}
-						if(this.empty(pair)) {
-							pair = "-";
-						}
-						if(this.empty(price)) {
-							price = 0;
-						}
+						let exchange = !this.empty(data[8]) ? this.replaceAll(data[8], '"', "") : "-";
+						let pair = !this.empty(data[9]) ? this.replaceAll(data[9], '"', "") : "-";
+						let price = !this.empty(data[10]) ? data[10] : 0;
 					
 						activity["exchange"] = exchange;
 						activity["pair"] = pair;
 						activity["price"] = price;
 					} else if(type === "transfer") {
-						if(this.empty(from)) {
-							from = "-";
-						}
-						if(this.empty(to)) {
-							to = "-";
-						}
+						let from = !this.empty(data[11]) ? this.replaceAll(data[11], '"', "") : "-";
+						let to = !this.empty(data[12]) ? this.replaceAll(data[12], '"', "") : "-";
 
 						activity["from"] = from;
 						activity["to"] = to;
@@ -480,7 +469,34 @@ class NoAPI {
 	}
 
 	importHoldings(rows) {
+		let valid = true;
 
+		let current = this.data.holdings;
+
+		rows.map(row => {
+			let data = row.split(",");
+
+			let id = !this.empty(data[1]) ? data[1] : valid = false;
+			let symbol = !this.empty(data[2]) ? data[2] : valid = false;
+			let amount = !this.empty(data[2]) ? data[2] : valid = false;
+
+			if(Object.keys(current).includes(id)) {
+				current[id].amount += amount;
+			} else {
+				current[id] = { symbol:symbol, amount:amount };
+			}
+		});
+
+		if(valid) {
+			let set = this.setData(current);
+			if(set) {
+				return { message:"The assets have been created." };
+			}
+
+			return { error:"Assets couldn't be created." };
+		} else {
+			return { error:"Invalid content format." };
+		}
 	}
 
 	readHoldings() {

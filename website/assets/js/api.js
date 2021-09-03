@@ -476,8 +476,8 @@ class NoAPI {
 		rows.map(row => {
 			let data = row.split(",");
 
-			let id = !this.empty(data[1]) ? data[1] : valid = false;
-			let symbol = !this.empty(data[2]) ? data[2] : valid = false;
+			let id = !this.empty(data[0]) ? data[0] : valid = false;
+			let symbol = !this.empty(data[1]) ? data[1] : valid = false;
 			let amount = !this.empty(data[2]) ? data[2] : valid = false;
 
 			if(Object.keys(current).includes(id)) {
@@ -500,7 +500,7 @@ class NoAPI {
 	}
 
 	readHoldings() {
-
+		return this.data.holdings;
 	}
 
 	updateHoldings(id, amount) {

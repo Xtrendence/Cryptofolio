@@ -433,7 +433,22 @@ class NoAPI {
 	// Holdings
 
 	createHoldings(id, symbol, amount) {
+		if(!this.empty(id) && !this.empty(symbol) && !this.empty(amount)) {
+			let current = this.data.holdings;
 
+			if(Object.keys(current).includes(id)) {
+				current[id].amount += amount;
+			} else {
+				current[id] = { symbol:symbol, amount:amount };
+			}
+
+			let set = this.setData(current);
+			if(set) {
+				return { message:"The asset has been created." };
+			}
+
+			return { error:"Asset couldn't be created." };
+		}
 	}
 
 	deleteHoldings(id) {

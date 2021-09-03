@@ -452,7 +452,17 @@ class NoAPI {
 	}
 
 	deleteHoldings(id) {
+		if(!this.empty(id)) {
+			let current = this.data;
+			delete current.holdings[id];
 
+			let set = this.setData(current);
+			if(set) {
+				return { message:"The asset has been deleted." };
+			}
+
+			return { error:"Asset couldn't be deleted." };
+		}
 	}
 
 	exportHoldings() {

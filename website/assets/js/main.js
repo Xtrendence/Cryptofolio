@@ -246,7 +246,15 @@ document.addEventListener("DOMContentLoaded", async () => {
 		}
 
 		noAPI = new NoAPI(data, "website", localStorage);
-		getLocalSettings();
+		
+		getLocalSettings().then(() => {
+			listDashboard();
+			listMarket();
+			listHoldings();
+			listActivity();
+		}).catch(e => {
+			console.log(e);
+		});
 	});
 
 	buttonLogout.addEventListener("click", () => {

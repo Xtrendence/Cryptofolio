@@ -39,6 +39,8 @@ class NoAPI {
 		if(this.empty(this.data.watchlist)) {
 			this.data.watchlist = {};
 		}
+
+		this.storeData();
 	}
 
 	async storeData() {
@@ -62,8 +64,8 @@ class NoAPI {
 	}
 
 	setData(data) {
-		if(!("modified" in this.data) || this.validGracePeriod(this.data.modified)) {
-			data.modified = (new Date().getTime() / 1000);
+		if(!("modified" in this.data) || this.validGracePeriod(parseInt(this.data.modified))) {
+			data.modified = (Math.floor(new Date().getTime() / 1000));
 			this.data = data;
 			this.storeData();
 			return true;
@@ -82,7 +84,7 @@ class NoAPI {
 			}
 
 			if(this.validDate(date)) {
-				let time = new Date(Date.parse(date)).getTime() / 1000;
+				let time = Math.floor(new Date(Date.parse(date)).getTime() / 1000);
 				let activity = { id:id, symbol:symbol, date:date, time:time, type:type, amount:amount, fee:fee, notes:notes };
 
 				if(type === "buy" || type === "sell" || type === "transfer") {
@@ -115,9 +117,9 @@ class NoAPI {
 					return { error:"Invalid activity type." };
 				}
 
-				let txID = new Date().getTime() / 1000 + this.getRandomHex(8);
+				let txID = Math.floor(new Date().getTime() / 1000) + this.getRandomHex(8);
 				while(txID in this.data.activity) {
-					txID = new Date().getTime() / 1000 + this.getRandomHex(8);
+					txID = Math.floor(new Date().getTime() / 1000) + this.getRandomHex(8);
 				}
 
 				let current = this.data;
@@ -174,9 +176,9 @@ class NoAPI {
 			let txID = !this.empty(data[0]) ? data[0] : valid = false;
 
 			if(txID === "-") {
-				txID = new Date().getTime() / 1000 + this.getRandomHex(8);
+				txID = Math.floor(new Date().getTime() / 1000) + this.getRandomHex(8);
 				while(txID in this.data.activity) {
-					txID = new Date().getTime() / 1000 + this.getRandomHex(8);
+					txID = Math.floor(new Date().getTime() / 1000) + this.getRandomHex(8);
 				}
 			}
 
@@ -189,7 +191,7 @@ class NoAPI {
 			let notes = !this.empty(data[7]) ? this.replaceAll(data[7], '"', "") : "-";
 
 			if(this.validDate(date)) {
-				let time = new Date(Date.parse(date)).getTime() / 1000;
+				let time = Math.floor(new Date(Date.parse(date)).getTime() / 1000);
 				let activity = { id:id, symbol:symbol, date:date, time:time, type:type, amount:amount, fee:fee, notes:notes };
 
 				if(type === "buy" || type === "sell" || type === "transfer") {
@@ -246,7 +248,7 @@ class NoAPI {
 			}
 
 			if(this.validDate(date)) {
-				let time = new Date(Date.parse(date)).getTime() / 1000;
+				let time = Math.floor(new Date(Date.parse(date)).getTime() / 1000);
 				let activity = { id:id, symbol:symbol, date:date, time:time, type:type, amount:amount, fee:fee, notes:notes };
 
 				if(type === "buy" || type === "sell" || type === "transfer") {
@@ -326,7 +328,7 @@ class NoAPI {
 
 	fetchCoins() {
 		return new Promise((resolve, reject) => {
-			if(this.empty(this.data.coins) || (new Date().getTime() / 1000) - 3600 > this.data.fetchedCoins) {
+			if(this.empty(this.data.coins) || (Math.floor(new Date().getTime() / 1000)) - 3600 > parseInt(this.data.fetchedCoins)) {
 				console.log("Fetching Coins...");
 
 				let pairs = [];
@@ -349,7 +351,7 @@ class NoAPI {
 						pairs.push(pair);
 					});
 
-					this.data.fetchedCoins = (new Date().getTime() / 1000);
+					this.data.fetchedCoins = (Math.floor(new Date().getTime() / 1000));
 
 					resolve(pairs);
 				}).catch(error => {
@@ -461,7 +463,7 @@ class NoAPI {
 				})
 				.then((data) => {
 					this.data.historical[key] = data;
-					this.data.historical["modified" + key] = (new Date().getTime() / 1000);
+					this.data.historical["modified" + key] = (Math.floor(new Date().getTime() / 1000));
 					this.storeData();
 					resolve(data);
 				}).catch(error => {
@@ -480,10 +482,10 @@ class NoAPI {
 		let settings = this.data.settings;
 		let refetchTime = 86400;
 		if(!this.empty(settings.refetchTime)) {
-			refetchTime = settings.refetchTime;
+			refetchTime = parseInt(settings.refetchTime);
 		}
 
-		if(!key in this.data.historical || (new Date().getTime() / 1000) - refetchTime > this.data.historical["modified" + key]) {
+		if(!key in this.data.historical || (Math.floor(new Date().getTime() / 1000)) - refetchTime > parseInt(this.data.historical["modified" + key])) {
 			return false;
 		}
 		return true;
@@ -495,7 +497,7 @@ class NoAPI {
 		if(!this.empty(id) && !this.empty(symbol) && !this.empty(amount)) {
 			let current = this.data;
 
-			if(Object.keys(current).includes(id)) {
+			if(Object.keys(current.holdings).includes(id)) {
 				current.holdings[id].amount += amount;
 			} else {
 				current.holdings[id] = { symbol:symbol, amount:amount };
@@ -550,7 +552,7 @@ class NoAPI {
 			let symbol = !this.empty(data[1]) ? data[1] : valid = false;
 			let amount = !this.empty(data[2]) ? data[2] : valid = false;
 
-			if(Object.keys(current).includes(id)) {
+			if(Object.keys(current.holdings).includes(id)) {
 				current.holdings[id].amount += amount;
 			} else {
 				current.holdings[id] = { symbol:symbol, amount:amount };
@@ -577,7 +579,7 @@ class NoAPI {
 		if(!this.empty(id) && !this.empty(amount)) {
 			let current = this.data;
 
-			if(Object.keys(current).includes(id)) {
+			if(Object.keys(current.holdings).includes(id)) {
 				current.holdings[id].amount = amount;
 
 				let set = this.setData(current);
@@ -602,7 +604,7 @@ class NoAPI {
 		if(!this.empty(key) && !this.empty(value)) {
 			let current = this.data;
 
-			if(Object.keys(current).includes(key)) {
+			if(Object.keys(current.settings).includes(key)) {
 				current.settings[key] = value;
 
 				let set = this.setData(current);
@@ -655,8 +657,8 @@ class NoAPI {
 	// Utils
 
 	validGracePeriod(time) {
-		let now = (new Date().getTime() / 1000);
-		if(now - 1000 > time) {
+		let now = (Math.floor(new Date().getTime() / 1000));
+		if(now - 1 > time) {
 			return true;
 		}
 		return false;

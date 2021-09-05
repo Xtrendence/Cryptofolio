@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", async () => {
-	let noAPI = null;
+	let noAPI;
 
 	const api = "../api/"; // Default: "../api/"
 	const updateInterval = 30000; // Default: 30000
@@ -440,7 +440,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 				let chartData = {};
 
 				let counter = 0;
-				let startDate = previousYear(new Date()).getTime() / 1000;
+				let startDate = Math.floor(previousYear(new Date()).getTime() / 1000);
 				for(let i = 0; i < 366; i++) {
 					let time = (startDate + counter) * 1000;
 					let date = formatDate(new Date(time)).replaceAll(" ", "");
@@ -1118,7 +1118,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 	});
 
 	buttonExportHoldings.addEventListener("click", () => {
-		download(api + "holdings/export.php?token=" + sessionToken + "&username=" + sessionUsername);
+		if(!empty(noAPI)) {
+			downloadCSV(noAPI.exportHoldings(), "Holdings-" + Math.floor(new Date().getTime() / 1000) + ".csv");
+		} else {
+			download(api + "holdings/export.php?token=" + sessionToken + "&username=" + sessionUsername);
+		}
 	});
 
 	buttonImportActivity.addEventListener("click", () => {
@@ -1147,7 +1151,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 	});
 
 	buttonExportActivity.addEventListener("click", () => {
-		download(api + "activity/export.php?token=" + sessionToken + "&username=" + sessionUsername);
+		if(!empty(noAPI)) {
+			downloadCSV(noAPI.exportActivity(), "Activity-" + Math.floor(new Date().getTime() / 1000) + ".csv");
+		} else {
+			download(api + "activity/export.php?token=" + sessionToken + "&username=" + sessionUsername);
+		}
 	});
 
 	buttonDeleteCache.addEventListener("click", () => {
@@ -3079,7 +3087,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 				let chartData = {};
 
 				let counter = 0;
-				let startDate = previousYear(new Date()).getTime() / 1000;
+				let startDate = Math.floor(previousYear(new Date()).getTime() / 1000);
 				for(let i = 0; i < 366; i++) {
 					let time = (startDate + counter) * 1000;
 					let date = formatDate(new Date(time)).replaceAll(" ", "");
@@ -3639,6 +3647,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 	function changeSetting(key, value) {
 		return new Promise((resolve, reject) => {
 			try {
+				if(!empty(noAPI)) {
+					resolve(noAPI.updateSettings(key, value));
+				}
+
 				let xhr = new XMLHttpRequest();
 
 				xhr.addEventListener("readystatechange", () => {
@@ -3752,6 +3764,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 	function updateHolding(id, amount) {
 		return new Promise((resolve, reject) => {
 			try {
+				if(!empty(noAPI)) {
+					resolve(noAPI.updateHoldings(id, amount));
+				}
+
 				let xhr = new XMLHttpRequest();
 
 				xhr.addEventListener("readystatechange", () => {
@@ -3775,6 +3791,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 	function deleteHolding(id) {
 		return new Promise((resolve, reject) => {
 			try {
+				if(!empty(noAPI)) {
+					resolve(noAPI.deleteHoldings(id));
+				}
+
 				let xhr = new XMLHttpRequest();
 
 				xhr.addEventListener("readystatechange", () => {
@@ -3796,6 +3816,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 	}
 
 	function importHoldings(rows) {
+		if(!empty(noAPI)) {
+			resolve(noAPI.importHoldings(rows));
+		}
+
 		let xhr = new XMLHttpRequest();
 
 		xhr.addEventListener("readystatechange", () => {
@@ -4094,6 +4118,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 	function getWatchlist() {
 		return new Promise((resolve, reject) => {
 			try {
+				if(!empty(noAPI)) {
+					resolve(noAPI.readWatchlist());
+				}
+
 				let xhr = new XMLHttpRequest();
 
 				xhr.addEventListener("readystatechange", () => {
@@ -4117,6 +4145,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 	function createWatchlist(id, symbol) {
 		return new Promise((resolve, reject) => {
 			try {
+				if(!empty(noAPI)) {
+					resolve(noAPI.createWatchlist(id, symbol));
+				}
+
 				let xhr = new XMLHttpRequest();
 
 				xhr.addEventListener("readystatechange", () => {
@@ -4140,6 +4172,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 	function deleteWatchlist(id) {
 		return new Promise((resolve, reject) => {
 			try {
+				if(!empty(noAPI)) {
+					resolve(noAPI.deleteWatchlist(id));
+				}
+
 				let xhr = new XMLHttpRequest();
 
 				xhr.addEventListener("readystatechange", () => {
@@ -4163,6 +4199,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 	function createActivity(id, symbol, date, amount, fee, notes, type, exchange, pair, price, from, to) {
 		return new Promise((resolve, reject) => {
 			try {
+				if(!empty(noAPI)) {
+					resolve(noAPI.createActivity(id, symbol, date, amount, fee, notes, type, exchange, pair, price, from, to));
+				}
+
 				let xhr = new XMLHttpRequest();
 
 				xhr.addEventListener("readystatechange", () => {
@@ -4186,6 +4226,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 	function updateActivity(txID, id, symbol, date, amount, fee, notes, type, exchange, pair, price, from, to) {
 		return new Promise((resolve, reject) => {
 			try {
+				if(!empty(noAPI)) {
+					resolve(noAPI.updateActivity(txID, id, symbol, date, type, amount, fee, notes, exchange, pair, price, from, to));
+				}
+
 				let xhr = new XMLHttpRequest();
 
 				xhr.addEventListener("readystatechange", () => {
@@ -4209,6 +4253,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 	function deleteActivity(txID) {
 		return new Promise((resolve, reject) => {
 			try {
+				if(!empty(noAPI)) {
+					resolve(noAPI.deleteActivity(txID));
+				}
+
 				let xhr = new XMLHttpRequest();
 
 				xhr.addEventListener("readystatechange", () => {
@@ -4287,6 +4335,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 	}
 
 	function importActivity(rows) {
+		if(!empty(noAPI)) {
+			resolve(noAPI.importActivity(rows));
+		}
+
 		let xhr = new XMLHttpRequest();
 
 		xhr.addEventListener("readystatechange", () => {
@@ -4407,6 +4459,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 	function getCoinHistoricalMarketData(ids, currency, from, to) {
 		return new Promise((resolve, reject) => {
 			try {
+				if(!empty(noAPI)) {
+					resolve(noAPI.readHistorical(ids, currency, from, to));
+				}
+
 				console.log("Fetching Historical Data... (API)");
 
 				let xhr = new XMLHttpRequest();
@@ -4421,7 +4477,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 					}
 				});
 
-				xhr.open("GET", api + "historical/read.php?token=" + sessionToken + "&username=" + sessionUsername + "&ids=" + ids + "&currency=" + currency + "&from=" + new Date(Date.parse(from)).getTime() / 1000 + "&to=" + new Date(Date.parse(to)).getTime() / 1000, true);
+				xhr.open("GET", api + "historical/read.php?token=" + sessionToken + "&username=" + sessionUsername + "&ids=" + ids + "&currency=" + currency + "&from=" + Math.floor(new Date(Date.parse(from)).getTime() / 1000) + "&to=" + Math.floor(new Date(Date.parse(to)).getTime() / 1000), true);
 				xhr.send();
 			} catch(e) {
 				reject(e);
@@ -4647,7 +4703,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 		return new Promise((resolve, reject) => {
 			try {
 				if(!empty(noAPI)) {
-					resolve(noAPI.getData().holdings);
+					resolve(noAPI.readHoldings());
 				}
 
 				let xhr = new XMLHttpRequest();
@@ -4734,6 +4790,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 	function getActivity() {
 		return new Promise((resolve, reject) => {
 			try {
+				if(!empty(noAPI)) {
+					resolve(noAPI.readActivity());
+				}
+
 				let xhr = new XMLHttpRequest();
 
 				xhr.addEventListener("readystatechange", () => {
@@ -4877,6 +4937,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 	function deleteCache() {
 		return new Promise((resolve, reject) => {
 			try {
+				if(!empty(noAPI)) {
+					resolve(noAPI.deleteHistorical());
+				}
+
 				let xhr = new XMLHttpRequest();
 
 				xhr.addEventListener("readystatechange", () => {
@@ -4905,6 +4969,20 @@ document.addEventListener("DOMContentLoaded", async () => {
 		frame.addEventListener("load", () => {
 			frame.remove();
 		});
+	}
+
+	function downloadCSV(csv, filename) {
+		let content = "data:text/csv;charset=utf-8," + csv;
+		let encoded = encodeURI(content);
+		let link = document.createElement("a");
+		link.setAttribute("href", encoded);
+		link.setAttribute("download", filename);
+		link.classList.add("hidden");
+		document.body.appendChild(link);
+		link.click();
+		setTimeout(() => {
+			link.remove();
+		}, 500);
 	}
 });
 

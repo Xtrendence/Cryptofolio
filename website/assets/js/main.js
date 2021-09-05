@@ -1,4 +1,6 @@
 document.addEventListener("DOMContentLoaded", async () => {
+	let noAPI = null;
+
 	const api = "../api/"; // Default: "../api/"
 	const updateInterval = 30000; // Default: 30000
 	
@@ -40,6 +42,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 	let inputLoginPassword = document.getElementById("login-password");
 
 	let buttonLogin = document.getElementById("login-button");
+	let buttonNoAPIMode = document.getElementById("login-noapi-button");
 	let buttonLogout = document.getElementById("logout-button");
 
 	let divLoadingOverlay = document.getElementById("loading-overlay");
@@ -231,6 +234,19 @@ document.addEventListener("DOMContentLoaded", async () => {
 		let username = inputLoginUsername.value;
 		let password = inputLoginPassword.value;
 		login(username, password);
+	});
+
+	buttonNoAPIMode.addEventListener("click", () => {
+		let json = localStorage.getItem("NoAPI");
+		let data;
+		if(empty(json)) {
+			data = {};
+		} else {
+			validJSON(json) ? data = JSON.parse(json) : data = {};
+		}
+
+		noAPI = new NoAPI(data, "website", localStorage);
+		getLocalSettings();
 	});
 
 	buttonLogout.addEventListener("click", () => {
@@ -1821,6 +1837,20 @@ document.addEventListener("DOMContentLoaded", async () => {
 	}
 
 	function checkSession() {
+		if(!empty(noAPI)) {
+			setTimeout(() => {
+				if(divLoadingOverlay.classList.contains("active")) {
+					divLoadingOverlay.classList.remove("active");
+				}
+			}, 250);
+
+			if(divLoginWrapper.classList.contains("active")) {
+				divLoginWrapper.classList.remove("active");
+			}
+
+			return;
+		}
+
 		if(empty(sessionToken) || empty(sessionUsername)) {
 			if(divLoadingOverlay.classList.contains("active")) {
 				divLoadingOverlay.classList.remove("active");
@@ -3543,6 +3573,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 	function getServerSettings() {
 		return new Promise((resolve, reject) => {
 			try {
+				if(!empty(noAPI)) {
+					resolve(noAPI.getData().settings);
+				}
+
 				let xhr = new XMLHttpRequest();
 
 				xhr.addEventListener("readystatechange", () => {

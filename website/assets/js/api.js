@@ -2,6 +2,8 @@ class NoAPI {
 	constructor(data, platform, storage) {
 		this.data = data;
 
+		this.checkData();
+
 		this.fetchCoins().then(coins => {
 			this.data.coins = coins;
 			this.storeData();
@@ -11,6 +13,32 @@ class NoAPI {
 
 		this.platform = platform;
 		this.storage = storage;
+	}
+
+	checkData() {
+		if(this.empty(this.data.activity)) {
+			this.data.activity = {};
+		}
+		if(this.empty(this.data.coins)) {
+			this.data.coins = {};
+		}
+		if(this.empty(this.data.historical)) {
+			this.data.historical = {};
+		}
+		if(this.empty(this.data.holdings)) {
+			this.data.holdings = {};
+		}
+		if(this.empty(this.data.settings)) {
+			this.data.settings = { 
+				shareHoldings:"disabled", 
+				pin:"0000", 
+				css:"", 
+				refetchTime:86400
+			};
+		}
+		if(this.empty(this.data.watchlist)) {
+			this.data.watchlist = {};
+		}
 	}
 
 	async storeData() {

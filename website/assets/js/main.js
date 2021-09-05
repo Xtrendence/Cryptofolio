@@ -128,6 +128,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 	let spanStorageText = document.getElementById("storage-text");
 
+	let buttonNoAPIClear = document.getElementById("noapi-clear-button");
+
 	let buttonChangePassword = document.getElementById("change-password-button");
 	let buttonManageAccounts = document.getElementById("manage-accounts-button");
 
@@ -269,7 +271,22 @@ document.addEventListener("DOMContentLoaded", async () => {
 	});
 
 	buttonNoAPILogout.addEventListener("click", () => {
-		window.location.reload();
+		window.location.reload(true);
+	});
+
+	buttonNoAPIClear.addEventListener("click", () => {
+		let html = '<button class="reject" id="popup-cancel">Cancel</button><button class="resolve warning" id="popup-confirm">Delete</button>';
+
+		popup("Deleting No-API Data", html, "240px", "120px");
+
+		document.getElementById("popup-cancel").addEventListener("click", () => {
+			hidePopup();
+		});
+
+		document.getElementById("popup-confirm").addEventListener("click", () => {
+			localStorage.removeItem("NoAPI");
+			window.location.reload(true);
+		});
 	});
 
 	buttonLogout.addEventListener("click", () => {

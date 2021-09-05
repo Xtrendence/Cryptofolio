@@ -3188,6 +3188,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 						});
 					}
 
+					console.log(chartData);
+
 					if(!empty(firstEvent)) {
 						individualHoldingChartPopup(coinID, firstEvent, chartData, startDate);
 					} else {
@@ -3833,7 +3835,19 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 	function importHoldings(rows) {
 		if(!empty(noAPI)) {
-			resolve(noAPI.importHoldings(rows));
+			let response = noAPI.importHoldings(rows);
+
+			if("error" in response) {
+				Notify.error({
+					title:"Error",
+					description:response.error
+				});
+			} else {
+				Notify.success({
+					title:"Holdings Imported",
+					description:response.message
+				});
+			}
 		} else {
 			let xhr = new XMLHttpRequest();
 
@@ -4352,7 +4366,19 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 	function importActivity(rows) {
 		if(!empty(noAPI)) {
-			resolve(noAPI.importActivity(rows));
+			let response = noAPI.importActivity(rows);
+
+			if("error" in response) {
+				Notify.error({
+					title:"Error",
+					description:response.error
+				});
+			} else {
+				Notify.success({
+					title:"Activity Imported",
+					description:response.message
+				});
+			}
 		} else {
 			let xhr = new XMLHttpRequest();
 

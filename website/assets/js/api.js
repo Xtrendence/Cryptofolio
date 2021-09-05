@@ -425,20 +425,26 @@ class NoAPI {
 				ids = ids.split(",");
 				let data = {};
 				for(let i = 0; i < ids.length; i++) {
-					if(i !== ids.length && !this.historicalDataExists(ids[i], currency)) {
-						setTimeout(() => {
-							this.fetchHistoricalData(ids[i], currency, from, to).then(historicalData => {
-								data[ids[i]] = historicalData;
-							}).catch(error => {
-								console.log(error);
-							});
-						}, i * 2000);
+					setTimeout(() => {
+						this.fetchHistoricalData(ids[i], currency, from, to).then(historicalData => {
+							data[ids[i]] = historicalData;
+							if(i === ids.length - 1) {
+								output();
+							}
+						}).catch(error => {
+							if(i === ids.length - 1) {
+								output();
+							}
+							console.log(error);
+						});
+					}, i * 2000);
+				}
+
+				function output() {
+					if(background === "true") {
+						resolve({ message:"Fetched historical data." });
 					} else {
-						if(background === "true") {
-							resolve({ message:"Fetched historical data." });
-						} else {
-							resolve(data);
-						}
+						resolve(data);
 					}
 				}
 			});

@@ -3188,8 +3188,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 						});
 					}
 
-					console.log(chartData);
-
 					if(!empty(firstEvent)) {
 						individualHoldingChartPopup(coinID, firstEvent, chartData, startDate);
 					} else {

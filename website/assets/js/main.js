@@ -246,7 +246,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 		}
 
 		noAPI = new NoAPI(data, "website", localStorage);
-		
+
+		let style = document.createElement("style");
+		style.innerHTML = ".noapi-hidden { display:none !important; }";
+		document.getElementsByTagName("head")[0].appendChild(style);
+
 		getLocalSettings().then(() => {
 			listDashboard();
 			listMarket();
@@ -4606,6 +4610,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 	function getHoldings() {
 		return new Promise((resolve, reject) => {
 			try {
+				if(!empty(noAPI)) {
+					resolve(noAPI.getData().holdings);
+				}
+
 				let xhr = new XMLHttpRequest();
 
 				xhr.addEventListener("readystatechange", () => {

@@ -317,7 +317,7 @@ class NoAPI {
 
 	fetchCoins() {
 		return new Promise((resolve, reject) => {
-			if(this.empty(this.data.coins) || new Date.getTime() - 3600 > this.data.fetchedCoins) {
+			if(this.empty(this.data.coins) || new Date().getTime() - 3600 > this.data.fetchedCoins) {
 				let pairs = [];
 
 				let endpoint = "https://api.coingecko.com/api/v3/coins/list"

@@ -1,12 +1,32 @@
 class NoAPI {
-	constructor(data) {
+	constructor(data, platform, storage) {
 		this.data = data;
 
 		this.fetchCoins().then(coins => {
 			this.data.coins = coins;
+			this.storeData();
 		}).catch(error => {
 			console.log(error);
 		});
+
+		this.platform = platform;
+		this.storage = storage;
+	}
+
+	async storeData() {
+		let json = JSON.stringify(this.data);
+
+		switch(this.platform) {
+			case "website":
+				this.storage.setItem("NoAPI", json);
+				break;
+			case "desktop":
+				await this.storage.setItem("NoAPI", json);
+				break;
+			case "mobile":
+				await this.storage.setItem("NoAPI", json);
+				break;
+		}
 	}
 
 	getData() {
@@ -17,6 +37,7 @@ class NoAPI {
 		if(!("modified" in this.data) || this.validGracePeriod(this.data.modified)) {
 			data.modified = new Date().getTime();
 			this.data = data;
+			this.storeData();
 			return true;
 		}
 		return false;
@@ -350,6 +371,7 @@ class NoAPI {
 	deleteHistorical() {
 		if("historical" in this.data) {
 			delete this.data.historical;
+			this.storeData();
 			return { message:"Historical data has been deleted." };
 		} else {
 			return { message:"Historical data not found." };
@@ -363,7 +385,11 @@ class NoAPI {
 			for(let i = 0; i < ids.length; i++) {
 				if(i !== ids.length - 1 && this.historicalDataExists(ids[i + 1], currency)) {
 					setTimeout(() => {
-						data[ids[i]] = this.fetchHistoricalData(ids[i], currency, from, to);
+						this.fetchHistoricalData(ids[i], currency, from, to).then(historicalData => {
+							data[ids[i]] = historicalData;
+						}).catch(error => {
+							console.log(error);
+						});
 					}, i * 2000);
 				}
 			}
@@ -379,29 +405,32 @@ class NoAPI {
 	fetchHistoricalData(id, currency, from, to) {
 		let key = id + currency;
 
-		if(!this.historicalDataExists(id, currency)) {
-			let endpoint = "https://api.coingecko.com/api/v3/coins/" + id + "/market_chart/range?vs_currency=" + currency + "&from=" + from + "&to=" + to;
+		return new Promise((resolve, reject) => {
+			if(!this.historicalDataExists(id, currency)) {
+				let endpoint = "https://api.coingecko.com/api/v3/coins/" + id + "/market_chart/range?vs_currency=" + currency + "&from=" + from + "&to=" + to;
 
-			fetch(endpoint, {
-				method: "GET",
-				headers: {
-					Accept: "application/json", "Content-Type": "application/json"
-				}
-			})
-			.then((json) => {
-				return json.json();
-			})
-			.then((data) => {
-				this.data.historical[key] = data;
-				this.data.historical["modified" + key] = new Date().getTime();
-				resolve(data);
-			}).catch(error => {
-				console.log(error);
-				reject(error);
-			});
-		} else {
-			return this.data.historical[key];
-		}
+				fetch(endpoint, {
+					method: "GET",
+					headers: {
+						Accept: "application/json", "Content-Type": "application/json"
+					}
+				})
+				.then((json) => {
+					return json.json();
+				})
+				.then((data) => {
+					this.data.historical[key] = data;
+					this.data.historical["modified" + key] = new Date().getTime();
+					this.storeData();
+					resolve(data);
+				}).catch(error => {
+					console.log(error);
+					reject(error);
+				});
+			} else {
+				resolve(this.data.historical[key]);
+			}
+		});
 	}
 
 	historicalDataExists(id, currency) {

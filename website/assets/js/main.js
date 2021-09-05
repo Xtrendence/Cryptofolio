@@ -43,6 +43,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 	let buttonLogin = document.getElementById("login-button");
 	let buttonNoAPIMode = document.getElementById("login-noapi-button");
+	let buttonNoAPILogout = document.getElementById("noapi-logout-button");
 	let buttonLogout = document.getElementById("logout-button");
 
 	let divLoadingOverlay = document.getElementById("loading-overlay");
@@ -259,6 +260,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 		}).catch(e => {
 			console.log(e);
 		});
+	});
+
+	buttonNoAPILogout.addEventListener("click", () => {
+		window.location.reload();
 	});
 
 	buttonLogout.addEventListener("click", () => {
@@ -3469,6 +3474,17 @@ document.addEventListener("DOMContentLoaded", async () => {
 	}
 
 	function getLocalSettings() {
+		let noAPIElements = document.getElementsByClassName("noapi-visible");
+		if(empty(noAPI)) {
+			for(let i = 0; i < noAPIElements.length; i++) {
+				noAPIElements[i].classList.add("hidden");
+			}
+		} else {
+			for(let i = 0; i < noAPIElements.length; i++) {
+				noAPIElements[i].classList.remove("hidden");
+			}
+		}
+
 		return new Promise((resolve, reject) => {
 			checkSession();
 

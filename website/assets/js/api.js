@@ -425,7 +425,7 @@ class NoAPI {
 				ids = ids.split(",");
 				let data = {};
 				for(let i = 0; i < ids.length; i++) {
-					if(i !== ids.length - 1 && this.historicalDataExists(ids[i + 1], currency)) {
+					if(i !== ids.length && !this.historicalDataExists(ids[i], currency)) {
 						setTimeout(() => {
 							this.fetchHistoricalData(ids[i], currency, from, to).then(historicalData => {
 								data[ids[i]] = historicalData;
@@ -487,7 +487,7 @@ class NoAPI {
 			refetchTime = parseInt(settings.refetchTime);
 		}
 
-		if(!key in this.data.historical || (Math.floor(new Date().getTime() / 1000)) - refetchTime > parseInt(this.data.historical["modified" + key])) {
+		if(!(key in this.data.historical) || (Math.floor(new Date().getTime() / 1000)) - refetchTime > parseInt(this.data.historical["modified" + key])) {
 			return false;
 		}
 		return true;

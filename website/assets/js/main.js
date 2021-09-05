@@ -4347,11 +4347,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 		return new Promise((resolve, reject) => {
 			try {
 				if(!empty(noAPI)) {
-					noAPI.readCoins(key, value).then(response => {
-						console.log(response);
+					noAPI.readCoins({ [key]:value }).then(response => {
 						resolve(response);
 					}).catch(e => {
 						console.log(e);
+						reject(e);
 					});
 
 					return;
@@ -4408,7 +4408,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 		return new Promise((resolve, reject) => {
 			try {
 				console.log("Fetching Historical Data... (API)");
-				
+
 				let xhr = new XMLHttpRequest();
 
 				xhr.addEventListener("readystatechange", () => {

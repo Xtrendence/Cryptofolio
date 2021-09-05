@@ -166,7 +166,7 @@ class NoAPI {
 	importActivity(rows) {
 		let valid = true;
 
-		let current = this.data.activity;
+		let current = this.data;
 
 		rows.map(row => {
 			let data = row.split(",");
@@ -209,7 +209,7 @@ class NoAPI {
 						activity["to"] = to;
 					}
 
-					current[txID] = activity;
+					current.activity[txID] = activity;
 				} else {
 					valid = false;
 					return { error:"Invalid activity type." };
@@ -301,28 +301,22 @@ class NoAPI {
 
 	// Coins
 
-	readCoins(id = null, symbol = null) {
+	readCoins(args) {
 		return new Promise((resolve, reject) => {
 			this.fetchCoins().then(coins => {
-				if((this.empty(id) && this.empty(symbol)) || (!this.empty(id) && !this.empty(symbol))) {
+				let coin;
+
+				if((this.empty(args.id) && this.empty(args.symbol)) || (!this.empty(args.id) && !this.empty(args.symbol))) {
 					return;
-				} else if(!this.empty(symbol)) {
-					findBySymbol(coins, symbol, true).then(response => {
-						resolve(response);
-					}).catch(error => {
-						console.log(error);
-						reject(error);
-					});
-				} else if(!this.empty(id)) {
-					findByID(coins, id, true).then(response => {
-						resolve(response);
-					}).catch(error => {
-						console.log(error);
-						reject(error);
-					});
+				} else if(!this.empty(args.symbol)) {
+					coin = this.findBySymbol(coins, args.symbol, true);
+				} else if(!this.empty(args.id)) {
+					coin = this.findByID(coins, args.id, true);
 				}
 
 				this.storeData();
+
+				resolve(coin);
 			}).catch(error => {
 				console.log(error);
 				reject(error);
@@ -499,12 +493,12 @@ class NoAPI {
 
 	createHoldings(id, symbol, amount) {
 		if(!this.empty(id) && !this.empty(symbol) && !this.empty(amount)) {
-			let current = this.data.holdings;
+			let current = this.data;
 
 			if(Object.keys(current).includes(id)) {
-				current[id].amount += amount;
+				current.holdings[id].amount += amount;
 			} else {
-				current[id] = { symbol:symbol, amount:amount };
+				current.holdings[id] = { symbol:symbol, amount:amount };
 			}
 
 			let set = this.setData(current);
@@ -547,7 +541,7 @@ class NoAPI {
 	importHoldings(rows) {
 		let valid = true;
 
-		let current = this.data.holdings;
+		let current = this.data;
 
 		rows.map(row => {
 			let data = row.split(",");
@@ -557,9 +551,9 @@ class NoAPI {
 			let amount = !this.empty(data[2]) ? data[2] : valid = false;
 
 			if(Object.keys(current).includes(id)) {
-				current[id].amount += amount;
+				current.holdings[id].amount += amount;
 			} else {
-				current[id] = { symbol:symbol, amount:amount };
+				current.holdings[id] = { symbol:symbol, amount:amount };
 			}
 		});
 
@@ -581,10 +575,10 @@ class NoAPI {
 
 	updateHoldings(id, amount) {
 		if(!this.empty(id) && !this.empty(amount)) {
-			let current = this.data.holdings;
+			let current = this.data;
 
 			if(Object.keys(current).includes(id)) {
-				current[id].amount = amount;
+				current.holdings[id].amount = amount;
 
 				let set = this.setData(current);
 				if(set) {
@@ -606,10 +600,10 @@ class NoAPI {
 
 	updateSettings(key, value) {
 		if(!this.empty(key) && !this.empty(value)) {
-			let current = this.data.settings;
+			let current = this.data;
 
 			if(Object.keys(current).includes(key)) {
-				current[key] = value;
+				current.settings[key] = value;
 
 				let set = this.setData(current);
 				if(set) {
@@ -627,9 +621,9 @@ class NoAPI {
 
 	createWatchlist(id, symbol) {
 		if(!this.empty(id) && !this.empty(symbol)) {
-			let current = this.data.watchlist;
+			let current = this.data;
 
-			current[id] = { symbol:symbol };
+			current.watchlist[id] = { symbol:symbol };
 
 			let set = this.setData(current);
 			if(set) {

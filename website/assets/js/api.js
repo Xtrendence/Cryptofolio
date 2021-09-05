@@ -411,7 +411,7 @@ class NoAPI {
 
 	deleteHistorical() {
 		if("historical" in this.data) {
-			delete this.data.historical;
+			this.data.historical = {};
 			this.storeData();
 			return { message:"Historical data has been deleted." };
 		} else {

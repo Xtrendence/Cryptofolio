@@ -1185,6 +1185,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 			let password = document.getElementById("popup-password").value;
 
 			if(!empty(password)) {
+				console.log("Logging In...");
+
 				let xhr = new XMLHttpRequest();
 
 				xhr.addEventListener("readystatechange", () => {
@@ -1726,6 +1728,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 	function login(username, password) {
 		try {
+			console.log("Logging In...");
+
 			let xhr = new XMLHttpRequest();
 
 			xhr.addEventListener("readystatechange", () => {
@@ -3658,6 +3662,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 	function getGlobal() {
 		return new Promise((resolve, reject) => {
 			try {
+				console.log("Fetching Global Market Data...");
+
 				let xhr = new XMLHttpRequest();
 
 				xhr.addEventListener("readystatechange", () => {
@@ -3719,6 +3725,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 	function createHolding(id, symbol, amount) {
 		return new Promise((resolve, reject) => {
 			try {
+				if(!empty(noAPI)) {
+					resolve(noAPI.createHoldings(id, symbol, amount));
+				}
+
 				let xhr = new XMLHttpRequest();
 
 				xhr.addEventListener("readystatechange", () => {
@@ -4311,6 +4321,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 	function getCoin(id) {
 		return new Promise((resolve, reject) => {
 			try {
+				console.log("Fetching Coin...");
+
 				let xhr = new XMLHttpRequest();
 
 				xhr.addEventListener("readystatechange", () => {
@@ -4334,6 +4346,19 @@ document.addEventListener("DOMContentLoaded", async () => {
 	function getCoinID(key, value) {
 		return new Promise((resolve, reject) => {
 			try {
+				if(!empty(noAPI)) {
+					noAPI.readCoins(key, value).then(response => {
+						console.log(response);
+						resolve(response);
+					}).catch(e => {
+						console.log(e);
+					});
+
+					return;
+				}
+
+				console.log("Fetching Coins... (API)")
+
 				let xhr = new XMLHttpRequest();
 
 				xhr.addEventListener("readystatechange", () => {
@@ -4357,6 +4382,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 	function getCoinInfo(id) {
 		return new Promise((resolve, reject) => {
 			try {
+				console.log("Fetching Coin Info...");
+
 				let xhr = new XMLHttpRequest();
 
 				xhr.addEventListener("readystatechange", () => {
@@ -4380,6 +4407,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 	function getCoinHistoricalMarketData(ids, currency, from, to) {
 		return new Promise((resolve, reject) => {
 			try {
+				console.log("Fetching Historical Data... (API)");
+				
 				let xhr = new XMLHttpRequest();
 
 				xhr.addEventListener("readystatechange", () => {
@@ -4403,6 +4432,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 	function getCoinMarketData(ids) {
 		return new Promise((resolve, reject) => {
 			try {
+				console.log("Fetching Market Data...");
+
 				let xhr = new XMLHttpRequest();
 
 				xhr.addEventListener("readystatechange", () => {
@@ -4426,6 +4457,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 	function getCoinPrice(id, date) {
 		return new Promise((resolve, reject) => {
 			try {
+				console.log("Fetching Coin Price...");
 				let xhr = new XMLHttpRequest();
 
 				xhr.addEventListener("readystatechange", () => {
@@ -4472,6 +4504,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 	function getMarket(page, amount) {
 		return new Promise((resolve, reject) => {
 			try {
+				console.log("Fetching Market Data...");
+
 				let xhr = new XMLHttpRequest();
 
 				xhr.addEventListener("readystatechange", () => {
@@ -4587,6 +4621,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 	function verifySession(token) {
 		return new Promise((resolve, reject) => {
 			try {
+				console.log("Verifying Session...");
+
 				let xhr = new XMLHttpRequest();
 
 				xhr.addEventListener("readystatechange", () => {
@@ -4637,6 +4673,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 	function parseHoldings(coins) {
 		return new Promise((resolve, reject) => {
 			try {
+				console.log("Fetching Holdings Market Data...");
+
 				let xhr = new XMLHttpRequest();
 
 				xhr.addEventListener("readystatechange", () => {

@@ -302,22 +302,39 @@ class NoAPI {
 	// Coins
 
 	readCoins(id = null, symbol = null) {
-		this.fetchCoins().then(coins => {
-			if((this.empty(id) && this.empty(symbol)) || (!this.empty(id) && !this.empty(symbol))) {
-				return;
-			} else if(!this.empty(symbol)) {
-				return findBySymbol(coins, symbol, true);
-			} else if(!this.empty(id)) {
-				return findByID(coins, id, true);
-			}
-		}).catch(error => {
-			console.log(error);
+		return new Promise((resolve, reject) => {
+			this.fetchCoins().then(coins => {
+				if((this.empty(id) && this.empty(symbol)) || (!this.empty(id) && !this.empty(symbol))) {
+					return;
+				} else if(!this.empty(symbol)) {
+					findBySymbol(coins, symbol, true).then(response => {
+						resolve(response);
+					}).catch(error => {
+						console.log(error);
+						reject(error);
+					});
+				} else if(!this.empty(id)) {
+					findByID(coins, id, true).then(response => {
+						resolve(response);
+					}).catch(error => {
+						console.log(error);
+						reject(error);
+					});
+				}
+
+				this.storeData();
+			}).catch(error => {
+				console.log(error);
+				reject(error);
+			});
 		});
 	}
 
 	fetchCoins() {
 		return new Promise((resolve, reject) => {
 			if(this.empty(this.data.coins) || new Date().getTime() - 3600 > this.data.fetchedCoins) {
+				console.log("Fetching Coins...");
+
 				let pairs = [];
 
 				let endpoint = "https://api.coingecko.com/api/v3/coins/list"
@@ -435,6 +452,8 @@ class NoAPI {
 
 		return new Promise((resolve, reject) => {
 			if(!this.historicalDataExists(id, currency)) {
+				console.log("Fetching Historical Data...");
+				
 				let endpoint = "https://api.coingecko.com/api/v3/coins/" + id + "/market_chart/range?vs_currency=" + currency + "&from=" + from + "&to=" + to;
 
 				fetch(endpoint, {

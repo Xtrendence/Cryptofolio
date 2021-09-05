@@ -411,9 +411,9 @@ input[type=number] {
 .login-wrapper div {
 	position:absolute;
 	width:calc(300px - 40px);
-	height:220px;
+	height:280px;
 	padding:20px;
-	top:calc(50% - 220px / 2 - 36px);
+	top:calc(50% - 280px / 2 - 36px);
 	left:calc(50% - 300px / 2);
 	background:var(--main-third);
 	box-shadow:var(--shadow-smooth);
@@ -1602,6 +1602,37 @@ html.dark .highlight-text .coin-wrapper.negative span {
 	background:var(--main-third);
 	box-shadow:var(--shadow-smooth);
 	display:inline-block;
+}
+.settings .section .storage-wrapper {
+	display:block;
+	width:100%;
+	height:30px;
+	position:relative;
+	overflow:hidden;
+	border-radius:var(--border-radius);
+	margin-bottom:20px;
+}
+.settings .section .storage-wrapper .background {
+	background:var(--main-third);
+	height:100%;
+	width:100%;
+	position:absolute;
+}
+.settings .section .storage-wrapper .foreground {
+	background:var(--purple-gradient);
+	position:absolute;
+	height:100%;
+	width:50%;
+}
+.settings .section .storage-wrapper span {
+	display:block;
+	position:absolute;
+	line-height:30px;
+	width:100%;
+	text-align:center;
+	font-size:16px;
+	font-weight:bold;
+	color:var(--accent-contrast);
 }
 
 .loading-screen {

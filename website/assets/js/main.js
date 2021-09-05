@@ -252,6 +252,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 		style.innerHTML = ".noapi-hidden { display:none !important; }";
 		document.getElementsByTagName("head")[0].appendChild(style);
 
+		empty(localStorage.getItem("defaultPage")) ? switchPage("market") : switchPage(localStorage.getItem("defaultPage"));
+
 		getLocalSettings().then(() => {
 			listDashboard();
 			listMarket();

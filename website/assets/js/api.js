@@ -63,7 +63,7 @@ class NoAPI {
 
 	setData(data) {
 		if(!("modified" in this.data) || this.validGracePeriod(this.data.modified)) {
-			data.modified = new Date().getTime();
+			data.modified = (new Date().getTime() / 1000);
 			this.data = data;
 			this.storeData();
 			return true;
@@ -332,7 +332,7 @@ class NoAPI {
 
 	fetchCoins() {
 		return new Promise((resolve, reject) => {
-			if(this.empty(this.data.coins) || new Date().getTime() - 3600 > this.data.fetchedCoins) {
+			if(this.empty(this.data.coins) || (new Date().getTime() / 1000) - 3600 > this.data.fetchedCoins) {
 				console.log("Fetching Coins...");
 
 				let pairs = [];
@@ -355,7 +355,7 @@ class NoAPI {
 						pairs.push(pair);
 					});
 
-					this.data.fetchedCoins = new Date().getTime();
+					this.data.fetchedCoins = (new Date().getTime() / 1000);
 
 					resolve(pairs);
 				}).catch(error => {
@@ -453,7 +453,7 @@ class NoAPI {
 		return new Promise((resolve, reject) => {
 			if(!this.historicalDataExists(id, currency)) {
 				console.log("Fetching Historical Data...");
-				
+
 				let endpoint = "https://api.coingecko.com/api/v3/coins/" + id + "/market_chart/range?vs_currency=" + currency + "&from=" + from + "&to=" + to;
 
 				fetch(endpoint, {
@@ -467,7 +467,7 @@ class NoAPI {
 				})
 				.then((data) => {
 					this.data.historical[key] = data;
-					this.data.historical["modified" + key] = new Date().getTime();
+					this.data.historical["modified" + key] = (new Date().getTime() / 1000);
 					this.storeData();
 					resolve(data);
 				}).catch(error => {
@@ -489,7 +489,7 @@ class NoAPI {
 			refetchTime = settings.refetchTime;
 		}
 
-		if(!key in this.data.historical || new Date().getTime() - refetchTime > this.data.historical["modified" + key]) {
+		if(!key in this.data.historical || (new Date().getTime() / 1000) - refetchTime > this.data.historical["modified" + key]) {
 			return false;
 		}
 		return true;
@@ -661,7 +661,7 @@ class NoAPI {
 	// Utils
 
 	validGracePeriod(time) {
-		let now = new Date().getTime();
+		let now = (new Date().getTime() / 1000);
 		if(now - 1000 > time) {
 			return true;
 		}

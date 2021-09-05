@@ -421,25 +421,27 @@ class NoAPI {
 
 	readHistorical(ids, currency, from, to, background) {
 		if(!this.empty(ids) && !this.empty(currency) && !this.empty(from) && !this.empty(to)) {
-			ids = ids.split(",");
-			let data = {};
-			for(let i = 0; i < ids.length; i++) {
-				if(i !== ids.length - 1 && this.historicalDataExists(ids[i + 1], currency)) {
-					setTimeout(() => {
-						this.fetchHistoricalData(ids[i], currency, from, to).then(historicalData => {
-							data[ids[i]] = historicalData;
-						}).catch(error => {
-							console.log(error);
-						});
-					}, i * 2000);
+			return new Promise((resolve, reject) => {
+				ids = ids.split(",");
+				let data = {};
+				for(let i = 0; i < ids.length; i++) {
+					if(i !== ids.length - 1 && this.historicalDataExists(ids[i + 1], currency)) {
+						setTimeout(() => {
+							this.fetchHistoricalData(ids[i], currency, from, to).then(historicalData => {
+								data[ids[i]] = historicalData;
+							}).catch(error => {
+								console.log(error);
+							});
+						}, i * 2000);
+					} else {
+						if(background === "true") {
+							resolve({ message:"Fetched historical data." });
+						} else {
+							resolve(data);
+						}
+					}
 				}
-			}
-
-			if(background === "true") {
-				return { message:"Fetched historical data." };
-			} else {
-				return data;
-			}
+			});
 		}
 	}
 

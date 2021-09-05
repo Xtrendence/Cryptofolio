@@ -4200,7 +4200,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 		return new Promise((resolve, reject) => {
 			try {
 				if(!empty(noAPI)) {
-					resolve(noAPI.createActivity(id, symbol, date, amount, fee, notes, type, exchange, pair, price, from, to));
+					resolve(noAPI.createActivity(id, symbol, date, type, amount, fee, notes, exchange, pair, price, from, to));
 				}
 
 				let xhr = new XMLHttpRequest();
@@ -4460,7 +4460,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 		return new Promise((resolve, reject) => {
 			try {
 				if(!empty(noAPI)) {
-					resolve(noAPI.readHistorical(ids, currency, from, to));
+					noAPI.readHistorical(ids, currency, from, to, false).then(response => {
+						resolve(response);
+					}).catch(e => {
+						console.log(e);
+						reject(e);
+					});
 				}
 
 				console.log("Fetching Historical Data... (API)");

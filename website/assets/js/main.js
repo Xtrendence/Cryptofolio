@@ -124,6 +124,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 	let inputETHAddress = document.getElementById("input-eth-address");
 
+	let divStorageProgress = document.getElementById("storage-progress");
+
+	let spanStorageText = document.getElementById("storage-text");
+
 	let buttonChangePassword = document.getElementById("change-password-button");
 	let buttonManageAccounts = document.getElementById("manage-accounts-button");
 
@@ -3473,6 +3477,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 				clearDashboard();
 				break;
 		}
+		updateLocalStorageSize();
 	}
 
 	function getLocalSettings() {
@@ -3607,6 +3612,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 				}
 
 				inputSharingURL.value = window.location.href.replaceAll("index.html", "") + "index.html?access=view&pin=" + settings.pin;
+
+				updateLocalStorageSize();
 
 				resolve();
 			}).catch(e => {
@@ -5045,6 +5052,18 @@ document.addEventListener("DOMContentLoaded", async () => {
 			link.remove();
 		}, 500);
 	}
+
+	function updateLocalStorageSize() {
+		getLocalStorageSize().then(size => {
+			let percentageRemaining = (size.remaining * 100) / size.size;
+			let percentageUsed = 100 - percentageRemaining;
+			divStorageProgress.style.width = percentageUsed + "%";
+			spanStorageText.textContent = percentageUsed.toFixed(0) + "%";
+		}).catch(e => {
+			spanStorageText.textContent = "Error";
+			console.log(e);
+		});
+	}
 });
 
 function getLocalStorageSize() {
@@ -5064,7 +5083,7 @@ function getLocalStorageSize() {
 				}
 			} else {
 				let remaining = localStorage.getItem("storageSize") - getLocalStorageUsedSize();
-				resolve({ size:localStorage.getItem("storageSize"), remaining:remaining });
+				resolve({ size:parseInt(localStorage.getItem("storageSize")), remaining:remaining });
 			}
 		} else {
 			reject({ size:0, remaining:0 });
@@ -5073,7 +5092,7 @@ function getLocalStorageSize() {
 }
 
 function getLocalStorageUsedSize() {
-	return JSON.stringify(localStorage).length;
+	return JSON.stringify(localStorage).length / 1000;
 }
 
 function sum(total, num) {

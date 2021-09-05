@@ -320,7 +320,15 @@
 				<div class="top noselect">
 					<span class="title">No-API Account</span>
 				</div>
+				<div class="description noselect">
+					<span>This progress bar displays how much storage space is left to store No-API mode data. Since the No-API mode isn't meant for long-term use, there are no protections against the loss of data. If there's no remaining storage, many of Cryptofolio's functions may cease to work right. In such an event, it's recommended to export your data to keep it safe.</span>
+				</div>
 				<div class="bottom">
+					<div class="storage-wrapper noselect">
+						<div class="background"></div>
+						<div class="foreground" id="storage-progress"></div>
+						<span id="storage-text">0%</span>
+					</div>
 					<button class="submit" id="noapi-logout-button">Logout</button>
 				</div>
 			</div>

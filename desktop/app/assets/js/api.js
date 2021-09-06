@@ -609,7 +609,7 @@ class NoAPI {
 	}
 
 	updateSettings(key, value) {
-		if(!this.empty(key) && !this.empty(value)) {
+		if(!this.empty(key) && typeof value !== "undefined") {
 			let current = this.data;
 
 			if(Object.keys(current.settings).includes(key)) {

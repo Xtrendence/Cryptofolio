@@ -4488,7 +4488,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 						reject(e);
 					});
 				} else {
-					console.log("Fetching Coins... (API)")
+					console.log("Fetching Coins... (API)");
 
 					let xhr = new XMLHttpRequest();
 
@@ -4599,6 +4599,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 		return new Promise((resolve, reject) => {
 			try {
 				console.log("Fetching Coin Price...");
+
 				let xhr = new XMLHttpRequest();
 
 				xhr.addEventListener("readystatechange", () => {

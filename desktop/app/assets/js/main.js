@@ -4,6 +4,8 @@ const { ipcRenderer } = electron;
 const Storage = new XStorage(ipcRenderer);
 
 document.addEventListener("DOMContentLoaded", async () => {
+	let noAPI;
+
 	let api = await Storage.getItem("api");
 	let sessionToken = await Storage.getItem("token");
 	let sessionUsername = await Storage.getItem("username");
@@ -54,6 +56,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 	let inputLoginPassword = document.getElementById("login-password");
 
 	let buttonLogin = document.getElementById("login-button");
+	let buttonNoAPIMode = document.getElementById("login-noapi-button");
+	let buttonNoAPILogout = document.getElementById("noapi-logout-button");
 	let buttonLogout = document.getElementById("logout-button");
 
 	let divLoadingOverlay = document.getElementById("loading-overlay");
@@ -131,6 +135,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 	let inputETHAddress = document.getElementById("input-eth-address");
 
+	let buttonNoAPIClear = document.getElementById("noapi-clear-button");
+
 	let buttonChangePassword = document.getElementById("change-password-button");
 	let buttonManageAccounts = document.getElementById("manage-accounts-button");
 
@@ -184,7 +190,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 	} else {
 		empty(await Storage.getItem("defaultPage")) ? switchPage("market") : switchPage(await Storage.getItem("defaultPage"));
 
-		if(!empty(api)) {
+		if(!empty(api) || !empty(await Storage.getItem("NoAPI"))) {
 			getLocalSettings().then(() => {
 				listDashboard();
 				listMarket();
@@ -277,6 +283,52 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 			login(username, password);
 		}
+	});
+
+	buttonNoAPIMode.addEventListener("click", async () => {
+		let json = await Storage.getItem("NoAPI");
+		let data;
+		if(empty(json)) {
+			data = {};
+		} else {
+			validJSON(json) ? data = JSON.parse(json) : data = {};
+		}
+
+		noAPI = new NoAPI(data, "desktop", Storage);
+
+		let style = document.createElement("style");
+		style.innerHTML = ".noapi-hidden { display:none !important; }";
+		document.getElementsByTagName("head")[0].appendChild(style);
+
+		empty(await Storage.getItem("defaultPage")) ? switchPage("market") : switchPage(await Storage.getItem("defaultPage"));
+
+		getLocalSettings().then(() => {
+			listDashboard();
+			listMarket();
+			listHoldings();
+			listActivity();
+		}).catch(e => {
+			console.log(e);
+		});
+	});
+
+	buttonNoAPILogout.addEventListener("click", () => {
+		window.location.reload(true);
+	});
+
+	buttonNoAPIClear.addEventListener("click", async () => {
+		let html = '<button class="reject" id="popup-cancel">Cancel</button><button class="resolve warning" id="popup-confirm">Delete</button>';
+
+		popup("Deleting No-API Data", html, "240px", "120px");
+
+		document.getElementById("popup-cancel").addEventListener("click", () => {
+			hidePopup();
+		});
+
+		document.getElementById("popup-confirm").addEventListener("click", async () => {
+			await Storage.removeItem("NoAPI");
+			window.location.reload(true);
+		});
 	});
 
 	buttonLogout.addEventListener("click", () => {
@@ -1096,7 +1148,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 	});
 
 	buttonExportHoldings.addEventListener("click", () => {
-		download(api + "holdings/export.php?token=" + sessionToken + "&username=" + sessionUsername);
+		if(!empty(noAPI)) {
+			downloadCSV(noAPI.exportHoldings(), "Holdings-" + Math.floor(new Date().getTime() / 1000) + ".csv");
+		} else {
+			download(api + "holdings/export.php?token=" + sessionToken + "&username=" + sessionUsername);
+		}
 	});
 
 	buttonImportActivity.addEventListener("click", () => {
@@ -1125,7 +1181,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 	});
 
 	buttonExportActivity.addEventListener("click", () => {
-		download(api + "activity/export.php?token=" + sessionToken + "&username=" + sessionUsername);
+		if(!empty(noAPI)) {
+			downloadCSV(noAPI.exportActivity(), "Activity-" + Math.floor(new Date().getTime() / 1000) + ".csv");
+		} else {
+			download(api + "activity/export.php?token=" + sessionToken + "&username=" + sessionUsername);
+		}
 	});
 
 	buttonDeleteCache.addEventListener("click", () => {
@@ -1163,6 +1223,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 			let password = document.getElementById("popup-password").value;
 
 			if(!empty(password)) {
+				console.log("Logging In...");
+
 				let xhr = new XMLHttpRequest();
 
 				xhr.addEventListener("readystatechange", () => {
@@ -1704,72 +1766,76 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 	async function login(username, password) {
 		try {
-			let xhr = new XMLHttpRequest();
+			if(empty(noAPI)) {
+				console.log("Logging In...");
 
-			xhr.addEventListener("readystatechange", async () => {
-				if(xhr.readyState === XMLHttpRequest.DONE) {
-					if(validJSON(xhr.responseText)) {
-						let response = JSON.parse(xhr.responseText);
+				let xhr = new XMLHttpRequest();
 
-						if("error" in response) {
-							Notify.error({
-								title:"Error",
-								description:response.error
-							});
-						} else {
-							if(response.valid) {
-								sessionToken = response.token;
-								sessionUsername = response.username;
+				xhr.addEventListener("readystatechange", async () => {
+					if(xhr.readyState === XMLHttpRequest.DONE) {
+						if(validJSON(xhr.responseText)) {
+							let response = JSON.parse(xhr.responseText);
 
-								await Storage.setItem("token", response.token);
-								await Storage.setItem("username", response.username);
-								
-								getLocalSettings();
-
-								Notify.success({
-									title:"Logging In...",
-									description:response.message
+							if("error" in response) {
+								Notify.error({
+									title:"Error",
+									description:response.error
 								});
+							} else {
+								if(response.valid) {
+									sessionToken = response.token;
+									sessionUsername = response.username;
 
-								setTimeout(async () => {
-									empty(await Storage.getItem("defaultPage")) ? switchPage("market") : switchPage(await Storage.getItem("defaultPage"));
-
-									getLocalSettings().then(() => {
-										listDashboard();
-										listMarket();
-										listHoldings();
-										listActivity();
-									}).catch(e => {
-										console.log(e);
-									});
+									await Storage.setItem("token", response.token);
+									await Storage.setItem("username", response.username);
 									
+									getLocalSettings();
+
+									Notify.success({
+										title:"Logging In...",
+										description:response.message
+									});
+
+									setTimeout(async () => {
+										empty(await Storage.getItem("defaultPage")) ? switchPage("market") : switchPage(await Storage.getItem("defaultPage"));
+
+										getLocalSettings().then(() => {
+											listDashboard();
+											listMarket();
+											listHoldings();
+											listActivity();
+										}).catch(e => {
+											console.log(e);
+										});
+										
+										divLoginWrapper.classList.remove("active");
+									}, 250);
+
 									divLoginWrapper.classList.remove("active");
-								}, 250);
+									divTitlebarShadow.classList.remove("hidden");
 
-								divLoginWrapper.classList.remove("active");
-								divTitlebarShadow.classList.remove("hidden");
+									inputLoginPassword.value = "";
+									inputLoginPassword.blur();
 
-								inputLoginPassword.value = "";
-								inputLoginPassword.blur();
-
-								if(sessionUsername === "admin") {
-									buttonManageAccounts.classList.remove("hidden");
-								} else {
-									buttonManageAccounts.classList.add("hidden");
+									if(sessionUsername === "admin") {
+										buttonManageAccounts.classList.remove("hidden");
+									} else {
+										buttonManageAccounts.classList.add("hidden");
+									}
 								}
 							}
+						} else {
+							Notify.error({
+								title:"Error",
+								description:"Invalid JSON."
+							});
 						}
-					} else {
-						Notify.error({
-							title:"Error",
-							description:"Invalid JSON."
-						});
 					}
-				}
-			});
+				});
 
-			xhr.open("POST", api + "accounts/login.php?platform=desktop", true);
-			xhr.send(JSON.stringify({ username:username, password:password }));
+				xhr.open("POST", api + "accounts/login.php?platform=desktop", true);
+				xhr.send(JSON.stringify({ username:username, password:password }));
+			}
 		} catch(e) {
 			reject(e);
 		}
@@ -1777,61 +1843,80 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 	async function logout() {
 		try {
-			let xhr = new XMLHttpRequest();
+			if(empty(noAPI)) {
+				let xhr = new XMLHttpRequest();
 
-			xhr.addEventListener("readystatechange", async () => {
-				if(xhr.readyState === XMLHttpRequest.DONE) {
-					if(validJSON(xhr.responseText)) {
-						let response = JSON.parse(xhr.responseText);
+				xhr.addEventListener("readystatechange", async () => {
+					if(xhr.readyState === XMLHttpRequest.DONE) {
+						if(validJSON(xhr.responseText)) {
+							let response = JSON.parse(xhr.responseText);
 
-						if("error" in response) {
+							if("error" in response) {
+								Notify.error({
+									title:"Error",
+									description:response.error
+								});
+							} else {
+								sessionToken = null;
+								sessionUsername = null;
+
+								await Storage.removeItem("token");
+								await Storage.removeItem("username");
+
+								Notify.success({
+									title:"Logging Out...",
+									description:response.message
+								});
+
+								clearDashboard();
+								clearMarketList();
+								clearHoldingsList();
+								clearActivityList();
+
+								spanHoldingsTotalValue.textContent = "...";
+
+								inputCurrentPassword.value = "";
+								inputNewPassword.value = "";
+								inputRepeatPassword.value = "";
+
+								divLoginWrapper.classList.add("active");
+								divTitlebarShadow.classList.add("hidden");
+							}
+						} else {
 							Notify.error({
 								title:"Error",
-								description:response.error
+								description:"Invalid JSON."
 							});
-						} else {
-							sessionToken = null;
-							sessionUsername = null;
-
-							await Storage.removeItem("token");
-							await Storage.removeItem("username");
-
-							Notify.success({
-								title:"Logging Out...",
-								description:response.message
-							});
-
-							clearDashboard();
-							clearMarketList();
-							clearHoldingsList();
-							clearActivityList();
-
-							spanHoldingsTotalValue.textContent = "...";
-
-							inputCurrentPassword.value = "";
-							inputNewPassword.value = "";
-							inputRepeatPassword.value = "";
-
-							divLoginWrapper.classList.add("active");
-							divTitlebarShadow.classList.add("hidden");
 						}
-					} else {
-						Notify.error({
-							title:"Error",
-							description:"Invalid JSON."
-						});
 					}
-				}
-			});
+				});
 
-			xhr.open("GET", api + "accounts/logout.php?platform=desktop&token=" + sessionToken + "&username=" + sessionUsername, true);
-			xhr.send();
+				xhr.open("GET", api + "accounts/logout.php?platform=desktop&token=" + sessionToken + "&username=" + sessionUsername, true);
+				xhr.send();
+			}
 		} catch(e) {
 			reject(e);
 		}
 	}
 
 	async function checkSession() {
+		if(!empty(noAPI)) {
+			setTimeout(() => {
+				if(divLoadingOverlay.classList.contains("active")) {
+					divLoadingOverlay.classList.remove("active");
+					divTitlebar.classList.remove("loading");
+					divWindowButtons.classList.remove("loading");
+				}
+			}, 250);
+
+			if(divLoginWrapper.classList.contains("active")) {
+				divLoginWrapper.classList.remove("active");
+				divTitlebarShadow.classList.remove("hidden");
+			}
+
+			return;
+		}
+
 		if(!empty(api)) {
 			inputLoginAPI.value = api;
 		}
@@ -2029,7 +2114,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 		divPageActivity.classList.remove("active");
 		divPageSettings.classList.remove("active");
 
-		if(!empty(api)) {
+		if(!empty(api) || !empty(noAPI)) {
 			getLocalSettings().then(() => {
 				switch(page) {
 					case "dashboard":
@@ -3475,6 +3560,17 @@ document.addEventListener("DOMContentLoaded", async () => {
 	}
 
 	function getLocalSettings() {
+		let noAPIElements = document.getElementsByClassName("noapi-visible");
+		if(empty(noAPI)) {
+			for(let i = 0; i < noAPIElements.length; i++) {
+				noAPIElements[i].classList.add("hidden");
+			}
+		} else {
+			for(let i = 0; i < noAPIElements.length; i++) {
+				noAPIElements[i].classList.remove("hidden");
+			}
+		}
+
 		return new Promise((resolve, reject) => {
 			checkSession();
 
@@ -3600,25 +3696,41 @@ document.addEventListener("DOMContentLoaded", async () => {
 		});
 	}
 
-	function getServerSettings() {
-		return new Promise((resolve, reject) => {
+	async function getServerSettings() {
+		return new Promise(async (resolve, reject) => {
 			try {
-				let xhr = new XMLHttpRequest();
+				if(!empty(noAPI)) {
+					resolve(noAPI.getData().settings);
+				} else {
+					if(empty(await Storage.getItem("NoAPI")) || !empty(await Storage.getItem("token"))) {
+						let xhr = new XMLHttpRequest();
 
-				xhr.addEventListener("readystatechange", () => {
-					if(xhr.readyState === XMLHttpRequest.DONE) {
-						if(validJSON(xhr.responseText)) {
-							resolve(JSON.parse(xhr.responseText));
+						xhr.addEventListener("readystatechange", () => {
+							if(xhr.readyState === XMLHttpRequest.DONE) {
+								if(validJSON(xhr.responseText)) {
+									resolve(JSON.parse(xhr.responseText));
+								} else {
+									reject("Invalid JSON.");
+								}
+							}
+						});
+
+						xhr.open("GET", api + "settings/read.php?token=" + sessionToken + "&username=" + sessionUsername, true);
+						xhr.send();
+					} else {
+						if(!empty(await Storage.getItem("NoAPI")) && validJSON(await Storage.getItem("NoAPI"))) {
+							resolve(JSON.parse(await Storage.getItem("NoAPI")).settings);
 						} else {
-							reject("Invalid JSON.");
+							reject(e);
 						}
 					}
-				});
-
-				xhr.open("GET", api + "settings/read.php?token=" + sessionToken + "&username=" + sessionUsername, true);
-				xhr.send();
+				}
 			} catch(e) {
-				reject(e);
+				if(!empty(await Storage.getItem("NoAPI")) && validJSON(await Storage.getItem("NoAPI"))) {
+					resolve(JSON.parse(await Storage.getItem("NoAPI")).settings);
+				} else {
+					reject(e);
+				}
 			}
 		});
 	}
@@ -3649,20 +3761,24 @@ document.addEventListener("DOMContentLoaded", async () => {
 	function changeSetting(key, value) {
 		return new Promise((resolve, reject) => {
 			try {
-				let xhr = new XMLHttpRequest();
+				if(!empty(noAPI)) {
+					resolve(noAPI.updateSettings(key, value));
+				} else {
+					let xhr = new XMLHttpRequest();
 
-				xhr.addEventListener("readystatechange", () => {
-					if(xhr.readyState === XMLHttpRequest.DONE) {
-						if(validJSON(xhr.responseText)) {
-							resolve(JSON.parse(xhr.responseText));
-						} else {
-							reject("Invalid JSON.");
+					xhr.addEventListener("readystatechange", () => {
+						if(xhr.readyState === XMLHttpRequest.DONE) {
+							if(validJSON(xhr.responseText)) {
+								resolve(JSON.parse(xhr.responseText));
+							} else {
+								reject("Invalid JSON.");
+							}
 						}
-					}
-				});
+					});
 
-				xhr.open("PUT", api + "settings/update.php", true);
-				xhr.send(JSON.stringify({ username:sessionUsername, token:sessionToken, key:key, value:value }));
+					xhr.open("PUT", api + "settings/update.php", true);
+					xhr.send(JSON.stringify({ username:sessionUsername, token:sessionToken, key:key, value:value }));
+				}
 			} catch(e) {
 				reject(e);
 			}
@@ -3672,6 +3788,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 	function getGlobal() {
 		return new Promise((resolve, reject) => {
 			try {
+				console.log("Fetching Global Market Data...");
+
 				let xhr = new XMLHttpRequest();
 
 				xhr.addEventListener("readystatechange", () => {
@@ -3733,20 +3851,24 @@ document.addEventListener("DOMContentLoaded", async () => {
 	function createHolding(id, symbol, amount) {
 		return new Promise((resolve, reject) => {
 			try {
-				let xhr = new XMLHttpRequest();
+				if(!empty(noAPI)) {
+					resolve(noAPI.createHoldings(id, symbol, amount));
+				} else {
+					let xhr = new XMLHttpRequest();
 
-				xhr.addEventListener("readystatechange", () => {
-					if(xhr.readyState === XMLHttpRequest.DONE) {
-						if(validJSON(xhr.responseText)) {
-							resolve(JSON.parse(xhr.responseText));
-						} else {
-							reject("Invalid JSON.");
+					xhr.addEventListener("readystatechange", () => {
+						if(xhr.readyState === XMLHttpRequest.DONE) {
+							if(validJSON(xhr.responseText)) {
+								resolve(JSON.parse(xhr.responseText));
+							} else {
+								reject("Invalid JSON.");
+							}
 						}
-					}
-				});
+					});
 
-				xhr.open("POST", api + "holdings/create.php", true);
-				xhr.send(JSON.stringify({ username:sessionUsername, token:sessionToken, id:id, symbol:symbol, amount:amount }));
+					xhr.open("POST", api + "holdings/create.php", true);
+					xhr.send(JSON.stringify({ username:sessionUsername, token:sessionToken, id:id, symbol:symbol, amount:amount }));
+				}
 			} catch(e) {
 				reject(e);
 			}
@@ -3756,20 +3878,24 @@ document.addEventListener("DOMContentLoaded", async () => {
 	function updateHolding(id, amount) {
 		return new Promise((resolve, reject) => {
 			try {
-				let xhr = new XMLHttpRequest();
+				if(!empty(noAPI)) {
+					resolve(noAPI.updateHoldings(id, amount));
+				} else {
+					let xhr = new XMLHttpRequest();
 
-				xhr.addEventListener("readystatechange", () => {
-					if(xhr.readyState === XMLHttpRequest.DONE) {
-						if(validJSON(xhr.responseText)) {
-							resolve(JSON.parse(xhr.responseText));
-						} else {
-							reject("Invalid JSON.");
+					xhr.addEventListener("readystatechange", () => {
+						if(xhr.readyState === XMLHttpRequest.DONE) {
+							if(validJSON(xhr.responseText)) {
+								resolve(JSON.parse(xhr.responseText));
+							} else {
+								reject("Invalid JSON.");
+							}
 						}
-					}
-				});
+					});
 
-				xhr.open("PUT", api + "holdings/update.php", true);
-				xhr.send(JSON.stringify({ username:sessionUsername, token:sessionToken, id:id, amount:amount }));
+					xhr.open("PUT", api + "holdings/update.php", true);
+					xhr.send(JSON.stringify({ username:sessionUsername, token:sessionToken, id:id, amount:amount }));
+				}
 			} catch(e) {
 				reject(e);
 			}
@@ -3779,20 +3905,24 @@ document.addEventListener("DOMContentLoaded", async () => {
 	function deleteHolding(id) {
 		return new Promise((resolve, reject) => {
 			try {
-				let xhr = new XMLHttpRequest();
+				if(!empty(noAPI)) {
+					resolve(noAPI.deleteHoldings(id));
+				} else {
+					let xhr = new XMLHttpRequest();
 
-				xhr.addEventListener("readystatechange", () => {
-					if(xhr.readyState === XMLHttpRequest.DONE) {
-						if(validJSON(xhr.responseText)) {
-							resolve(JSON.parse(xhr.responseText));
-						} else {
-							reject("Invalid JSON.");
+					xhr.addEventListener("readystatechange", () => {
+						if(xhr.readyState === XMLHttpRequest.DONE) {
+							if(validJSON(xhr.responseText)) {
+								resolve(JSON.parse(xhr.responseText));
+							} else {
+								reject("Invalid JSON.");
+							}
 						}
-					}
-				});
+					});
 
-				xhr.open("DELETE", api + "holdings/delete.php", true);
-				xhr.send(JSON.stringify({ username:sessionUsername, token:sessionToken, id:id }));
+					xhr.open("DELETE", api + "holdings/delete.php", true);
+					xhr.send(JSON.stringify({ username:sessionUsername, token:sessionToken, id:id }));
+				}
 			} catch(e) {
 				reject(e);
 			}
@@ -3800,35 +3930,51 @@ document.addEventListener("DOMContentLoaded", async () => {
 	}
 
 	function importHoldings(rows) {
-		let xhr = new XMLHttpRequest();
+		if(!empty(noAPI)) {
+			let response = noAPI.importHoldings(rows);
 
-		xhr.addEventListener("readystatechange", () => {
-			if(xhr.readyState === XMLHttpRequest.DONE) {
-				if(validJSON(xhr.responseText)) {
-					let response = JSON.parse(xhr.responseText);
+			if("error" in response) {
+				Notify.error({
+					title:"Error",
+					description:response.error
+				});
+			} else {
+				Notify.success({
+					title:"Holdings Imported",
+					description:response.message
+				});
+			}
+		} else {
+			let xhr = new XMLHttpRequest();
 
-					if("error" in response) {
+			xhr.addEventListener("readystatechange", () => {
+				if(xhr.readyState === XMLHttpRequest.DONE) {
+					if(validJSON(xhr.responseText)) {
+						let response = JSON.parse(xhr.responseText);
+
+						if("error" in response) {
+							Notify.error({
+								title:"Error",
+								description:response.error
+							});
+						} else {
+							Notify.success({
+								title:"Holdings Imported",
+								description:response.message
+							});
+						}
+					} else {
 						Notify.error({
 							title:"Error",
-							description:response.error
-						});
-					} else {
-						Notify.success({
-							title:"Holdings Imported",
-							description:response.message
+							description:"Invalid JSON."
 						});
 					}
-				} else {
-					Notify.error({
-						title:"Error",
-						description:"Invalid JSON."
-					});
 				}
-			}
-		});
+			});
 
-		xhr.open("POST", api + "holdings/import.php", true);
-		xhr.send(JSON.stringify({ username:sessionUsername, token:sessionToken, rows:rows }));
+			xhr.open("POST", api + "holdings/import.php", true);
+			xhr.send(JSON.stringify({ username:sessionUsername, token:sessionToken, rows:rows }));
+		}
 	}
 
 	function activityPopup(action, params) {
@@ -4098,20 +4244,24 @@ document.addEventListener("DOMContentLoaded", async () => {
 	function getWatchlist() {
 		return new Promise((resolve, reject) => {
 			try {
-				let xhr = new XMLHttpRequest();
+				if(!empty(noAPI)) {
+					resolve(noAPI.readWatchlist());
+				} else {
+					let xhr = new XMLHttpRequest();
 
-				xhr.addEventListener("readystatechange", () => {
-					if(xhr.readyState === XMLHttpRequest.DONE) {
-						if(validJSON(xhr.responseText)) {
-							resolve(JSON.parse(xhr.responseText));
-						} else {
-							reject("Invalid JSON.");
+					xhr.addEventListener("readystatechange", () => {
+						if(xhr.readyState === XMLHttpRequest.DONE) {
+							if(validJSON(xhr.responseText)) {
+								resolve(JSON.parse(xhr.responseText));
+							} else {
+								reject("Invalid JSON.");
+							}
 						}
-					}
-				});
+					});
 
-				xhr.open("GET", api + "watchlist/read.php?token=" + sessionToken + "&username=" + sessionUsername, true);
-				xhr.send();
+					xhr.open("GET", api + "watchlist/read.php?token=" + sessionToken + "&username=" + sessionUsername, true);
+					xhr.send();
+				}
 			} catch(e) {
 				reject(e);
 			}
@@ -4121,20 +4271,24 @@ document.addEventListener("DOMContentLoaded", async () => {
 	function createWatchlist(id, symbol) {
 		return new Promise((resolve, reject) => {
 			try {
-				let xhr = new XMLHttpRequest();
+				if(!empty(noAPI)) {
+					resolve(noAPI.createWatchlist(id, symbol));
+				} else {
+					let xhr = new XMLHttpRequest();
 
-				xhr.addEventListener("readystatechange", () => {
-					if(xhr.readyState === XMLHttpRequest.DONE) {
-						if(validJSON(xhr.responseText)) {
-							resolve(JSON.parse(xhr.responseText));
-						} else {
-							reject("Invalid JSON.");
+					xhr.addEventListener("readystatechange", () => {
+						if(xhr.readyState === XMLHttpRequest.DONE) {
+							if(validJSON(xhr.responseText)) {
+								resolve(JSON.parse(xhr.responseText));
+							} else {
+								reject("Invalid JSON.");
+							}
 						}
-					}
-				});
+					});
 
-				xhr.open("POST", api + "watchlist/create.php", true);
-				xhr.send(JSON.stringify({ username:sessionUsername, token:sessionToken, id:id, symbol:symbol }));
+					xhr.open("POST", api + "watchlist/create.php", true);
+					xhr.send(JSON.stringify({ username:sessionUsername, token:sessionToken, id:id, symbol:symbol }));
+				}
 			} catch(e) {
 				reject(e);
 			}
@@ -4144,20 +4298,24 @@ document.addEventListener("DOMContentLoaded", async () => {
 	function deleteWatchlist(id) {
 		return new Promise((resolve, reject) => {
 			try {
-				let xhr = new XMLHttpRequest();
+				if(!empty(noAPI)) {
+					resolve(noAPI.deleteWatchlist(id));
+				} else {
+					let xhr = new XMLHttpRequest();
 
-				xhr.addEventListener("readystatechange", () => {
-					if(xhr.readyState === XMLHttpRequest.DONE) {
-						if(validJSON(xhr.responseText)) {
-							resolve(JSON.parse(xhr.responseText));
-						} else {
-							reject("Invalid JSON.");
+					xhr.addEventListener("readystatechange", () => {
+						if(xhr.readyState === XMLHttpRequest.DONE) {
+							if(validJSON(xhr.responseText)) {
+								resolve(JSON.parse(xhr.responseText));
+							} else {
+								reject("Invalid JSON.");
+							}
 						}
-					}
-				});
+					});
 
-				xhr.open("DELETE", api + "watchlist/delete.php", true);
-				xhr.send(JSON.stringify({ username:sessionUsername, token:sessionToken, id:id }));
+					xhr.open("DELETE", api + "watchlist/delete.php", true);
+					xhr.send(JSON.stringify({ username:sessionUsername, token:sessionToken, id:id }));
+				}
 			} catch(e) {
 				reject(e);
 			}
@@ -4167,20 +4325,24 @@ document.addEventListener("DOMContentLoaded", async () => {
 	function createActivity(id, symbol, date, amount, fee, notes, type, exchange, pair, price, from, to) {
 		return new Promise((resolve, reject) => {
 			try {
-				let xhr = new XMLHttpRequest();
+				if(!empty(noAPI)) {
+					resolve(noAPI.createActivity(id, symbol, date, type, amount, fee, notes, exchange, pair, price, from, to));
+				} else {
+					let xhr = new XMLHttpRequest();
 
-				xhr.addEventListener("readystatechange", () => {
-					if(xhr.readyState === XMLHttpRequest.DONE) {
-						if(validJSON(xhr.responseText)) {
-							resolve(JSON.parse(xhr.responseText));
-						} else {
-							reject("Invalid JSON.");
+					xhr.addEventListener("readystatechange", () => {
+						if(xhr.readyState === XMLHttpRequest.DONE) {
+							if(validJSON(xhr.responseText)) {
+								resolve(JSON.parse(xhr.responseText));
+							} else {
+								reject("Invalid JSON.");
+							}
 						}
-					}
-				});
+					});
 
-				xhr.open("POST", api + "activity/create.php", true);
-				xhr.send(JSON.stringify({ username:sessionUsername, token:sessionToken, id:id, symbol:symbol, date:date, amount:amount, fee:fee, notes:notes, type:type, exchange:exchange, pair:pair, price:price, from:from, to:to }));
+					xhr.open("POST", api + "activity/create.php", true);
+					xhr.send(JSON.stringify({ username:sessionUsername, token:sessionToken, id:id, symbol:symbol, date:date, amount:amount, fee:fee, notes:notes, type:type, exchange:exchange, pair:pair, price:price, from:from, to:to }));
+				}
 			} catch(e) {
 				reject(e);
 			}
@@ -4190,20 +4352,24 @@ document.addEventListener("DOMContentLoaded", async () => {
 	function updateActivity(txID, id, symbol, date, amount, fee, notes, type, exchange, pair, price, from, to) {
 		return new Promise((resolve, reject) => {
 			try {
-				let xhr = new XMLHttpRequest();
+				if(!empty(noAPI)) {
+					resolve(noAPI.updateActivity(txID, id, symbol, date, type, amount, fee, notes, exchange, pair, price, from, to));
+				} else {
+					let xhr = new XMLHttpRequest();
 
-				xhr.addEventListener("readystatechange", () => {
-					if(xhr.readyState === XMLHttpRequest.DONE) {
-						if(validJSON(xhr.responseText)) {
-							resolve(JSON.parse(xhr.responseText));
-						} else {
-							reject("Invalid JSON.");
+					xhr.addEventListener("readystatechange", () => {
+						if(xhr.readyState === XMLHttpRequest.DONE) {
+							if(validJSON(xhr.responseText)) {
+								resolve(JSON.parse(xhr.responseText));
+							} else {
+								reject("Invalid JSON.");
+							}
 						}
-					}
-				});
+					});
 
-				xhr.open("PUT", api + "activity/update.php", true);
-				xhr.send(JSON.stringify({ username:sessionUsername, token:sessionToken, txID:txID, id:id, symbol:symbol, date:date, amount:amount, fee:fee, notes:notes, type:type, exchange:exchange, pair:pair, price:price, from:from, to:to }));
+					xhr.open("PUT", api + "activity/update.php", true);
+					xhr.send(JSON.stringify({ username:sessionUsername, token:sessionToken, txID:txID, id:id, symbol:symbol, date:date, amount:amount, fee:fee, notes:notes, type:type, exchange:exchange, pair:pair, price:price, from:from, to:to }));
+				}
 			} catch(e) {
 				reject(e);
 			}
@@ -4213,20 +4379,24 @@ document.addEventListener("DOMContentLoaded", async () => {
 	function deleteActivity(txID) {
 		return new Promise((resolve, reject) => {
 			try {
-				let xhr = new XMLHttpRequest();
+				if(!empty(noAPI)) {
+					resolve(noAPI.deleteActivity(txID));
+				} else {
+					let xhr = new XMLHttpRequest();
 
-				xhr.addEventListener("readystatechange", () => {
-					if(xhr.readyState === XMLHttpRequest.DONE) {
-						if(validJSON(xhr.responseText)) {
-							resolve(JSON.parse(xhr.responseText));
-						} else {
-							reject("Invalid JSON.");
+					xhr.addEventListener("readystatechange", () => {
+						if(xhr.readyState === XMLHttpRequest.DONE) {
+							if(validJSON(xhr.responseText)) {
+								resolve(JSON.parse(xhr.responseText));
+							} else {
+								reject("Invalid JSON.");
+							}
 						}
-					}
-				});
+					});
 
-				xhr.open("DELETE", api + "activity/delete.php", true);
-				xhr.send(JSON.stringify({ username:sessionUsername, token:sessionToken, txID:txID }));
+					xhr.open("DELETE", api + "activity/delete.php", true);
+					xhr.send(JSON.stringify({ username:sessionUsername, token:sessionToken, txID:txID }));
+				}
 			} catch(e) {
 				reject(e);
 			}
@@ -4291,40 +4461,58 @@ document.addEventListener("DOMContentLoaded", async () => {
 	}
 
 	function importActivity(rows) {
-		let xhr = new XMLHttpRequest();
+		if(!empty(noAPI)) {
+			let response = noAPI.importActivity(rows);
 
-		xhr.addEventListener("readystatechange", () => {
-			if(xhr.readyState === XMLHttpRequest.DONE) {
-				if(validJSON(xhr.responseText)) {
-					let response = JSON.parse(xhr.responseText);
+			if("error" in response) {
+				Notify.error({
+					title:"Error",
+					description:response.error
+				});
+			} else {
+				Notify.success({
+					title:"Activity Imported",
+					description:response.message
+				});
+			}
+		} else {
+			let xhr = new XMLHttpRequest();
 
-					if("error" in response) {
+			xhr.addEventListener("readystatechange", () => {
+				if(xhr.readyState === XMLHttpRequest.DONE) {
+					if(validJSON(xhr.responseText)) {
+						let response = JSON.parse(xhr.responseText);
+
+						if("error" in response) {
+							Notify.error({
+								title:"Error",
+								description:response.error
+							});
+						} else {
+							Notify.success({
+								title:"Activity Imported",
+								description:response.message
+							});
+						}
+					} else {
 						Notify.error({
 							title:"Error",
-							description:response.error
-						});
-					} else {
-						Notify.success({
-							title:"Activity Imported",
-							description:response.message
+							description:"Invalid JSON."
 						});
 					}
-				} else {
-					Notify.error({
-						title:"Error",
-						description:"Invalid JSON."
-					});
 				}
-			}
-		});
+			});
 
-		xhr.open("POST", api + "activity/import.php", true);
-		xhr.send(JSON.stringify({ username:sessionUsername, token:sessionToken, rows:rows }));
+			xhr.open("POST", api + "activity/import.php", true);
+			xhr.send(JSON.stringify({ username:sessionUsername, token:sessionToken, rows:rows }));
+		}
 	}
 
 	function getCoin(id) {
 		return new Promise((resolve, reject) => {
 			try {
+				console.log("Fetching Coin...");
+
 				let xhr = new XMLHttpRequest();
 
 				xhr.addEventListener("readystatechange", () => {
@@ -4348,20 +4536,31 @@ document.addEventListener("DOMContentLoaded", async () => {
 	function getCoinID(key, value) {
 		return new Promise((resolve, reject) => {
 			try {
-				let xhr = new XMLHttpRequest();
+				if(!empty(noAPI)) {
+					noAPI.readCoins({ [key]:value }).then(response => {
+						resolve(response);
+					}).catch(e => {
+						console.log(e);
+						reject(e);
+					});
+				} else {
+					console.log("Fetching Coins... (API)");
 
-				xhr.addEventListener("readystatechange", () => {
-					if(xhr.readyState === XMLHttpRequest.DONE) {
-						if(validJSON(xhr.responseText)) {
-							resolve(JSON.parse(xhr.responseText));
-						} else {
-							reject("Invalid JSON.");
+					let xhr = new XMLHttpRequest();
+
+					xhr.addEventListener("readystatechange", () => {
+						if(xhr.readyState === XMLHttpRequest.DONE) {
+							if(validJSON(xhr.responseText)) {
+								resolve(JSON.parse(xhr.responseText));
+							} else {
+								reject("Invalid JSON.");
+							}
 						}
-					}
-				});
+					});
 
-				xhr.open("GET", api + "coins/read.php?token=" + sessionToken + "&username=" + sessionUsername + "&" + key + "=" + value, true);
-				xhr.send();
+					xhr.open("GET", api + "coins/read.php?token=" + sessionToken + "&username=" + sessionUsername + "&" + key + "=" + value, true);
+					xhr.send();
+				}
 			} catch(e) {
 				reject(e);
 			}
@@ -4371,6 +4570,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 	function getCoinInfo(id) {
 		return new Promise((resolve, reject) => {
 			try {
+				console.log("Fetching Coin Info...");
+
 				let xhr = new XMLHttpRequest();
 
 				xhr.addEventListener("readystatechange", () => {
@@ -4394,20 +4595,31 @@ document.addEventListener("DOMContentLoaded", async () => {
 	function getCoinHistoricalMarketData(ids, currency, from, to) {
 		return new Promise((resolve, reject) => {
 			try {
-				let xhr = new XMLHttpRequest();
+				if(!empty(noAPI)) {
+					noAPI.readHistorical(ids, currency, Math.floor(new Date(Date.parse(from)).getTime() / 1000), Math.floor(new Date(Date.parse(to)).getTime() / 1000), false).then(response => {
+						resolve(response);
+					}).catch(e => {
+						console.log(e);
+						reject(e);
+					});
+				} else {
+					console.log("Fetching Historical Data... (API)");
 
-				xhr.addEventListener("readystatechange", () => {
-					if(xhr.readyState === XMLHttpRequest.DONE) {
-						if(validJSON(xhr.responseText)) {
-							resolve(JSON.parse(xhr.responseText));
-						} else {
-							reject("Invalid JSON.");
+					let xhr = new XMLHttpRequest();
+
+					xhr.addEventListener("readystatechange", () => {
+						if(xhr.readyState === XMLHttpRequest.DONE) {
+							if(validJSON(xhr.responseText)) {
+								resolve(JSON.parse(xhr.responseText));
+							} else {
+								reject("Invalid JSON.");
+							}
 						}
-					}
-				});
+					});
 
-				xhr.open("GET", api + "historical/read.php?token=" + sessionToken + "&username=" + sessionUsername + "&ids=" + ids + "&currency=" + currency + "&from=" + new Date(Date.parse(from)).getTime() / 1000 + "&to=" + new Date(Date.parse(to)).getTime() / 1000, true);
-				xhr.send();
+					xhr.open("GET", api + "historical/read.php?token=" + sessionToken + "&username=" + sessionUsername + "&ids=" + ids + "&currency=" + currency + "&from=" + Math.floor(new Date(Date.parse(from)).getTime() / 1000) + "&to=" + Math.floor(new Date(Date.parse(to)).getTime() / 1000), true);
+					xhr.send();
+				}
 			} catch(e) {
 				reject(e);
 			}
@@ -4417,6 +4629,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 	function getCoinMarketData(ids) {
 		return new Promise((resolve, reject) => {
 			try {
+				console.log("Fetching Market Data...");
+
 				let xhr = new XMLHttpRequest();
 
 				xhr.addEventListener("readystatechange", () => {
@@ -4440,6 +4654,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 	function getCoinPrice(id, date) {
 		return new Promise((resolve, reject) => {
 			try {
+				console.log("Fetching Coin Price...");
+
 				let xhr = new XMLHttpRequest();
 
 				xhr.addEventListener("readystatechange", () => {
@@ -4486,6 +4702,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 	function getMarket(page, amount) {
 		return new Promise((resolve, reject) => {
 			try {
+				console.log("Fetching Market Data...");
+
 				let xhr = new XMLHttpRequest();
 
 				xhr.addEventListener("readystatechange", () => {
@@ -4601,6 +4819,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 	function verifySession(token) {
 		return new Promise((resolve, reject) => {
 			try {
+				console.log("Verifying Session...");
+
 				let xhr = new XMLHttpRequest();
 
 				xhr.addEventListener("readystatechange", () => {
@@ -4624,20 +4844,24 @@ document.addEventListener("DOMContentLoaded", async () => {
 	function getHoldings() {
 		return new Promise((resolve, reject) => {
 			try {
-				let xhr = new XMLHttpRequest();
+				if(!empty(noAPI)) {
+					resolve(noAPI.readHoldings());
+				} else {
+					let xhr = new XMLHttpRequest();
 
-				xhr.addEventListener("readystatechange", () => {
-					if(xhr.readyState === XMLHttpRequest.DONE) {
-						if(validJSON(xhr.responseText)) {
-							resolve(JSON.parse(xhr.responseText));
-						} else {
-							reject("Invalid JSON.");
+					xhr.addEventListener("readystatechange", () => {
+						if(xhr.readyState === XMLHttpRequest.DONE) {
+							if(validJSON(xhr.responseText)) {
+								resolve(JSON.parse(xhr.responseText));
+							} else {
+								reject("Invalid JSON.");
+							}
 						}
-					}
-				});
+					});
 
-				xhr.open("GET", api + "holdings/read.php?token=" + sessionToken + "&username=" + sessionUsername, true);
-				xhr.send();
+					xhr.open("GET", api + "holdings/read.php?token=" + sessionToken + "&username=" + sessionUsername, true);
+					xhr.send();
+				}
 			} catch(e) {
 				reject(e);
 			}
@@ -4647,6 +4871,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 	function parseHoldings(coins) {
 		return new Promise((resolve, reject) => {
 			try {
+				console.log("Fetching Holdings Market Data...");
+
 				let xhr = new XMLHttpRequest();
 
 				xhr.addEventListener("readystatechange", () => {
@@ -4706,20 +4932,24 @@ document.addEventListener("DOMContentLoaded", async () => {
 	function getActivity() {
 		return new Promise((resolve, reject) => {
 			try {
-				let xhr = new XMLHttpRequest();
+				if(!empty(noAPI)) {
+					resolve(noAPI.readActivity());
+				} else {
+					let xhr = new XMLHttpRequest();
 
-				xhr.addEventListener("readystatechange", () => {
-					if(xhr.readyState === XMLHttpRequest.DONE) {
-						if(validJSON(xhr.responseText)) {
-							resolve(JSON.parse(xhr.responseText));
-						} else {
-							reject("Invalid JSON.");
+					xhr.addEventListener("readystatechange", () => {
+						if(xhr.readyState === XMLHttpRequest.DONE) {
+							if(validJSON(xhr.responseText)) {
+								resolve(JSON.parse(xhr.responseText));
+							} else {
+								reject("Invalid JSON.");
+							}
 						}
-					}
-				});
+					});
 
-				xhr.open("GET", api + "activity/read.php?token=" + sessionToken + "&username=" + sessionUsername, true);
-				xhr.send();
+					xhr.open("GET", api + "activity/read.php?token=" + sessionToken + "&username=" + sessionUsername, true);
+					xhr.send();
+				}
 			} catch(e) {
 				reject(e);
 			}
@@ -4849,20 +5079,24 @@ document.addEventListener("DOMContentLoaded", async () => {
 	function deleteCache() {
 		return new Promise((resolve, reject) => {
 			try {
-				let xhr = new XMLHttpRequest();
+				if(!empty(noAPI)) {
+					resolve(noAPI.deleteHistorical());
+				} else {
+					let xhr = new XMLHttpRequest();
 
-				xhr.addEventListener("readystatechange", () => {
-					if(xhr.readyState === XMLHttpRequest.DONE) {
-						if(validJSON(xhr.responseText)) {
-							resolve(JSON.parse(xhr.responseText));
-						} else {
-							reject("Invalid JSON.");
+					xhr.addEventListener("readystatechange", () => {
+						if(xhr.readyState === XMLHttpRequest.DONE) {
+							if(validJSON(xhr.responseText)) {
+								resolve(JSON.parse(xhr.responseText));
+							} else {
+								reject("Invalid JSON.");
+							}
 						}
-					}
-				});
+					});
 
-				xhr.open("DELETE", api + "historical/delete.php", true);
-				xhr.send(JSON.stringify({ username:sessionUsername, token:sessionToken }));
+					xhr.open("DELETE", api + "historical/delete.php", true);
+					xhr.send(JSON.stringify({ username:sessionUsername, token:sessionToken }));
+				}
 			} catch(e) {
 				reject(e);
 			}
@@ -4877,6 +5111,20 @@ document.addEventListener("DOMContentLoaded", async () => {
 		frame.addEventListener("load", () => {
 			frame.remove();
 		});
+	}
+
+	function downloadCSV(csv, filename) {
+		let content = "data:text/csv;charset=utf-8," + csv;
+		let encoded = encodeURI(content);
+		let link = document.createElement("a");
+		link.setAttribute("href", encoded);
+		link.setAttribute("download", filename);
+		link.classList.add("hidden");
+		document.body.appendChild(link);
+		link.click();
+		setTimeout(() => {
+			link.remove();
+		}, 500);
 	}
 });
 

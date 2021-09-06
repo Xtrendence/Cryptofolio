@@ -6,7 +6,7 @@ import LinearGradient from "react-native-linear-gradient";
 import NoAPI from "../utils/api";
 import { globalColors, globalStyles } from "../styles/global";
 import { ThemeContext } from "../utils/theme";
-import { empty, separateThousands, abbreviateNumber, epoch, wait, currencies, capitalizeFirstLetter } from "../utils/utils";
+import { empty, separateThousands, abbreviateNumber, epoch, wait, currencies, capitalizeFirstLetter, validJSON } from "../utils/utils";
 import styles from "../styles/Dashboard";
 import { getWatchlist, createWatchlist, deleteWatchlist, getCoinID } from "../utils/requests";
 
@@ -530,22 +530,206 @@ export default function Dashboard({ navigation }) {
 
 		let theme = empty(await AsyncStorage.getItem("theme")) ? "Light" : await AsyncStorage.getItem("theme");
 
-		let api = await AsyncStorage.getItem("api");
-		let token = await AsyncStorage.getItem("token");
-		let username = await AsyncStorage.getItem("username");
+		if(empty(await AsyncStorage.getItem("NoAPIMode"))) {
+			let api = await AsyncStorage.getItem("api");
+			let token = await AsyncStorage.getItem("token");
+			let username = await AsyncStorage.getItem("username");
 
-		let endpoint = api + "holdings/read.php?platform=app&token=" + token + "&username=" + username;
+			let endpoint = api + "holdings/read.php?platform=app&token=" + token + "&username=" + username;
 
-		fetch(endpoint, {
-			method: "GET",
-			headers: {
-				Accept: "application/json", "Content-Type": "application/json"
+			fetch(endpoint, {
+				method: "GET",
+				headers: {
+					Accept: "application/json", "Content-Type": "application/json"
+				}
+			})
+			.then((response) => {
+				return response.json();
+			})
+			.then(async (coins) => {
+				if(Object.keys(coins).length === 0 && transactionsAffectHoldings !== "override" && transactionsAffectHoldings !== "mixed") {
+					if(navigation.isFocused()) {
+						setHoldingsData([<Text key="empty" style={[styles.loadingText, styles.headerText, styles[`headerText${theme}`]]}>No Holdings Found.</Text>]);
+						setHoldingsValue("-");
+					}
+				} else {
+					let transactionsBySymbol;
+
+					if(transactionsAffectHoldings === "mixed") {
+						transactionsBySymbol = await getActivityHoldings();
+
+						let ids = Object.keys(transactionsBySymbol);
+						ids.map(id => {
+							if(!(id in coins)) {
+								coins[id] = { amount:0, symbol:transactionsBySymbol[id].symbol };
+							}
+						});
+					} else if(transactionsAffectHoldings === "override") {
+						transactionsBySymbol = await getActivityHoldings();
+
+						coins = {};
+
+						let ids = Object.keys(transactionsBySymbol);
+						ids.map(id => {
+							if(transactionsBySymbol[id].amount > 0) {
+								coins[id] = { amount:transactionsBySymbol[id].amount, symbol:transactionsBySymbol[id].symbol };
+							}
+						});
+					}
+
+					parseHoldings(coins).then(async holdings => {
+						let data = [];
+
+						data.push(
+							<View style={styles.row} key={epoch() + "holdings-header"}>
+								<Text style={[styles.headerText, styles[`headerText${theme}`], styles.headerRank]}>#</Text>
+								<Text style={[styles.headerText, styles[`headerText${theme}`], styles.headerCoin]}>Coin</Text>
+								<Text style={[styles.headerText, styles[`headerText${theme}`], styles.headerAmount]}>Amount</Text>
+								{ (additionalDashboardColumns === "enabled") &&
+									<View style={{ flexDirection:"row" }}>
+										<Text style={[styles.headerText, styles[`headerText${theme}`], styles.headerValue]}>Value</Text>
+										<Text style={[styles.headerText, styles[`headerText${theme}`], styles.headerDay]}>24h Change</Text>
+									</View>
+								}
+							</View>
+						);
+
+						let rank = 0;
+						
+						let mixedValue = 0;
+
+						let keys = Object.keys(holdings);
+
+						switch(sortItem) {
+							case "coin":
+								keys.sort((a, b) => {
+									return holdings[b].symbol.charAt(0).localeCompare(holdings[a].symbol.charAt(0));
+								});
+								break;
+							case "amount":
+								keys.sort((a, b) => {
+									return holdings[b].amount - holdings[a].amount;
+								});
+								break;
+							case "value":
+								keys.sort((a, b) => {
+									return holdings[b].value - holdings[a].value;
+								});
+								break;
+							case "change":
+								keys.sort((a, b) => {
+									return parseFloat(holdings[b].change) - parseFloat(holdings[a].change);
+								});
+								break;
+						}
+
+						if(sortOrder !== "descending") {
+							keys.reverse();
+						}
+
+						keys.map(holding => {
+							rank += 1;
+
+							let coin = holdings[holding];
+
+							let icon = coin.image;
+							let amount = coin.amount;
+							let symbol = coin.symbol;
+							let value = separateThousands(abbreviateNumber(coin.value.toFixed(2), 2));
+
+							let day = coin.change.includes("-") ? coin.change + "%" : "+" + coin.change + "%";
+
+							if(!empty(transactionsBySymbol)) {
+								if(transactionsAffectHoldings === "mixed") {
+									if(holding in transactionsBySymbol) {
+										amount = parseFloat(amount) + transactionsBySymbol[holding].amount;
+										value = (coin.price * amount).toFixed(2);
+										mixedValue += parseFloat(value.replaceAll(",", ""));
+										value = separateThousands(abbreviateNumber(parseFloat(value.replaceAll(",", "")), 2));
+									}
+								}
+							}
+
+							let change = parseFloat(coin.change);
+
+							let changeType = "";
+							if(change > 0) {
+								changeType = "Positive";
+							} else if(change === 0) {
+								changeType = "None"
+							} else {
+								changeType = "Negative";
+							}
+
+							let highlightRow = `rowHighlight${capitalizeFirstLetter(highlightPriceChange)}${changeType}${theme}`;
+							let highlightText = `cellHighlight${capitalizeFirstLetter(highlightPriceChange)}${changeType}${theme}`;
+
+							if(amount < 0) {
+								amount = 0;
+							}
+
+							if(value < 0) {
+								value = 0;
+							}
+
+							data.push(
+								<View key={epoch() + holding} style={[styles.row, styles[highlightRow]]}>
+									<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellRank, styles[highlightText]]}>{rank}</Text>
+									<Image style={styles.cellImage} source={{uri:icon}}/>
+									<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellSymbol, styles[highlightText]]}>{symbol}</Text>
+									<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellAmount, styles[highlightText]]}>{separateThousands(amount)}</Text>
+									{ (additionalDashboardColumns === "enabled") &&
+										<View style={{ flexDirection:"row" }}>
+											<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellValue, styles[highlightText]]} ellipsizeMode="tail">{currencies[currency] + value}</Text>
+											<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellDay, styles[highlightText]]}>{day}</Text>
+										</View>
+									}
+								</View>
+							);
+						});
+
+						if(mixedValue > 0 && navigation.isFocused()) {
+							let currency = await AsyncStorage.getItem("currency");
+							if(empty(currency)) {
+								currency = "usd";
+							}
+
+							let totalValue = holdingsValue;
+
+							if(!isNaN(totalValue)) {
+								totalValue += mixedValue;
+							} else {
+								totalValue = mixedValue;
+							}
+
+							if(screenWidth > 380) {
+								setHoldingsValue(currencies[currency] + separateThousands(totalValue.toFixed(2)));
+							} else {
+								setHoldingsValue(currencies[currency] + abbreviateNumber(totalValue, 2));
+							}
+						}
+
+						if(navigation.isFocused()) {
+							setHoldingsData(data);
+						}
+					}).catch(e => {
+						console.log(e);
+					});
+				}
+			}).catch(error => {
+				console.log(error);
+			});
+		} else {
+			let data = await AsyncStorage.getItem("NoAPI");
+			if(validJSON(data)) {
+				data = JSON.parse(data);
+			} else {
+				data = {};
 			}
-		})
-		.then((response) => {
-			return response.json();
-		})
-		.then(async (coins) => {
+
+			let noAPI = new NoAPI(data, "mobile", AsyncStorage);
+			let coins = noAPI.readHoldings();
+
 			if(Object.keys(coins).length === 0 && transactionsAffectHoldings !== "override" && transactionsAffectHoldings !== "mixed") {
 				if(navigation.isFocused()) {
 					setHoldingsData([<Text key="empty" style={[styles.loadingText, styles.headerText, styles[`headerText${theme}`]]}>No Holdings Found.</Text>]);
@@ -594,7 +778,7 @@ export default function Dashboard({ navigation }) {
 					);
 
 					let rank = 0;
-					
+						
 					let mixedValue = 0;
 
 					let keys = Object.keys(holdings);
@@ -715,9 +899,7 @@ export default function Dashboard({ navigation }) {
 					console.log(e);
 				});
 			}
-		}).catch(error => {
-			console.log(error);
-		});
+		}
 	}
 
 	function parseHoldings(coins) {
@@ -804,22 +986,65 @@ export default function Dashboard({ navigation }) {
 		console.log("Holdings - Getting Activity - " + epoch());
 
 		return new Promise(async (resolve, reject) => {
-			let api = await AsyncStorage.getItem("api");
-			let token = await AsyncStorage.getItem("token");
-			let username = await AsyncStorage.getItem("username");
+			if(empty(await AsyncStorage.getItem("NoAPIMode"))) {
+				let api = await AsyncStorage.getItem("api");
+				let token = await AsyncStorage.getItem("token");
+				let username = await AsyncStorage.getItem("username");
 
-			let endpoint = api + "activity/read.php?platform=app&token=" + token + "&username=" + username;
+				let endpoint = api + "activity/read.php?platform=app&token=" + token + "&username=" + username;
 
-			fetch(endpoint, {
-				method: "GET",
-				headers: {
-					Accept: "application/json", "Content-Type": "application/json"
+				fetch(endpoint, {
+					method: "GET",
+					headers: {
+						Accept: "application/json", "Content-Type": "application/json"
+					}
+				})
+				.then((response) => {
+					return response.json();
+				})
+				.then(async (events) => {
+					let txIDs = Object.keys(events);
+
+					let sorted = {};
+
+					txIDs.map(txID => {
+						let transaction = events[txID];
+						let id = transaction.id;
+						let symbol = transaction.symbol;
+						let type = transaction.type;
+						let amount = parseFloat(transaction.amount);
+
+						if(!(id in sorted)) {
+							sorted[id] = { amount:0, symbol:symbol };
+						}
+				
+						if(type === "sell") {
+							let subtracted = parseFloat(sorted[id].amount) - amount;
+							if(subtracted < 0) {
+								subtracted = 0;
+							}
+							sorted[id].amount = subtracted;
+						} else if(type === "buy") {
+							sorted[id].amount = parseFloat(sorted[id].amount) + amount;
+						}
+					});
+
+					resolve(sorted);
+				}).catch(error => {
+					console.log(arguments.callee.name + " - " + error);
+					reject(error);
+				});
+			} else {
+				let data = await AsyncStorage.getItem("NoAPI");
+				if(validJSON(data)) {
+					data = JSON.parse(data);
+				} else {
+					data = {};
 				}
-			})
-			.then((response) => {
-				return response.json();
-			})
-			.then(async (events) => {
+
+				let noAPI = new NoAPI(data, "mobile", AsyncStorage);
+				let events = noAPI.readActivity();
+
 				let txIDs = Object.keys(events);
 
 				let sorted = {};
@@ -834,7 +1059,7 @@ export default function Dashboard({ navigation }) {
 					if(!(id in sorted)) {
 						sorted[id] = { amount:0, symbol:symbol };
 					}
-			
+				
 					if(type === "sell") {
 						let subtracted = parseFloat(sorted[id].amount) - amount;
 						if(subtracted < 0) {
@@ -847,10 +1072,7 @@ export default function Dashboard({ navigation }) {
 				});
 
 				resolve(sorted);
-			}).catch(error => {
-				console.log(arguments.callee.name + " - " + error);
-				reject(error);
-			});
+			}
 		});
 	}
 }

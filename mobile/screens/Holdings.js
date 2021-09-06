@@ -827,27 +827,44 @@ export default function Holdings({ navigation }) {
 		console.log("Holdings - Getting Coin Market Data - " + epoch());
 
 		return new Promise(async (resolve, reject) => {
-			let api = await AsyncStorage.getItem("api");
-			let token = await AsyncStorage.getItem("token");
-			let username = await AsyncStorage.getItem("username");
+			if(empty(await AsyncStorage.getItem("NoAPIMode"))) {
+				let api = await AsyncStorage.getItem("api");
+				let token = await AsyncStorage.getItem("token");
+				let username = await AsyncStorage.getItem("username");
 
-			let endpoint = api + "historical/read.php?token=" + token + "&username=" + username + "&ids=" + ids + "&currency=" + currency + "&from=" + new Date(Date.parse(from)).getTime() / 1000 + "&to=" + new Date(Date.parse(to)).getTime() / 1000;
+				let endpoint = api + "historical/read.php?token=" + token + "&username=" + username + "&ids=" + ids + "&currency=" + currency + "&from=" + new Date(Date.parse(from)).getTime() / 1000 + "&to=" + new Date(Date.parse(to)).getTime() / 1000;
 
-			fetch(endpoint, {
-				method: "GET",
-				headers: {
-					Accept: "application/json", "Content-Type": "application/json"
+				fetch(endpoint, {
+					method: "GET",
+					headers: {
+						Accept: "application/json", "Content-Type": "application/json"
+					}
+				})
+				.then((json) => {
+					return json.json();
+				})
+				.then(async (response) => {
+					resolve(response);
+				}).catch(error => {
+					console.log(arguments.callee.name + " - " + error);
+					reject(error);
+				});
+			} else {
+				let data = await AsyncStorage.getItem("NoAPI");
+				if(validJSON(data)) {
+					data = JSON.parse(data);
+				} else {
+					data = {};
 				}
-			})
-			.then((json) => {
-				return json.json();
-			})
-			.then(async (response) => {
-				resolve(response);
-			}).catch(error => {
-				console.log(arguments.callee.name + " - " + error);
-				reject(error);
-			});
+
+				let noAPI = new NoAPI(data, "mobile", AsyncStorage);
+				noAPI.readHistorical(ids, currency, Math.floor(new Date(Date.parse(from)).getTime() / 1000), Math.floor(new Date(Date.parse(to)).getTime() / 1000), false).then(response => {
+					resolve(response);
+				}).catch(error => {
+					console.log(error);
+					reject(error);
+				});
+			}
 		});
 	}
 
@@ -943,18 +960,81 @@ export default function Holdings({ navigation }) {
 			} else {
 				let symbol = coin.symbol;
 
-				let endpoint = api + "holdings/create.php";
-				let method = "POST";
-				let body = { token:token, username:username, id:id, symbol:symbol, amount:amount };
+				if(empty(await AsyncStorage.getItem("NoAPIMode"))) {
+					let endpoint = api + "holdings/create.php";
+					let method = "POST";
+					let body = { token:token, username:username, id:id, symbol:symbol, amount:amount };
 
-				if(action === "update") {
-					endpoint = api + "holdings/update.php";
-					method = "PUT";
-					body = { token:token, username:username, id:id, amount:amount };
+					if(action === "update") {
+						endpoint = api + "holdings/update.php";
+						method = "PUT";
+						body = { token:token, username:username, id:id, amount:amount };
+					}
+
+					fetch(endpoint, {
+						method: method,
+						body: JSON.stringify(body),
+						headers: {
+							Accept: "application/json", "Content-Type": "application/json"
+						}
+					})
+					.then((json) => {
+						return json.json();
+					})
+					.then(async (response) => {
+						if("message" in response) {
+							hideModal();
+							getHoldings();
+						} else {
+							setModalMessage(response.error);
+						}
+					}).catch(error => {
+						console.log(error);
+					});
+				} else {
+					let data = await AsyncStorage.getItem("NoAPI");
+					if(validJSON(data)) {
+						data = JSON.parse(data);
+					} else {
+						data = {};
+					}
+
+					let noAPI = new NoAPI(data, "mobile", AsyncStorage);
+					let response;
+					if(action === "update") {
+						response = noAPI.updateHoldings(id, amount);
+					} else {
+						response = noAPI.createHoldings(id, symbol, amount);
+					}
+
+					if("message" in response) {
+						hideModal();
+						getHoldings();
+					} else {
+						setModalMessage(response.error);
+					}
 				}
+			}
+		}).catch(error => {
+			console.log(error);
+		});
+	}
+
+	async function deleteHolding(id) {
+		if(!empty(id)) {
+			id = id.toLowerCase().replaceAll(" ", "-");
+
+			if(empty(await AsyncStorage.getItem("NoAPIMode"))) {
+				let api = await AsyncStorage.getItem("api");
+				let token = await AsyncStorage.getItem("token");
+				let username = await AsyncStorage.getItem("username");
+
+				let endpoint = api + "holdings/delete.php";
+
+				let body = { token:token, username:username, id:id };
 
 				fetch(endpoint, {
-					method: method,
+					method: "DELETE",
 					body: JSON.stringify(body),
 					headers: {
 						Accept: "application/json", "Content-Type": "application/json"
@@ -973,44 +1053,24 @@ export default function Holdings({ navigation }) {
 				}).catch(error => {
 					console.log(error);
 				});
-			}
-		}).catch(error => {
-			console.log(error);
-		});
-	}
-
-	async function deleteHolding(id) {
-		if(!empty(id)) {
-			id = id.toLowerCase().replaceAll(" ", "-");
-
-			let api = await AsyncStorage.getItem("api");
-			let token = await AsyncStorage.getItem("token");
-			let username = await AsyncStorage.getItem("username");
-
-			let endpoint = api + "holdings/delete.php";
-
-			let body = { token:token, username:username, id:id };
-
-			fetch(endpoint, {
-				method: "DELETE",
-				body: JSON.stringify(body),
-				headers: {
-					Accept: "application/json", "Content-Type": "application/json"
+			} else {
+				let data = await AsyncStorage.getItem("NoAPI");
+				if(validJSON(data)) {
+					data = JSON.parse(data);
+				} else {
+					data = {};
 				}
-			})
-			.then((json) => {
-				return json.json();
-			})
-			.then(async (response) => {
+
+				let noAPI = new NoAPI(data, "mobile", AsyncStorage);
+				let response = noAPI.deleteHoldings(id);
+
 				if("message" in response) {
 					hideModal();
 					getHoldings();
 				} else {
 					setModalMessage(response.error);
 				}
-			}).catch(error => {
-				console.log(error);
-			});
+			}
 		} else {
 			setModalMessage("Coin ID field must be filled out.");
 		}
@@ -1044,22 +1104,174 @@ export default function Holdings({ navigation }) {
 		
 		let theme = empty(await AsyncStorage.getItem("theme")) ? "Light" : await AsyncStorage.getItem("theme");
 
-		let api = await AsyncStorage.getItem("api");
-		let token = await AsyncStorage.getItem("token");
-		let username = await AsyncStorage.getItem("username");
+		if(empty(await AsyncStorage.getItem("NoAPIMode"))) {
+			let api = await AsyncStorage.getItem("api");
+			let token = await AsyncStorage.getItem("token");
+			let username = await AsyncStorage.getItem("username");
 
-		let endpoint = api + "holdings/read.php?platform=app&token=" + token + "&username=" + username;
+			let endpoint = api + "holdings/read.php?platform=app&token=" + token + "&username=" + username;
 
-		fetch(endpoint, {
-			method: "GET",
-			headers: {
-				Accept: "application/json", "Content-Type": "application/json"
+			fetch(endpoint, {
+				method: "GET",
+				headers: {
+					Accept: "application/json", "Content-Type": "application/json"
+				}
+			})
+			.then((response) => {
+				return response.json();
+			})
+			.then(async (coins) => {
+				if(Object.keys(coins).length === 0 && transactionsAffectHoldings !== "override" && transactionsAffectHoldings !== "mixed") {
+					if(navigation.isFocused()) {
+						setHoldingsData([<Text key="empty" style={[styles.headerText, styles[`headerText${theme}`], { marginLeft:20 }]}>No Holdings Found.</Text>]);
+						setHoldingsValue("-");
+					}
+				} else {
+					let transactionsBySymbol;
+
+					if(transactionsAffectHoldings === "mixed") {
+						transactionsBySymbol = processActivity(await getActivity());
+
+						let ids = Object.keys(transactionsBySymbol);
+						ids.map(id => {
+							if(!(id in coins)) {
+								coins[id] = { amount:0, symbol:transactionsBySymbol[id].symbol };
+							}
+						});
+					} else if(transactionsAffectHoldings === "override") {
+						transactionsBySymbol = processActivity(await getActivity());
+
+						coins = {};
+
+						let ids = Object.keys(transactionsBySymbol);
+						ids.map(id => {
+							if(transactionsBySymbol[id].amount > 0) {
+								coins[id] = { amount:transactionsBySymbol[id].amount, symbol:transactionsBySymbol[id].symbol };
+							}
+						});
+					}
+
+					let holdingsObject = {};
+
+					parseHoldings(coins).then(async holdings => {
+						let data = [];
+
+						data.push(
+							<View style={styles.row} key={epoch() + "holdings-header"}>
+								<Text style={[styles.headerText, styles[`headerText${theme}`], styles.headerRank]} ellipsizeMode="tail">#</Text>
+								<Text style={[styles.headerText, styles[`headerText${theme}`], styles.headerCoin]} ellipsizeMode="tail">Coin</Text>
+								<Text style={[styles.headerText, styles[`headerText${theme}`], styles.headerAmount]} ellipsizeMode="tail">Amount</Text>
+								<Text style={[styles.headerText, styles[`headerText${theme}`], styles.headerValue]} ellipsizeMode="tail">Value</Text>
+							</View>
+						);
+
+						let rank = 0;
+
+						let mixedValue = 0;
+
+						Object.keys(holdings).map(holding => {
+							rank += 1;
+
+							let coin = holdings[holding];
+
+							let icon = coin.image;
+							let amount = coin.amount;
+							let symbol = coin.symbol;
+							let change = parseFloat(coin.change);
+							let value = separateThousands(abbreviateNumber(coin.value.toFixed(2), 2));
+
+							holdingsObject[holding] = { amount:amount, value:coin.value };
+
+							if(!empty(transactionsBySymbol)) {
+								if(transactionsAffectHoldings === "mixed") {
+									if(holding in transactionsBySymbol) {
+										amount = parseFloat(amount) + transactionsBySymbol[holding].amount;
+										value = (coin.price * amount).toFixed(2);
+										mixedValue += parseFloat(value.replaceAll(",", ""));
+										value = separateThousands(abbreviateNumber(parseFloat(value.replaceAll(",", "")), 2));
+									}
+								}
+							}
+
+							if(amount < 0) {
+								amount = 0;
+							}
+
+							if(value < 0) {
+								value = 0;
+							}
+
+							let changeType = "";
+							if(change > 0) {
+								changeType = "Positive";
+							} else if(change === 0) {
+								changeType = "None"
+							} else {
+								changeType = "Negative";
+							}
+
+							let highlightRow = `rowHighlight${capitalizeFirstLetter(highlightPriceChange)}${changeType}${theme}`;
+							let highlightText = `cellHighlight${capitalizeFirstLetter(highlightPriceChange)}${changeType}${theme}`;
+
+							if(value !== 0) {
+								data.push(
+									<TouchableOpacity onPress={() => { openModal(transactionsAffectHoldings, "update", capitalizeFirstLetter(holding), symbol.toUpperCase(), amount.toString(), coin.value)}} key={epoch() + holding}>
+										<View style={[styles.row, rank % 2 ? {...styles.rowOdd, ...styles[`rowOdd${theme}`]} : null, styles[highlightRow]]}>
+											<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellRank, styles[highlightText]]} ellipsizeMode="tail">{rank}</Text>
+											<Image style={styles.cellImage} source={{uri:icon}}/>
+											<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellSymbol, styles[highlightText]]} ellipsizeMode="tail">{symbol}</Text>
+											<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellAmount, styles[highlightText]]} ellipsizeMode="tail">{separateThousands(amount)}</Text>
+											<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellValue, styles[highlightText]]} ellipsizeMode="tail">{currencies[currency] + value}</Text>
+										</View>
+									</TouchableOpacity>
+								);
+							}
+						});
+
+						setHoldingsCache(holdingsObject);
+
+						if(mixedValue > 0 && navigation.isFocused()) {
+							let currency = await AsyncStorage.getItem("currency");
+							if(empty(currency)) {
+								currency = "usd";
+							}
+
+							let totalValue = holdingsValue;
+
+							if(!isNaN(totalValue)) {
+								totalValue += mixedValue;
+							} else {
+								totalValue = mixedValue;
+							}
+
+							if(screenWidth > 380) {
+								setHoldingsValue(currencies[currency] + separateThousands(totalValue.toFixed(2)));
+							} else {
+								setHoldingsValue(currencies[currency] + abbreviateNumber(totalValue, 2));
+							}
+						}
+
+						if(navigation.isFocused()) {
+							setHoldingsData(data);
+						}
+					}).catch(e => {
+						console.log(e);
+					});
+				}
+			}).catch(error => {
+				console.log(arguments.callee.name + " - " + error);
+			});
+		} else {
+			let data = await AsyncStorage.getItem("NoAPI");
+			if(validJSON(data)) {
+				data = JSON.parse(data);
+			} else {
+				data = {};
 			}
-		})
-		.then((response) => {
-			return response.json();
-		})
-		.then(async (coins) => {
+
+			let noAPI = new NoAPI(data, "mobile", AsyncStorage);
+			let coins = noAPI.readHoldings();
+
 			if(Object.keys(coins).length === 0 && transactionsAffectHoldings !== "override" && transactionsAffectHoldings !== "mixed") {
 				if(navigation.isFocused()) {
 					setHoldingsData([<Text key="empty" style={[styles.headerText, styles[`headerText${theme}`], { marginLeft:20 }]}>No Holdings Found.</Text>]);
@@ -1197,9 +1409,7 @@ export default function Holdings({ navigation }) {
 					console.log(e);
 				});
 			}
-		}).catch(error => {
-			console.log(arguments.callee.name + " - " + error);
-		});
+		}
 	}
 
 	function parseHoldings(coins) {
@@ -1286,27 +1496,39 @@ export default function Holdings({ navigation }) {
 		console.log("Holdings - Getting Activity - " + epoch());
 
 		return new Promise(async (resolve, reject) => {
-			let api = await AsyncStorage.getItem("api");
-			let token = await AsyncStorage.getItem("token");
-			let username = await AsyncStorage.getItem("username");
+			if(empty(await AsyncStorage.getItem("NoAPIMode"))) {
+				let api = await AsyncStorage.getItem("api");
+				let token = await AsyncStorage.getItem("token");
+				let username = await AsyncStorage.getItem("username");
 
-			let endpoint = api + "activity/read.php?platform=app&token=" + token + "&username=" + username;
+				let endpoint = api + "activity/read.php?platform=app&token=" + token + "&username=" + username;
 
-			fetch(endpoint, {
-				method: "GET",
-				headers: {
-					Accept: "application/json", "Content-Type": "application/json"
+				fetch(endpoint, {
+					method: "GET",
+					headers: {
+						Accept: "application/json", "Content-Type": "application/json"
+					}
+				})
+				.then((response) => {
+					return response.json();
+				})
+				.then(async (events) => {
+					resolve(events);
+				}).catch(error => {
+					console.log(arguments.callee.name + " - " + error);
+					reject(error);
+				});
+			} else {
+				let data = await AsyncStorage.getItem("NoAPI");
+				if(validJSON(data)) {
+					data = JSON.parse(data);
+				} else {
+					data = {};
 				}
-			})
-			.then((response) => {
-				return response.json();
-			})
-			.then(async (events) => {
-				resolve(events);
-			}).catch(error => {
-				console.log(arguments.callee.name + " - " + error);
-				reject(error);
-			});
+
+				let noAPI = new NoAPI(data, "mobile", AsyncStorage);
+				resolve(noAPI.readActivity());
+			}
 		});
 	}
 

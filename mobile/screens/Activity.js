@@ -274,82 +274,18 @@ export default function Activity({ navigation }) {
 	}
 
 	async function createActivity(id, symbol, date, amount, fee, notes, type, exchange, pair, price, from, to) {
-		let api = await AsyncStorage.getItem("api");
-		let token = await AsyncStorage.getItem("token");
-		let username = await AsyncStorage.getItem("username");
-
-		let endpoint = api + "activity/create.php";
-
-		let body = { token:token, username:username, id:id, symbol:symbol, date:date, amount:amount, fee:fee, notes:notes, type:type, exchange:exchange, pair:pair, price:price, from:from, to:to };
-
-		fetch(endpoint, {
-			body: JSON.stringify(body),
-			method: "POST",
-			headers: {
-				Accept: "application/json", "Content-Type": "application/json"
-			}
-		})
-		.then((json) => {
-			return json.json();
-		})
-		.then(async (response) => {
-			if(!empty(response.error)) {
-				setModalMessage(response.error);
-			} else {
-				hideModal();
-				getActivity();
-			}
-		}).catch(error => {
-			setModalMessage("Couldn't record activity. Make sure all fields are filled out.");
-			console.log(error);
-		});
-	}
-	
-	async function updateActivity(txID, id, symbol, date, amount, fee, notes, type, exchange, pair, price, from, to) {
-		let api = await AsyncStorage.getItem("api");
-		let token = await AsyncStorage.getItem("token");
-		let username = await AsyncStorage.getItem("username");
-
-		let endpoint = api + "activity/update.php";
-
-		let body = { token:token, username:username, txID:txID, id:id, symbol:symbol, date:date, amount:amount, fee:fee, notes:notes, type:type, exchange:exchange, pair:pair, price:price, from:from, to:to };
-
-		fetch(endpoint, {
-			body: JSON.stringify(body),
-			method: "PUT",
-			headers: {
-				Accept: "application/json", "Content-Type": "application/json"
-			}
-		})
-		.then((json) => {
-			return json.json();
-		})
-		.then(async (response) => {
-			if(!empty(response.error)) {
-				setModalMessage(response.error);
-			} else {
-				hideModal();
-				getActivity();
-			}
-		}).catch(error => {
-			setModalMessage("Couldn't update activity. Make sure all fields are filled out.");
-			console.log(error);
-		});
-	}
-
-	async function deleteActivity(txID) {
-		if(!empty(txID)) {
+		if(empty(await AsyncStorage.getItem("NoAPIMode"))) {
 			let api = await AsyncStorage.getItem("api");
 			let token = await AsyncStorage.getItem("token");
 			let username = await AsyncStorage.getItem("username");
 
-			let endpoint = api + "activity/delete.php";
+			let endpoint = api + "activity/create.php";
 
-			let body = { token:token, username:username, txID:txID };
+			let body = { token:token, username:username, id:id, symbol:symbol, date:date, amount:amount, fee:fee, notes:notes, type:type, exchange:exchange, pair:pair, price:price, from:from, to:to };
 
 			fetch(endpoint, {
-				method: "DELETE",
 				body: JSON.stringify(body),
+				method: "POST",
 				headers: {
 					Accept: "application/json", "Content-Type": "application/json"
 				}
@@ -358,15 +294,136 @@ export default function Activity({ navigation }) {
 				return json.json();
 			})
 			.then(async (response) => {
+				if(!empty(response.error)) {
+					setModalMessage(response.error);
+				} else {
+					hideModal();
+					getActivity();
+				}
+			}).catch(error => {
+				setModalMessage("Couldn't record activity. Make sure all fields are filled out.");
+				console.log(error);
+			});
+		} else {
+			let data = await AsyncStorage.getItem("NoAPI");
+			if(validJSON(data)) {
+				data = JSON.parse(data);
+			} else {
+				data = {};
+			}
+
+			let noAPI = new NoAPI(data, "mobile", AsyncStorage);
+			let response = noAPI.createActivity(id, symbol, date, type, amount, fee, notes, exchange, pair, price, from, to);
+
+			if(!empty(response.error)) {
+				setModalMessage(response.error);
+			} else {
+				hideModal();
+				getActivity();
+			}
+		}
+	}
+	
+	async function updateActivity(txID, id, symbol, date, amount, fee, notes, type, exchange, pair, price, from, to) {
+		if(empty(await AsyncStorage.getItem("NoAPIMode"))) {
+			let api = await AsyncStorage.getItem("api");
+			let token = await AsyncStorage.getItem("token");
+			let username = await AsyncStorage.getItem("username");
+
+			let endpoint = api + "activity/update.php";
+
+			let body = { token:token, username:username, txID:txID, id:id, symbol:symbol, date:date, amount:amount, fee:fee, notes:notes, type:type, exchange:exchange, pair:pair, price:price, from:from, to:to };
+
+			fetch(endpoint, {
+				body: JSON.stringify(body),
+				method: "PUT",
+				headers: {
+					Accept: "application/json", "Content-Type": "application/json"
+				}
+			})
+			.then((json) => {
+				return json.json();
+			})
+			.then(async (response) => {
+				if(!empty(response.error)) {
+					setModalMessage(response.error);
+				} else {
+					hideModal();
+					getActivity();
+				}
+			}).catch(error => {
+				setModalMessage("Couldn't update activity. Make sure all fields are filled out.");
+				console.log(error);
+			});
+		} else {
+			let data = await AsyncStorage.getItem("NoAPI");
+			if(validJSON(data)) {
+				data = JSON.parse(data);
+			} else {
+				data = {};
+			}
+
+			let noAPI = new NoAPI(data, "mobile", AsyncStorage);
+			let response = noAPI.updateActivity(txID, id, symbol, date, type, amount, fee, notes, exchange, pair, price, from, to);
+
+			if(!empty(response.error)) {
+				setModalMessage(response.error);
+			} else {
+				hideModal();
+				getActivity();
+			}
+		}
+	}
+
+	async function deleteActivity(txID) {
+		if(!empty(txID)) {
+			if(empty(await AsyncStorage.getItem("NoAPIMode"))) {
+				let api = await AsyncStorage.getItem("api");
+				let token = await AsyncStorage.getItem("token");
+				let username = await AsyncStorage.getItem("username");
+
+				let endpoint = api + "activity/delete.php";
+
+				let body = { token:token, username:username, txID:txID };
+
+				fetch(endpoint, {
+					method: "DELETE",
+					body: JSON.stringify(body),
+					headers: {
+						Accept: "application/json", "Content-Type": "application/json"
+					}
+				})
+				.then((json) => {
+					return json.json();
+				})
+				.then(async (response) => {
+					if("message" in response) {
+						hideModal();
+						getActivity();
+					} else {
+						setModalMessage(response.error);
+					}
+				}).catch(error => {
+					console.log(error);
+				});
+			} else {
+				let data = await AsyncStorage.getItem("NoAPI");
+				if(validJSON(data)) {
+					data = JSON.parse(data);
+				} else {
+					data = {};
+				}
+
+				let noAPI = new NoAPI(data, "mobile", AsyncStorage);
+				let response = noAPI.deleteActivity(txID);
+
 				if("message" in response) {
 					hideModal();
 					getActivity();
 				} else {
 					setModalMessage(response.error);
 				}
-			}).catch(error => {
-				console.log(error);
-			});
+			}
 		} else {
 			setModalMessage("Activity not found.");
 		}
@@ -377,22 +434,86 @@ export default function Activity({ navigation }) {
 		
 		let theme = empty(await AsyncStorage.getItem("theme")) ? "Light" : await AsyncStorage.getItem("theme");
 
-		let api = await AsyncStorage.getItem("api");
-		let token = await AsyncStorage.getItem("token");
-		let username = await AsyncStorage.getItem("username");
+		if(empty(await AsyncStorage.getItem("NoAPIMode"))) {
+			let api = await AsyncStorage.getItem("api");
+			let token = await AsyncStorage.getItem("token");
+			let username = await AsyncStorage.getItem("username");
 
-		let endpoint = api + "activity/read.php?platform=app&token=" + token + "&username=" + username;
+			let endpoint = api + "activity/read.php?platform=app&token=" + token + "&username=" + username;
 
-		fetch(endpoint, {
-			method: "GET",
-			headers: {
-				Accept: "application/json", "Content-Type": "application/json"
+			fetch(endpoint, {
+				method: "GET",
+				headers: {
+					Accept: "application/json", "Content-Type": "application/json"
+				}
+			})
+			.then((response) => {
+				return response.json();
+			})
+			.then(async (events) => {
+				if(Object.keys(events).length === 0) {
+					if(navigation.isFocused()) {
+						setActivityData([<Text key="empty" style={[styles.loadingText, styles.headerText, styles[`headerText${theme}`], { marginLeft:20 }]}>No Activity Found...</Text>]);
+					}
+				} else {
+					events = sortActivity(events);
+
+					let data = [];
+
+					let index = 0;
+
+					Object.keys(events).map(txID => {
+						index += 1;
+
+						let activity = events[txID];
+		
+						let id = activity.id;
+						let symbol = activity.symbol.toUpperCase();
+						let date = activity.date;
+						let amount = activity.amount;
+						let fee = activity.fee?.toString();
+						let notes = activity.notes;
+						let type = capitalizeFirstLetter(activity.type);
+						let exchange = activity.exchange;
+						let pair = activity.pair;
+						let price = activity.price?.toString();
+						let from = activity.from;
+						let to = activity.to;
+
+						data.push(
+							<TouchableOpacity onPress={() => { setEventID(txID); setCoinID(id); setCoinSymbol(symbol); setEventDate(date); setEventType(type.toLowerCase()); setCoinAmount(amount); setEventFee(fee); setEventNotes(notes); setEventExchange(exchange); setCoinPair(pair); setCoinPrice(price); setEventFrom(from); setEventTo(to); setAction("update"); setModal(true)}} key={epoch() + txID}>
+								<View style={[styles.row, index % 2 ? null : {...styles.rowEven, ...styles[`rowEven${theme}`]}]}>
+									<View style={[styles.column, styles.columnLeft]}>
+										<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellDate]} ellipsizeMode="tail">{date}</Text>
+										<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellType]} ellipsizeMode="tail">{type} - {symbol}</Text>
+									</View>
+									<View style={[styles.column, styles.columnRight]}>
+										<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellAmount]} ellipsizeMode="tail">{amount}</Text>
+										<Text style={[styles.cellText, styles[`cellText${theme}`], styles.cellNotes]} ellipsizeMode="tail" numberOfLines={1}>{notes}</Text>
+									</View>
+								</View>
+							</TouchableOpacity>
+						);
+					});
+
+					if(navigation.isFocused()) {
+						setActivityData(data);
+					}
+				}
+			}).catch(error => {
+				console.log(arguments.callee.name + " - " + error);
+			});
+		} else {
+			let data = await AsyncStorage.getItem("NoAPI");
+			if(validJSON(data)) {
+				data = JSON.parse(data);
+			} else {
+				data = {};
 			}
-		})
-		.then((response) => {
-			return response.json();
-		})
-		.then(async (events) => {
+
+			let noAPI = new NoAPI(data, "mobile", AsyncStorage);
+			let events = noAPI.readActivity();
+
 			if(Object.keys(events).length === 0) {
 				if(navigation.isFocused()) {
 					setActivityData([<Text key="empty" style={[styles.loadingText, styles.headerText, styles[`headerText${theme}`], { marginLeft:20 }]}>No Activity Found...</Text>]);
@@ -408,7 +529,7 @@ export default function Activity({ navigation }) {
 					index += 1;
 
 					let activity = events[txID];
-	
+		
 					let id = activity.id;
 					let symbol = activity.symbol.toUpperCase();
 					let date = activity.date;
@@ -442,9 +563,7 @@ export default function Activity({ navigation }) {
 					setActivityData(data);
 				}
 			}
-		}).catch(error => {
-			console.log(arguments.callee.name + " - " + error);
-		});
+		}
 	}
 
 	function sortActivity(events) {

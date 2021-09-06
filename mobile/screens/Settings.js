@@ -417,20 +417,50 @@ export default function Settings({ navigation, route }) {
 	}
 
 	async function exportData(type) {
-		let api = await AsyncStorage.getItem("api");
-		let token = await AsyncStorage.getItem("token");
-		let username = await AsyncStorage.getItem("username");
+		if(empty(await AsyncStorage.getItem("NoAPIMode"))) {
+			let api = await AsyncStorage.getItem("api");
+			let token = await AsyncStorage.getItem("token");
+			let username = await AsyncStorage.getItem("username");
 
-		let endpoint = api + "holdings/export.php?token=" + token + "&username=" + username;
+			let endpoint = api + "holdings/export.php?token=" + token + "&username=" + username;
 
-		if(type === "activity") {
-			endpoint = api + "activity/export.php?token=" + token + "&username=" + username;
+			if(type === "activity") {
+				endpoint = api + "activity/export.php?token=" + token + "&username=" + username;
+			}
+
+			Linking.openURL(endpoint).catch(error => {
+				ToastAndroid.showWithGravity("Couldn't open the browser...", ToastAndroid.LONG, ToastAndroid.BOTTOM);
+				console.log(error);
+			});
+		} else {
+			let data = await AsyncStorage.getItem("NoAPI");
+			if(validJSON(data)) {
+				data = JSON.parse(data);
+			} else {
+				data = {};
+			}
+
+			let noAPI = new NoAPI(data, "mobile", AsyncStorage);
+			let filename;
+			let csv;
+			
+			if(type === "activity") {
+				filename = "Activity-" + Math.floor(new Date().getTime() / 1000) + ".csv";
+				csv = noAPI.exportActivity();
+			} else {
+				filename = "Holdings-" + Math.floor(new Date().getTime() / 1000) + ".csv"
+				csv = noAPI.exportHoldings();
+			}
+
+			let path = RNFS.DocumentDirectoryPath + "/" + filename;
+
+			RNFS.writeFile(path, csv, "utf8").then((success) => {
+				ToastAndroid.showWithGravity("Data exported to: " + path, ToastAndroid.LONG, ToastAndroid.BOTTOM);
+			}).catch((error) => {
+				ToastAndroid.showWithGravity("Couldn't export data...", ToastAndroid.LONG, ToastAndroid.BOTTOM);
+				console.log(error);
+			});
 		}
-
-		Linking.openURL(endpoint).catch(error => {
-			ToastAndroid.showWithGravity("Couldn't open the browser...", ToastAndroid.LONG, ToastAndroid.BOTTOM);
-			console.log(error);
-		});
 	}
 
 	async function importETHTokens(importTokens, address) {

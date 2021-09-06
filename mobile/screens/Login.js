@@ -49,6 +49,11 @@ export default function Login({ navigation, route }) {
 							<Text style={styles.text}>Login</Text>
 						</LinearGradient>
 					</TouchableOpacity>
+					<TouchableOpacity onPress={() => loginNoAPI()}>
+						<LinearGradient colors={globalColors[theme].purpleGradient} style={[styles.button, { marginTop:20, width:150 }]} useAngle={true} angle={45}>
+							<Text style={styles.text}>No-API Mode</Text>
+						</LinearGradient>
+					</TouchableOpacity>
 					<TouchableOpacity onPress={() => setShowCamera(true)}>
 						<LinearGradient colors={globalColors[theme].atlasGradient} style={[styles.button, { marginTop:20, width:150 }]} useAngle={true} angle={45}>
 							<Text style={styles.text}>Scan QR Code</Text>
@@ -105,10 +110,24 @@ export default function Login({ navigation, route }) {
 		}
 	}
 
+	async function loginNoAPI() {
+		await AsyncStorage.setItem("NoAPIMode", "enabled");
+
+		let validPages = ["Dashboard", "Market", "Holdings", "Settings"];
+		let page = await AsyncStorage.getItem("defaultPage");
+		if(empty(page) || !validPages.includes(page)) {
+			navigation.navigate("Dashboard");
+		} else {
+			navigation.navigate(page);
+		}
+	}
+
 	async function attemptLogin(token) {
 		if(empty(token)) {
 			login(url, username, password).then(async response => {
 				let token = response.token;
+
+				await AsyncStorage.removeItem("NoAPIMode");
 
 				await AsyncStorage.setItem("api", response.api);
 				await AsyncStorage.setItem("username", response.username);
@@ -134,6 +153,8 @@ export default function Login({ navigation, route }) {
 		} else {
 			verifySession(token).then(async response => {
 				if(response.valid) {
+					await AsyncStorage.removeItem("NoAPIMode");
+
 					await AsyncStorage.setItem("username", response.username);
 
 					setUsername();

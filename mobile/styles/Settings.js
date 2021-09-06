@@ -12,6 +12,30 @@ export default styles = StyleSheet.create({
 	pageDark: {
 		backgroundColor:globalColors["Dark"].mainSecond
 	},
+	modalWrapper: {
+		width:"100%",
+		height:"100%",
+		flex:1,
+		justifyContent:"center",
+		alignItems:"center",
+		backgroundColor:globalColors["Light"].mainThird
+	},
+	modalWrapperDark: {
+		backgroundColor:globalColors["Dark"].mainThird
+	},
+	modal: {
+		width:300,
+		height:300,
+		alignItems:"center",
+		backgroundColor:globalColors["Light"].mainFirst
+	},
+	modalDark: {
+		backgroundColor:globalColors["Dark"].mainFirst
+	},
+	buttonDelete: {
+		backgroundColor:"rgb(230,50,50)",
+		width:"auto",
+	},
 	section: {
 		shadowColor:globalStyles.shadowColor,
 		shadowOffset:globalStyles.shadowOffset,

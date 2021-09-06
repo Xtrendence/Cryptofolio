@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { NavigationActions } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
-import { Text, TouchableOpacity, View, StyleSheet, ScrollView, Dimensions, Switch, TextInput, Linking, ToastAndroid } from "react-native";
+import { Text, TouchableOpacity, View, StyleSheet, ScrollView, Dimensions, Switch, TextInput, Linking, ToastAndroid, Modal } from "react-native";
 import Clipboard from "@react-native-clipboard/clipboard";
 import DocumentPicker from "react-native-document-picker";
 import * as RNFS from "react-native-fs";
@@ -18,6 +18,10 @@ const screenHeight = Dimensions.get("screen").height;
 
 export default function Settings({ navigation, route }) {
 	const { theme, toggleTheme } = React.useContext(ThemeContext);
+
+	const [modal, setModal] = React.useState(false);
+
+	const [noAPIMode, setNoAPIMode] = React.useState(false);
 
 	const [currency, setCurrency] = React.useState();
 
@@ -56,6 +60,20 @@ export default function Settings({ navigation, route }) {
 
 	return (
 		<ScrollView style={[styles.page, styles[`page${theme}`]]} contentContainerStyle={{ paddingLeft:20, paddingTop:20, paddingRight:20 }} nestedScrollEnabled={true}>
+			<Modal animationType="fade" visible={modal} onRequestClose={() => { hideModal()}} transparent={false}>
+				<View style={[styles.modalWrapper, styles[`modalWrapper${theme}`]]}>
+					<View stlye={[styles.modal, styles[`modal${theme}`]]}>
+						<View style={[styles.buttonWrapper, styles.buttonWrapperCenter]}>
+							<TouchableOpacity style={[styles.button, styles.buttonDelete]} onPress={() => { clearNoAPIData()}}>
+								<Text style={styles.text}>Delete No-API Data</Text>
+							</TouchableOpacity>
+							<TouchableOpacity style={[styles.button, styles[`button${theme}`], styles.buttonCancel]} onPress={() => { hideModal()}}>
+								<Text style={styles.text}>Cancel</Text>
+							</TouchableOpacity>
+						</View>
+					</View>
+				</View>
+			</Modal>
 			<View style={[styles.section, styles[`section${theme}`]]}>
 				<Text style={[styles.header, styles[`header${theme}`]]}>Appearance</Text>
 				<View style={styles.container}>
@@ -229,17 +247,28 @@ export default function Settings({ navigation, route }) {
 			</View>
 			<View style={[styles.section, styles[`section${theme}`]]}>
 				<Text style={[styles.header, styles[`header${theme}`]]}>Account</Text>
-				{ !empty(accountMessage) &&
-					<View style={styles.messageWrapper}>
-						<Text style={styles.message}>{accountMessage}</Text>
+				{ !noAPIMode &&
+					<View>
+						{ !empty(accountMessage) &&
+							<View style={styles.messageWrapper}>
+								<Text style={styles.message}>{accountMessage}</Text>
+							</View>
+						}
+						<TextInput secureTextEntry={!empty(currentPassword)} style={[styles.input, styles[`input${theme}`]]} placeholder="Current Password..." placeholderTextColor={globalColors[theme].mainContrastLight} onChangeText={(value) => { setCurrentPassword(value)}} autoCapitalize="none"/>
+						<TextInput secureTextEntry={!empty(newPassword)} style={[styles.input, styles[`input${theme}`]]} placeholder="New Password..." placeholderTextColor={globalColors[theme].mainContrastLight} onChangeText={(value) => { setNewPassword(value)}} autoCapitalize="none"/>
+						<TextInput secureTextEntry={!empty(repeatPassword)} style={[styles.input, styles[`input${theme}`]]} placeholder="Repeat Password..." placeholderTextColor={globalColors[theme].mainContrastLight} onChangeText={(value) => { setRepeatPassword(value)}} autoCapitalize="none"/>
+						<TouchableOpacity style={styles.button} onPress={() => { changePassword() }}>
+							<Text style={styles.text}>Change Password</Text>
+						</TouchableOpacity>
 					</View>
 				}
-				<TextInput secureTextEntry={!empty(currentPassword)} style={[styles.input, styles[`input${theme}`]]} placeholder="Current Password..." placeholderTextColor={globalColors[theme].mainContrastLight} onChangeText={(value) => { setCurrentPassword(value)}} autoCapitalize="none"/>
-				<TextInput secureTextEntry={!empty(newPassword)} style={[styles.input, styles[`input${theme}`]]} placeholder="New Password..." placeholderTextColor={globalColors[theme].mainContrastLight} onChangeText={(value) => { setNewPassword(value)}} autoCapitalize="none"/>
-				<TextInput secureTextEntry={!empty(repeatPassword)} style={[styles.input, styles[`input${theme}`]]} placeholder="Repeat Password..." placeholderTextColor={globalColors[theme].mainContrastLight} onChangeText={(value) => { setRepeatPassword(value)}} autoCapitalize="none"/>
-				<TouchableOpacity style={styles.button} onPress={() => { changePassword() }}>
-					<Text style={styles.text}>Change Password</Text>
-				</TouchableOpacity>
+				{ noAPIMode &&
+					<View>
+						<TouchableOpacity style={styles.button} onPress={() => { showModal() }}>
+							<Text style={styles.text}>Clear No-API Data</Text>
+						</TouchableOpacity>
+					</View>
+				}
 				<TouchableOpacity style={styles.button} onPress={() => { logout() }}>
 					<Text style={styles.text}>Logout</Text>
 				</TouchableOpacity>
@@ -298,6 +327,14 @@ export default function Settings({ navigation, route }) {
 		</ScrollView>
 	);
 
+	function hideModal() {
+		setModal(false);
+	}
+
+	function showModal() {
+		setModal(true);
+	}
+
 	function copyAddress(address) {
 		let addresses = {
 			ADA: "addr1qyh9ejp2z7drzy8vzpyfeuvzuej5t5tnmjyfpfjn0vt722zqupdg44rqfw9fd8jruaez30fg9fxl34vdnncc33zqwhlqn37lz4",
@@ -330,6 +367,11 @@ export default function Settings({ navigation, route }) {
 			ToastAndroid.showWithGravity("Couldn't open the file picker, or no file was selected...", ToastAndroid.LONG, ToastAndroid.BOTTOM);
 			console.log(error);
 		});
+	}
+
+	async function clearNoAPIData() {
+		await AsyncStorage.removeItem("NoAPI");
+		logout();
 	}
 
 	async function importHoldings(data) {
@@ -486,30 +528,42 @@ export default function Settings({ navigation, route }) {
 	}
 
 	async function logout() {
-		let api = await AsyncStorage.getItem("api");
-		let token = await AsyncStorage.getItem("token");
-		let username = await AsyncStorage.getItem("username");
+		if(empty(await AsyncStorage.getItem("NoAPIMode"))) {
+			let api = await AsyncStorage.getItem("api");
+			let token = await AsyncStorage.getItem("token");
+			let username = await AsyncStorage.getItem("username");
 
-		let endpoint = api + "accounts/logout.php?platform=app&token=" + token + "&username=" + username;
+			let endpoint = api + "accounts/logout.php?platform=app&token=" + token + "&username=" + username;
 
-		fetch(endpoint, {
-			method: "GET",
-			headers: {
-				Accept: "application/json", "Content-Type": "application/json"
-			}
-		})
-		.then((json) => {
-			return json.json();
-		})
-		.then(async (response) => {
+			fetch(endpoint, {
+				method: "GET",
+				headers: {
+					Accept: "application/json", "Content-Type": "application/json"
+				}
+			})
+			.then((json) => {
+				return json.json();
+			})
+			.then(async (response) => {
+				await AsyncStorage.removeItem("NoAPIMode");
+				await AsyncStorage.removeItem("token");
+				await AsyncStorage.removeItem("username");
+
+				navigation.navigate("Login");
+
+				if("error" in response) {
+					console.log(response);
+				}
+			}).catch(error => {
+				console.log(error);
+			});
+		} else {
+			await AsyncStorage.removeItem("NoAPIMode");
+			await AsyncStorage.removeItem("token");
+			await AsyncStorage.removeItem("username");
+
 			navigation.navigate("Login");
-
-			if("error" in response) {
-				console.log(response);
-			}
-		}).catch(error => {
-			console.log(error);
-		});
+		}
 	}
 
 	async function changeDefaultPage(page) {
@@ -634,6 +688,13 @@ export default function Settings({ navigation, route }) {
 	}
 
 	async function getSettings() {
+		let noAPIMode = await AsyncStorage.getItem("NoAPIMode");
+		if(empty(noAPIMode)) {
+			setNoAPIMode(false);
+		} else {
+			setNoAPIMode(true);
+		}
+
 		let currency = await AsyncStorage.getItem("currency");
 		if(empty(currency)) {
 			currency = "usd";

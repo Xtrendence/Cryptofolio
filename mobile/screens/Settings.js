@@ -6,6 +6,7 @@ import { Text, TouchableOpacity, View, StyleSheet, ScrollView, Dimensions, Switc
 import Clipboard from "@react-native-clipboard/clipboard";
 import DocumentPicker from "react-native-document-picker";
 import * as RNFS from "react-native-fs";
+import NoAPI from "../utils/api";
 import { ThemeContext } from "../utils/theme";
 import { globalColors, globalStyles } from "../styles/global";
 import { empty } from "../utils/utils";

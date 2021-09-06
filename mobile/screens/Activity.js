@@ -5,6 +5,7 @@ import Icon from "react-native-vector-icons/FontAwesome5";
 import { StatusBar } from "expo-status-bar";
 import LinearGradient from "react-native-linear-gradient";
 import DatePicker from "react-native-modern-datepicker";
+import NoAPI from "../utils/api";
 import { globalColors, globalStyles } from "../styles/global";
 import { ThemeContext } from "../utils/theme";
 import { getCoinID } from "../utils/requests";

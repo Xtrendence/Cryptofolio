@@ -7,6 +7,7 @@ import { Stop, LinearGradient as SVGLinearGradient } from "react-native-svg";
 import LinearGradient from "react-native-linear-gradient";
 import { LineChart } from 'react-native-chart-kit';
 import HTML from "react-native-render-html";
+import NoAPI from "../utils/api";
 import { globalColors, globalStyles } from "../styles/global";
 import { ThemeContext } from "../utils/theme";
 import { empty, separateThousands, abbreviateNumber, epoch, wait, currencies, replaceAll, formatDate, capitalizeFirstLetter, formatDateHuman, previousYear } from "../utils/utils";

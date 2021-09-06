@@ -3,6 +3,7 @@ import React, { useEffect } from "react";
 import { Text, StyleSheet, View, Image, Dimensions, ScrollView, RefreshControl, TouchableOpacity, Modal, TextInput } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import LinearGradient from "react-native-linear-gradient";
+import NoAPI from "../utils/api";
 import { globalColors, globalStyles } from "../styles/global";
 import { ThemeContext } from "../utils/theme";
 import { empty, separateThousands, abbreviateNumber, epoch, wait, currencies, capitalizeFirstLetter } from "../utils/utils";

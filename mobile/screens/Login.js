@@ -6,6 +6,7 @@ import FlashMessage, { showMessage, hideMessage } from "react-native-flash-messa
 import { StatusBar } from "expo-status-bar";
 import QRCodeScanner from "react-native-qrcode-scanner";
 import { RNCamera } from "react-native-camera";
+import NoAPI from "../utils/api";
 import { globalColors, globalStyles } from "../styles/global";
 import { empty } from "../utils/utils";
 import { login, verifySession } from "../utils/requests";

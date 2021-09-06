@@ -9,7 +9,7 @@ import NoAPI from "../utils/api";
 import { globalColors, globalStyles } from "../styles/global";
 import { ThemeContext } from "../utils/theme";
 import { getCoinID } from "../utils/requests";
-import { empty, separateThousands, abbreviateNumber, epoch, capitalizeFirstLetter, wait, currencies, replaceAll, formatDateHuman, formatDate } from "../utils/utils";
+import { empty, separateThousands, abbreviateNumber, validJSON, epoch, capitalizeFirstLetter, wait, currencies, replaceAll, formatDateHuman, formatDate } from "../utils/utils";
 import styles from "../styles/Activity";
 
 const screenWidth = Dimensions.get("screen").width;

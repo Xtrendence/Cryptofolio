@@ -8,7 +8,7 @@ import QRCodeScanner from "react-native-qrcode-scanner";
 import { RNCamera } from "react-native-camera";
 import NoAPI from "../utils/api";
 import { globalColors, globalStyles } from "../styles/global";
-import { empty } from "../utils/utils";
+import { empty, validJSON } from "../utils/utils";
 import { login, verifySession } from "../utils/requests";
 import { ThemeContext } from "../utils/theme";
 import styles from "../styles/Login";

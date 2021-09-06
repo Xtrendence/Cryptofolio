@@ -10,7 +10,7 @@ import HTML from "react-native-render-html";
 import NoAPI from "../utils/api";
 import { globalColors, globalStyles } from "../styles/global";
 import { ThemeContext } from "../utils/theme";
-import { empty, separateThousands, abbreviateNumber, epoch, wait, currencies, replaceAll, formatDate, capitalizeFirstLetter, formatDateHuman, previousYear } from "../utils/utils";
+import { empty, separateThousands, abbreviateNumber, epoch, wait, currencies, replaceAll, formatDate, capitalizeFirstLetter, formatDateHuman, previousYear, validJSON } from "../utils/utils";
 import GradientChart from "../components/GradientChart";
 import styles from "../styles/Market";
 import { getWatchlist, createWatchlist, deleteWatchlist } from "../utils/requests";

@@ -9,7 +9,7 @@ import * as RNFS from "react-native-fs";
 import NoAPI from "../utils/api";
 import { ThemeContext } from "../utils/theme";
 import { globalColors, globalStyles } from "../styles/global";
-import { empty } from "../utils/utils";
+import { empty, validJSON } from "../utils/utils";
 import { importData, getCoinID, getETHAddressBalance, addHolding, updateHolding } from "../utils/requests";
 import styles from "../styles/Settings";
 

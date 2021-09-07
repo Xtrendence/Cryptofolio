@@ -8,6 +8,10 @@
 
 Cryptofolio is an open-source, and self-hosted solution for tracking your cryptocurrency holdings. It features a web interface, an Android mobile app, and a cross-platform desktop application for Windows, macOS, and Linux. These three platforms all work using a RESTful API, which you'd have to host yourself.
 
+### Is there a demo version?
+
+Yes [there is](https://xtrendence.github.io/Cryptofolio/website/), but it's not intended for long-term use as it stores data in localStorage.
+
 ### How can I view a list of upcoming features?
 
 The [project board](https://github.com/Xtrendence/Cryptofolio/projects/1?fullscreen=true) will be updated with any features that are currently in development.

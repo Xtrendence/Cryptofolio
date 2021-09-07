@@ -93,6 +93,8 @@ If you use DockerHub, then simply follow the instructions on the [page there](ht
 
 Use `docker pull xtrendence/cryptofolio:latest` to quickly pull the latest image.
 
+**Initial Username**: admin (the admin account must always have the username "admin")
+
 **Initial Password**: admin
 
 First, download the latest release from the [Releases](https://github.com/Xtrendence/Cryptofolio/releases) section. For the API and website, to ensure you don't get any unfinished code and that everything is compatible, download the "Source code (zip)" file from the Releases section rather than just downloading the source code containing the most recent commits. You'll then have to set up a server on your network using a guide such as [this](https://www.ionos.co.uk/digitalguide/server/tools/xampp-tutorial-create-your-own-local-test-server/) one.

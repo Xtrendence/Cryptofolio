@@ -178,7 +178,7 @@ export default function Settings({ navigation, route }) {
 				<Text style={[styles.header, styles[`header${theme}`]]}>Dashboard Holdings Sorting</Text>
 				<View style={styles.container}>
 					<TouchableOpacity style={[styles.inlineButton, styles[`inlineButton${theme}`], (dashboardHoldingsSorting === "coin") ? styles.inlineButtonActive : null]} onPress={() => { changeDashboardHoldingsSorting("coin")}}>
-						<Text style={[styles.buttonText, styles[`buttonText${theme}`], (dashboardMarketSorting === "coin") ? styles.buttonTextActive : null]}>Coin</Text>
+						<Text style={[styles.buttonText, styles[`buttonText${theme}`], (dashboardHoldingsSorting === "coin") ? styles.buttonTextActive : null]}>Coin</Text>
 					</TouchableOpacity>
 					<TouchableOpacity style={[styles.inlineButton, styles[`inlineButton${theme}`], (dashboardHoldingsSorting === "amount") ? styles.inlineButtonActive : null]} onPress={() => { changeDashboardHoldingsSorting("amount")}}>
 						<Text style={[styles.buttonText, styles[`buttonText${theme}`], (dashboardHoldingsSorting === "amount") ? styles.buttonTextActive : null]}>Amount</Text>

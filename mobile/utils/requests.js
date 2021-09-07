@@ -350,6 +350,7 @@ export async function getWatchlist() {
 		if(empty(await AsyncStorage.getItem("NoAPIMode"))) {
 			let api = await AsyncStorage.getItem("api");
 			let token = await AsyncStorage.getItem("token");
+			let username = await AsyncStorage.getItem("username");
 
 			let endpoint = api + "watchlist/read.php?platform=app&token=" + token + "&username=" + username;
 

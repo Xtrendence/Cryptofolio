@@ -47,11 +47,11 @@ export default function Activity({ navigation }) {
 	const [activityData, setActivityData] = React.useState([<Text key="loading" style={[styles.loadingText, styles.headerText, styles[`headerText${theme}`]]}>Loading...</Text>]);
 
 	useEffect(() => {
-		// setInterval(() => {
-		// 	if(navigation.isFocused()) {
-		// 		getActivity();
-		// 	}
-		// }, 15000);
+		setInterval(() => {
+			if(navigation.isFocused()) {
+				getActivity();
+			}
+		}, 15000);
 
 		navigation.addListener("focus", () => {
 			if(navigation.isFocused()) {

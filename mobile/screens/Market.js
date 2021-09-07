@@ -61,12 +61,12 @@ export default function Market({ navigation }) {
 	const [marketData, setMarketData] = React.useState([<Text key="loading" style={[styles.loadingText, styles.headerText, styles[`headerText${theme}`]]}>Loading...</Text>]);
 
 	useEffect(() => {
-		// setInterval(() => {
-		// 	if(navigation.isFocused()) {
-		// 		getMarket();
-		// 		getGlobal();
-		// 	}
-		// }, 15000);
+		setInterval(() => {
+			if(navigation.isFocused()) {
+				getMarket();
+				getGlobal();
+			}
+		}, 15000);
 
 		navigation.addListener("focus", () => {
 			if(navigation.isFocused()) {
@@ -171,8 +171,8 @@ export default function Market({ navigation }) {
 								</TouchableOpacity>
 							}
 							{ modalWatchlist &&
-								<TouchableOpacity style={[styles.modalDescriptionWrapper, styles[`modalDescriptionWrapper${theme}`], { width:220 }]} onPress={() => { deleteWatchlist(coinID); setModalWatchlist(false)}}>
-									<Text style={[styles.modalDescription, styles[`modalDescription${theme}`]]}>Remove From Watchlist</Text>
+								<TouchableOpacity style={[styles.modalDescriptionWrapper, styles[`modalDescriptionWrapper${theme}`], { width:220, backgroundColor:globalColors[theme].accentThird }]} onPress={() => { deleteWatchlist(coinID); setModalWatchlist(false)}}>
+									<Text style={[styles.modalDescription, styles[`modalDescription${theme}`], { color:globalColors[theme].accentContrast }]}>Remove From Watchlist</Text>
 								</TouchableOpacity>
 							}
 							<View style={[styles.modalDescriptionWrapper, styles[`modalDescriptionWrapper${theme}`]]}>

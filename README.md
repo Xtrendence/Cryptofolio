@@ -135,7 +135,9 @@ In order to add an asset to your list of holdings, you will need to find out wha
 #### Credits
 
 Chart.js: https://www.chartjs.org/
+
 QR Code Styling: https://qr-code-styling.com/
+
 Flatpickr: https://flatpickr.js.org/
 
 #### Mobile App

@@ -6,7 +6,7 @@ const screenHeight = Dimensions.get("screen").height;
 
 export default styles = StyleSheet.create({
 	page: {
-		maxHeight:screenHeight - 190,
+		height:screenHeight - 190,
 		backgroundColor:globalColors["Light"].mainSecond
 	},
 	pageDark: {

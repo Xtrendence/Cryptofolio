@@ -59,7 +59,7 @@ export default function Settings({ navigation, route }) {
 	}, []);
 
 	return (
-		<ScrollView style={[styles.page, styles[`page${theme}`]]} contentContainerStyle={{ paddingLeft:20, paddingTop:20, paddingRight:20 }} nestedScrollEnabled={true}>
+		<ScrollView style={[styles.page, styles[`page${theme}`]]} contentContainerStyle={{ padding:20 }} nestedScrollEnabled={true}>
 			<Modal animationType="fade" visible={modal} onRequestClose={() => { hideModal()}} transparent={false}>
 				<View style={[styles.modalWrapper, styles[`modalWrapper${theme}`]]}>
 					<View stlye={[styles.modal, styles[`modal${theme}`]]}>
@@ -291,7 +291,7 @@ export default function Settings({ navigation, route }) {
 					<Text style={styles.text}>Export Activity</Text>
 				</TouchableOpacity>
 			</View>
-			<View style={[styles.section, styles[`section${theme}`]]}>
+			<View style={[styles.section, styles[`section${theme}`], { marginBottom:60 }]}>
 				<Text style={[styles.header, styles[`header${theme}`]]}>Donate</Text>
 				<View style={[styles.sectionDescriptionWrapper, styles[`sectionDescriptionWrapper${theme}`]]}>
 					<Text style={[styles.sectionDescription, styles[`sectionDescription${theme}`]]}>If you'd like to donate, then please feel free to do so, it'd be much appreciated. However, I don't want you to feel obliged to do so, and there are no perks for it. If you decide to donate, please contact me afterwards so I can actually thank you, and I'd love to hear about any ideas you may have for Cryptofolio. If they're within the scope of the project, I'll probably implement them.</Text>

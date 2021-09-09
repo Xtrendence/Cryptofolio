@@ -62,7 +62,7 @@
 				height:80px;
 				width:100%;
 			}
-			.download-button, .download-count-wrapper, .action-button {
+			.demo-button, .download-button, .download-count-wrapper, .action-button {
 				position:absolute;
 				top:20px;
 				right:20px;
@@ -78,14 +78,20 @@
 				cursor:pointer;
 				transition:transform 0.25s;
 			}
-			.download-button svg {
+			.download-button {
+				width:140px;
+			}
+			.demo-button {
+				right:180px;
+			}
+			.demo-button svg, .download-button svg {
 				width:24px;
 				height:24px;
 				fill:rgb(255,255,255);
 				vertical-align:middle;
 				margin-left:10px;
 			}
-			.download-button:hover, .action-button:hover {
+			.demo-button:hover, .download-button:hover, .action-button:hover {
 				transform:scale(0.95);
 			}
 			.download-count-wrapper {
@@ -391,6 +397,9 @@
 		</div>
 		<div class="background-padding"></div>
 		<svg class="background" viewBox="0 0 1440 324" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><path d="M 0 0 C 207.6 0 138.4 168 346 168 L 346 168 L 346 0 L 0 0 Z" stroke-width="0"></path> <path d="M 345 168 C 567 168 493 49 715 49 L 715 49 L 715 0 L 345 0 Z" stroke-width="0"></path> <path d="M 714 49 C 990.5999999999999 49 898.4000000000001 270 1175 270 L 1175 270 L 1175 0 L 714 0 Z" stroke-width="0"></path><path d="M 1174 270 C 1333.6 270 1280.4 50 1440 50 L 1440 50 L 1440 0 L 1174 0 Z" stroke-width="0"></path></svg>
+		<a href="https://xtrendence.github.io/Cryptofolio/website/" target="_blank">
+			<button class="demo-button">Demo<svg width="1792" height="1792" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1664 960q-152-236-381-353 61 104 61 225 0 185-131.5 316.5t-316.5 131.5-316.5-131.5-131.5-316.5q0-121 61-225-229 117-381 353 133 205 333.5 326.5t434.5 121.5 434.5-121.5 333.5-326.5zm-720-384q0-20-14-34t-34-14q-125 0-214.5 89.5t-89.5 214.5q0 20 14 34t34 14 34-14 14-34q0-86 61-147t147-61q20 0 34-14t14-34zm848 384q0 34-20 69-140 230-376.5 368.5t-499.5 138.5-499.5-139-376.5-368q-20-35-20-69t20-69q140-229 376.5-368t499.5-139 499.5 139 376.5 368q20 35 20 69z"/></svg></button>
+		</a>
 		<a href="https://github.com/Xtrendence/Cryptofolio/releases">
 			<button class="download-button">Download<svg width="1792" height="1792" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1675 832q0 53-37 90l-651 652q-39 37-91 37-53 0-90-37l-651-652q-38-36-38-90 0-53 38-91l74-75q39-37 91-37 53 0 90 37l294 294v-704q0-52 38-90t90-38h128q52 0 90 38t38 90v704l294-294q37-37 90-37 52 0 91 37l75 75q37 39 37 91z"/></svg></button>
 		</a>

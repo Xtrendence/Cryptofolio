@@ -83,6 +83,8 @@ export default class NoAPI {
 				notes = "-";
 			}
 
+			date = this.replaceAll(date, "/", "-");
+
 			if(this.validDate(date)) {
 				let time = Math.floor(new Date(Date.parse(date)).getTime() / 1000);
 				let activity = { id:id, symbol:symbol, date:date, time:time, type:type, amount:amount, fee:fee, notes:notes };
@@ -190,6 +192,8 @@ export default class NoAPI {
 			let fee = !this.empty(data[6]) ? data[6] : 0;
 			let notes = !this.empty(data[7]) ? this.replaceAll(data[7], '"', "") : "-";
 
+			date = this.replaceAll(date, "/", "-");
+
 			if(this.validDate(date)) {
 				let time = Math.floor(new Date(Date.parse(date)).getTime() / 1000);
 				let activity = { id:id, symbol:symbol, date:date, time:time, type:type, amount:amount, fee:fee, notes:notes };
@@ -246,6 +250,8 @@ export default class NoAPI {
 			if(this.empty(notes)) {
 				notes = "-";
 			}
+
+			date = this.replaceAll(date, "/", "-");
 
 			if(this.validDate(date)) {
 				let time = Math.floor(new Date(Date.parse(date)).getTime() / 1000);

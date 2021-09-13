@@ -74,6 +74,7 @@ export default function Holdings({ navigation }) {
 			if(navigation.isFocused()) {
 				setTimeout(() => {
 					setPageKey(epoch());
+					hideChartModal();
 					getHoldings();
 				}, 500);
 			}
@@ -81,6 +82,8 @@ export default function Holdings({ navigation }) {
 	}, []);
 
 	useEffect(() => {
+		hideChartModal();
+
 		setHoldingsData([<Text key="loading" style={[styles.loadingText, styles.headerText, styles[`headerText${theme}`]]}>Loading...</Text>]);
 
 		setPageKey(epoch());

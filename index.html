@@ -62,7 +62,7 @@
 				height:80px;
 				width:100%;
 			}
-			.demo-button, .download-button, .download-count-wrapper, .action-button {
+			.demo-button, .store-button, .download-button, .download-count-wrapper, .action-button {
 				position:absolute;
 				top:20px;
 				right:20px;
@@ -78,20 +78,25 @@
 				cursor:pointer;
 				transition:transform 0.25s;
 			}
+			.store-button {
+				width:170px;
+				right:20px;
+				top:80px;
+			}
 			.download-button {
 				width:140px;
 			}
 			.demo-button {
 				right:180px;
 			}
-			.demo-button svg, .download-button svg {
+			.demo-button svg, .store-button svg, .download-button svg {
 				width:24px;
 				height:24px;
 				fill:rgb(255,255,255);
 				vertical-align:middle;
 				margin-left:10px;
 			}
-			.demo-button:hover, .download-button:hover, .action-button:hover {
+			.demo-button:hover, .store-button:hover, .download-button:hover, .action-button:hover {
 				transform:scale(0.95);
 			}
 			.download-count-wrapper {
@@ -241,7 +246,7 @@
 				}
 				.pane.first {
 					left:auto;
-					margin-top:80px;
+					margin-top:20px;
 				}
 				.pane.second {
 					left:auto;
@@ -255,6 +260,12 @@
 				}
 				.navigation-button {
 					display:none;
+				}
+				.store-button {
+					position:relative;
+					top:auto;
+					right:auto;
+					margin:100px auto 0 0;
 				}
 				.action-button.bottom {
 					top:auto;
@@ -407,6 +418,9 @@
 			<div class="download-count-wrapper">
 				<span id="download-count" aria-label="GitHub Release Downloads + DockerHub Pulls" data-microtip-position="bottom-right" role="tooltip">... Downloads</span>
 			</div>
+			<a href="https://play.google.com/store/apps/details?id=com.xtrendence.cryptofolio">
+				<button class="store-button">Google Play<svg width="1792" height="1792" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1576 927l-1328 738q-23 13-39.5 3t-16.5-36v-1472q0-26 16.5-36t39.5 3l1328 738q23 13 23 31t-23 31z"/></svg></button>
+			</a>
 			<div class="navigation-button left" id="previous-button">
 				<svg width="1792" height="1792" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1427 301l-531 531 531 531q19 19 19 45t-19 45l-166 166q-19 19-45 19t-45-19l-742-742q-19-19-19-45t19-45l742-742q19-19 45-19t45 19l166 166q19 19 19 45t-19 45z"/></svg>
 			</div>

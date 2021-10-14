@@ -512,7 +512,7 @@ export default class NoAPI {
 			let current = this.data;
 
 			if(Object.keys(current.holdings).includes(id)) {
-				current.holdings[id].amount += amount;
+				current.holdings[id].amount = parseFloat(current.holdings[id].amount) + parseFloat(amount);
 			} else {
 				current.holdings[id] = { symbol:symbol, amount:amount };
 			}

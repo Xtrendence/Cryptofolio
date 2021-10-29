@@ -19,9 +19,9 @@ export default function TopBar(props) {
 const styles = StyleSheet.create({
 	bar: {
 		justifyContent:"center",
-		height:80,
+		height:84,
 		paddingBottom:10,
-		paddingTop:Constants.statusBarHeight + 5,
+		paddingTop:Constants.statusBarHeight,
 		width:"100%",
 		backgroundColor:globalColors["Light"].mainFirst,
 		shadowColor:globalStyles.shadowColor,

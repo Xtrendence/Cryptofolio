@@ -1,5 +1,3 @@
-At the moment, only Docker-related pull requests would be accepted and merged (provided the code is safe, commit titles are sensible etc.)
+Use this guide to set up your dev enviornment: https://github.com/Xtrendence/Cryptofolio/wiki/Dev-Environment
 
-Since I'm planning on basing my final year university project on Cryptofolio, all the code for the main application has to be my own to avoid any plagiarism concerns. Furthermore, as I already had a big team project for my second year, I want this to be more of a solo project that I can use an example of what I can make on my own.
-
-Once I finish my final year, I will open the project up to being modified by the community. The only restrictions in that sense would be to not deviate too much from the original, as I ultimately do want this to still feel like my project. 
+PRs will be reviewed (and hopefully accepted) as soon as possible. The only stipulation is that they cannot modify the app in ways that would make it completely deviate from its original purpose. No paid API usage, no data hosted in external servers, no calls home, no huge UI changes that completely change the look and feel of the app. Essentially, I want the app to still feel like something I made, and I absolutely want privacy and freeware to be at the forefront of the project's mission.
